@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  phone         String?   @unique // Added for phone authentication
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          String    @default("USER") // USER, TENANT, ADMIN
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  tickets       Ticket[]
+  payments      Payment[]
+}
+
+model Property {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  price       Float
+  location    String
+  status      String   @default("AVAILABLE") // AVAILABLE, RENTED, SOLD, MAINTENANCE
+  type        String // e.g., Apartment, House, Office
+  images      String // JSON string or comma-separated URLs
+  features    String? // JSON string of features
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Material {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  category    String
+  price       Float?   // Optional, as it might be "Contact for price"
+  images      String // JSON string or comma-separated URLs
+  inStock     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Ticket {
+  id          String       @id @default(cuid())
+  subject     String
+  description String
+  category    String       // PLUMBING, ELECTRICAL, STRUCTURAL, OTHER
+  status      String       @default("PENDING") // PENDING, IN_PROGRESS, RESOLVED, CLOSED
+  images      String?      // JSON string of image URLs
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  amount      Float
+  reference   String        @unique // Payment gateway reference
+  status      String        @default("PENDING") // PENDING, SUCCESS, FAILED
+  method      String        // e.g., Paystack, Transfer
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  message   String
+  status    String   @default("NEW") // NEW, READ, ARCHIVED
+  createdAt DateTime @default(now())
+}
