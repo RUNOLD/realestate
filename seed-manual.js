@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
+    console.log("Starting manual seed...");
     const password = await bcrypt.hash('password123', 10);
 
     const admin = await prisma.user.upsert({
@@ -16,6 +17,7 @@ async function main() {
             role: 'ADMIN',
         },
     });
+    console.log("Admin created/found:", admin.email);
 
     const staff = await prisma.user.upsert({
         where: { email: 'staff@ayoolaproperty.com' },
@@ -27,6 +29,7 @@ async function main() {
             role: 'STAFF',
         },
     });
+    console.log("Staff created/found:", staff.email);
 
     const tenant = await prisma.user.upsert({
         where: { email: 'tenant@example.com' },
@@ -38,8 +41,9 @@ async function main() {
             role: 'TENANT',
         },
     });
+    console.log("Tenant created/found:", tenant.email);
 
-    console.log({ admin, staff, tenant });
+    console.log("Seed completed successfully.");
 }
 
 main()

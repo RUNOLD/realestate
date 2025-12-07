@@ -74,8 +74,15 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
                                                 <Shield size={12} /> {user.role}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 flex items-center gap-2 text-muted-foreground">
-                                            <Mail size={14} /> {user.email}
+                                        <td className="px-6 py-4 flex flex-col gap-1 text-muted-foreground">
+                                            <div className="flex items-center gap-2">
+                                                <Mail size={14} /> {user.email}
+                                            </div>
+                                            {user.status === 'PENDING' && (
+                                                <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full w-fit">
+                                                    Pending Approval
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4 text-muted-foreground">
                                             {new Date(user.createdAt).toLocaleDateString()}

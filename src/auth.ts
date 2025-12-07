@@ -31,6 +31,7 @@ async function getUser(identifier: string): Promise<any> {
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,
+    debug: true,
     providers: [
         Credentials({
             async authorize(credentials) {
@@ -39,13 +40,23 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 if (parsedCredentials.success) {
                     const { identifier, password } = parsedCredentials.data;
                     const user = await getUser(identifier);
-                    if (!user) return null;
+                    if (!user) {
+                        console.log('Login Failed: User not found for identifier:', identifier);
+                        return null;
+                    }
 
-                    const passwordsMatch = await bcrypt.compare(password, user.password || ''); // handle potential null password
-                    if (passwordsMatch) return user;
+                    const passwordsMatch = await bcrypt.compare(password, user.password || '');
+
+                    if (passwordsMatch) {
+                        console.log('Login Success: User authenticated:', user.email);
+                        return user;
+                    } else {
+                        console.log('Login Failed: Password mismatch for user:', user.email);
+                    }
+                } else {
+                    console.log('Login Failed: Invalid input format');
                 }
 
-                console.log('Invalid credentials');
                 return null;
             },
         }),
@@ -67,5 +78,23 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             }
             return session;
         },
+    },
+    events: {
+        async signIn({ user }) {
+            if (user) {
+                const { createActivityLog, ActionType, EntityType } = await import('@/lib/logger');
+                try {
+                    await createActivityLog(
+                        user.id as string,
+                        ActionType.LOGIN,
+                        EntityType.USER,
+                        user.id as string,
+                        { method: 'credentials', role: (user as any).role }
+                    );
+                } catch (e) {
+                    console.error("Failed to log activity:", e);
+                }
+            }
+        }
     },
 });

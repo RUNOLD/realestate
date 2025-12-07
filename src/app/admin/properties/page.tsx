@@ -1,18 +1,19 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { 
-    Plus, 
-    Edit, 
-    Trash2, 
-    MapPin, 
-    Search, 
-    Filter, 
-    Home, 
-    BedDouble, 
+import {
+    Plus,
+    Edit,
+    Trash2,
+    MapPin,
+    Search,
+    Filter,
+    Home,
+    BedDouble,
     Maximize,
     MoreVertical
 } from "lucide-react";
+import { DeleteButton } from "@/components/admin/DeleteButton";
 
 export default async function AdminPropertiesPage() {
     // Fetch data
@@ -27,7 +28,7 @@ export default async function AdminPropertiesPage() {
     return (
         <div className="min-h-screen bg-gray-50/50 p-6 sm:p-8">
             <div className="max-w-7xl mx-auto space-y-8">
-                
+
                 {/* 1. Header & Stats */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                     <div>
@@ -59,9 +60,9 @@ export default async function AdminPropertiesPage() {
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                         <div className="relative w-full sm:w-64">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <input 
-                                type="text" 
-                                placeholder="Search by address..." 
+                            <input
+                                type="text"
+                                placeholder="Search by address..."
                                 className="w-full pl-9 pr-4 py-1.5 text-sm border-none bg-transparent focus:outline-none focus:ring-0"
                             />
                         </div>
@@ -89,15 +90,15 @@ export default async function AdminPropertiesPage() {
 
 // --- Helper Components ---
 
-function PropertyCard({ property }) {
+function PropertyCard({ property }: { property: any }) {
     return (
         <div className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200">
             {/* Image Area */}
             <div className="relative h-48 bg-gray-100">
                 {property.images ? (
-                    <img 
-                        src={property.images} 
-                        alt={property.title} 
+                    <img
+                        src={property.images}
+                        alt={property.title}
                         className="w-full h-full object-cover"
                     />
                 ) : (
@@ -105,7 +106,7 @@ function PropertyCard({ property }) {
                         <Home size={32} />
                     </div>
                 )}
-                
+
                 {/* Status Badge Overlay */}
                 <div className="absolute top-3 right-3">
                     <StatusBadge status={property.status} />
@@ -145,12 +146,12 @@ function PropertyCard({ property }) {
                         ₦{property.price.toLocaleString()}
                     </span>
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="outline" size="icon" className="h-8 w-8">
-                            <Edit size={14} />
-                        </Button>
-                        <Button variant="outline" size="icon" className="h-8 w-8 text-red-600 hover:bg-red-50 hover:border-red-200">
-                            <Trash2 size={14} />
-                        </Button>
+                        <Link href={`/admin/properties/${property.id}/edit`}>
+                            <Button variant="outline" size="icon" className="h-8 w-8">
+                                <Edit size={14} />
+                            </Button>
+                        </Link>
+                        <DeleteButton id={property.id} type="PROPERTY" />
                     </div>
                 </div>
             </div>
@@ -158,8 +159,8 @@ function PropertyCard({ property }) {
     );
 }
 
-function StatusBadge({ status }) {
-    const styles = {
+function StatusBadge({ status }: { status: string }) {
+    const styles: Record<string, string> = {
         AVAILABLE: "bg-green-100 text-green-700 backdrop-blur-md bg-opacity-90",
         RENTED: "bg-blue-100 text-blue-700 backdrop-blur-md bg-opacity-90",
         SOLD: "bg-gray-800 text-white backdrop-blur-md bg-opacity-90",

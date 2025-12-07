@@ -1,4 +1,5 @@
 import { auth } from "../../../auth";
+import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { FileText, Download, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -7,8 +8,15 @@ export default async function DocumentsPage() {
     const session = await auth();
     if (!session?.user) redirect("/login");
 
-    // Placeholder for real documents - since we don't have a Document model yet
-    const documents: any[] = [];
+    const documents = await prisma.document.findMany({
+        where: { userId: session.user.id },
+        orderBy: { createdAt: 'desc' }
+    });
+
+    // Helper to format category
+    const formatCategory = (cat: string) => {
+        return cat.replace(/_/g, ' ');
+    };
 
     return (
         <div className="space-y-8">
@@ -33,20 +41,33 @@ export default async function DocumentsPage() {
                     </div>
                 ) : (
                     <div className="divide-y divide-border">
-                        {documents.map((doc, index) => (
-                            <div key={index} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                        {documents.map((doc) => (
+                            <div key={doc.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                                 <div className="flex items-center gap-4">
                                     <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center">
                                         <FileText className="text-primary" size={20} />
                                     </div>
                                     <div>
                                         <h4 className="font-medium text-foreground">{doc.name}</h4>
-                                        <p className="text-xs text-muted-foreground">{doc.date}</p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-[10px] font-bold bg-muted text-muted-foreground px-1.5 py-0.5 rounded uppercase">
+                                                {formatCategory(doc.category)}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {new Date(doc.createdAt).toLocaleDateString()}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                                <a
+                                    href={doc.url}
+                                    download={doc.name}
+                                    className="h-10 w-10 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
                                     <Download size={18} />
-                                </Button>
+                                </a>
                             </div>
                         ))}
                     </div>

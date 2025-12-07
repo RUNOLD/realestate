@@ -1,16 +1,19 @@
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/Button";
-import { 
-    MessageSquare, 
-    Edit, 
-    Clock, 
-    CheckCircle, 
-    AlertCircle, 
-    Search, 
+import {
+    MessageSquare,
+    Edit,
+    Clock,
+    CheckCircle,
+    AlertCircle,
+    Search,
     Filter,
     MoreHorizontal,
     User
 } from "lucide-react";
+import { TicketApprovalActions } from "@/components/dashboard/TicketApprovalActions";
+import { CreateTicketModal } from "@/components/admin/CreateTicketModal";
+import { ExportTicketsButton } from "@/components/admin/ExportTicketsButton";
 
 export default async function AdminTicketsPage() {
     // 1. Fetch Data
@@ -24,10 +27,17 @@ export default async function AdminTicketsPage() {
     const openTickets = tickets.filter(t => t.status === 'PENDING').length;
     const resolvedTickets = tickets.filter(t => t.status === 'RESOLVED').length;
 
+    // 3. Fetch Tenants for Create Modal
+    const tenants = await prisma.user.findMany({
+        where: { role: 'TENANT' },
+        select: { id: true, name: true, email: true },
+        orderBy: { name: 'asc' }
+    });
+
     return (
         <div className="min-h-screen bg-gray-50/50 p-6 sm:p-8">
             <div className="max-w-7xl mx-auto space-y-8">
-                
+
                 {/* Header Section */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                     <div>
@@ -35,8 +45,8 @@ export default async function AdminTicketsPage() {
                         <p className="text-gray-500 mt-1">Manage maintenance requests and tenant issues.</p>
                     </div>
                     <div className="flex gap-2">
-                        <Button variant="outline" className="bg-white border-gray-200">Export CSV</Button>
-                        <Button className="bg-gray-900 text-white hover:bg-black shadow-md">Create Ticket</Button>
+                        <ExportTicketsButton tickets={tickets} />
+                        <CreateTicketModal tenants={tenants} />
                     </div>
                 </div>
 
@@ -71,14 +81,14 @@ export default async function AdminTicketsPage() {
                     </div>
                 </div>
 
-                
 
-[Image of financial dashboard wireframe layout]
+
+                [Image of financial dashboard wireframe layout]
 
 
                 {/* Main Ticket List */}
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                    
+
                     {/* Toolbar */}
                     <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-gray-50/30">
                         {/* Tabs */}
@@ -87,14 +97,14 @@ export default async function AdminTicketsPage() {
                             <button className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900">Pending</button>
                             <button className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900">Resolved</button>
                         </div>
-                        
+
                         {/* Search */}
                         <div className="flex items-center gap-2 w-full sm:w-auto">
                             <div className="relative w-full sm:w-64">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                <input 
-                                    type="text" 
-                                    placeholder="Search by subject or ID..." 
+                                <input
+                                    type="text"
+                                    placeholder="Search by subject or ID..."
                                     className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/5"
                                 />
                             </div>
@@ -130,13 +140,13 @@ export default async function AdminTicketsPage() {
                                 ) : (
                                     tickets.map((ticket) => (
                                         <tr key={ticket.id} className="group hover:bg-blue-50/30 transition-colors">
-                                            
+
                                             {/* Column 1: Subject & ID */}
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col">
                                                     <span className="font-semibold text-gray-900 text-base">{ticket.subject}</span>
                                                     <div className="flex items-center gap-2 mt-1">
-                                                        <span className="font-mono text-xs text-gray-400">#{ticket.id.substring(0,6)}</span>
+                                                        <span className="font-mono text-xs text-gray-400">#{ticket.id.substring(0, 6)}</span>
                                                         <span className="text-gray-300">•</span>
                                                         <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
                                                             {ticket.category}
@@ -160,7 +170,19 @@ export default async function AdminTicketsPage() {
 
                                             {/* Column 3: Status Badge */}
                                             <td className="px-6 py-4">
-                                                <StatusBadge status={ticket.status} />
+                                                <div className="flex flex-col gap-2">
+                                                    <StatusBadge status={ticket.status} />
+                                                    {ticket.requiresApproval && (
+                                                        <div className="text-xs">
+                                                            <span className="font-medium text-gray-500 mr-1">Approval:</span>
+                                                            <span className={`font-mono 
+                                                                ${ticket.approvalStatus === 'APPROVED' ? 'text-green-600' :
+                                                                    ticket.approvalStatus?.includes('PENDING') ? 'text-amber-600' : 'text-gray-500'}`}>
+                                                                {ticket.approvalStatus}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </td>
 
                                             {/* Column 4: Date */}
@@ -173,10 +195,10 @@ export default async function AdminTicketsPage() {
 
                                             {/* Column 5: Actions */}
                                             <td className="px-6 py-4 text-right">
-                                                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
-                                                    <Button variant="outline" size="sm" className="h-8 bg-white text-xs">
-                                                        Open
-                                                    </Button>
+                                                <div className="flex justify-end gap-2 items-center">
+                                                    {ticket.requiresApproval && (
+                                                        <TicketApprovalActions ticketId={ticket.id} approvalStatus={ticket.approvalStatus} />
+                                                    )}
                                                     <Button variant="ghost" size="icon" className="h-8 w-8">
                                                         <MoreHorizontal size={16} className="text-gray-400" />
                                                     </Button>

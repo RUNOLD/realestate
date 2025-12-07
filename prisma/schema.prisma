@@ -18,12 +18,25 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
-  role          String    @default("USER") // USER, TENANT, ADMIN
+  role          String    @default("USER") // USER, TENANT, ADMIN, STAFF
+  status        String    @default("ACTIVE") // ACTIVE, PENDING (for Staff created tenants)
+  
+  // Tenant Profile Fields
+  nextOfKinName  String?
+  nextOfKinPhone String?
+  employerName   String?
+  jobTitle       String?
+  isEmployed     Boolean   @default(false)
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   tickets       Ticket[]
   payments      Payment[]
+  activityLogs  ActivityLog[]
+  leases        Lease[]
+  documents     Document[]
+  rentModifications RentModificationLog[] @relation("AdminRentModifications")
 }
 
 model Property {
@@ -38,6 +51,9 @@ model Property {
   features    String? // JSON string of features
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  leases      Lease[]
+  documents   Document[]
 }
 
 model Material {
@@ -52,17 +68,21 @@ model Material {
   updatedAt   DateTime @updatedAt
 }
 
+
 model Ticket {
-  id          String       @id @default(cuid())
-  subject     String
-  description String
-  category    String       // PLUMBING, ELECTRICAL, STRUCTURAL, OTHER
-  status      String       @default("PENDING") // PENDING, IN_PROGRESS, RESOLVED, CLOSED
-  images      String?      // JSON string of image URLs
-  userId      String
-  user        User         @relation(fields: [userId], references: [id])
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id             String       @id @default(cuid())
+  subject        String
+  description    String
+  category       String       // PLUMBING, ELECTRICAL, STRUCTURAL, OTHER
+  status         String       @default("PENDING") // PENDING, IN_PROGRESS, RESOLVED, CLOSED
+  approvalStatus String       @default("PENDING_MANAGER") // PENDING_MANAGER, PENDING_ADMIN, APPROVED
+  requiresApproval Boolean    @default(true)
+  priority       String       @default("MEDIUM") // LOW, MEDIUM, HIGH, EMERGENCY
+  images         String?      // JSON string of image URLs
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
 model Payment {
@@ -70,9 +90,12 @@ model Payment {
   amount      Float
   reference   String        @unique // Payment gateway reference
   status      String        @default("PENDING") // PENDING, SUCCESS, FAILED
+  approvalStatus String     @default("APPROVED") // APPROVED, PENDING (for Staff created payments)
   method      String        // e.g., Paystack, Transfer
   userId      String
   user        User          @relation(fields: [userId], references: [id])
+  leaseId     String?       // Optional link to specific lease
+  lease       Lease?        @relation(fields: [leaseId], references: [id])
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 }
@@ -85,4 +108,61 @@ model ContactSubmission {
   message   String
   status    String   @default("NEW") // NEW, READ, ARCHIVED
   createdAt DateTime @default(now())
+}
+
+// --- Digital Transparency System Models ---
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?  // Can be null if system action, but usually having a user actor is good
+  user      User?    @relation(fields: [userId], references: [id]) // The actor
+  action    String   // LOGIN, CREATE, READ, UPDATE, DELETE, APPROVE
+  entity    String   // USER, PROPERTY, TICKET, PAYMENT, LEASE
+  entityId  String?  // ID of the affected record
+  details   String?  // JSON string for extra details (diffs, etc.)
+  createdAt DateTime @default(now())
+}
+
+model Lease {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id])
+  startDate   DateTime
+  endDate     DateTime?
+  rentAmount  Float
+  isActive    Boolean  @default(true)
+  documents   Document[]
+  rentHistory RentModificationLog[]
+  payments    Payment[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model RentModificationLog {
+  id             String   @id @default(cuid())
+  leaseId        String
+  lease          Lease    @relation(fields: [leaseId], references: [id])
+  adminId        String   // The admin who made the change
+  admin          User     @relation("AdminRentModifications", fields: [adminId], references: [id])
+  previousAmount Float
+  newAmount      Float
+  reason         String?
+  createdAt      DateTime @default(now())
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id])
+  leaseId    String?
+  lease      Lease?    @relation(fields: [leaseId], references: [id])
+  type       String    // LEASE_AGREEMENT, RECEIPT, ID_CARD, OTHER
+  category   String?   // KYC, AGREEMENT, GUARANTOR, HANDOVER
+  url        String
+  name       String
+  createdAt  DateTime  @default(now())
 }

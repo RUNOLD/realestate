@@ -1,6 +1,6 @@
 
 import Link from "next/link";
-import { signOut } from "../../../auth";
+import { signOut, auth } from "../../../auth";
 import {
     LayoutDashboard,
     Building2,
@@ -9,17 +9,19 @@ import {
     DollarSign,
     LogOut,
     Settings,
-    Package
+    Package,
+    FileText,
+    CheckCircle
 } from "lucide-react";
-
-
 
 export default async function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-
+    const session = await auth();
+    const userRole = (session?.user as any)?.role || 'USER';
+    const isSuperAdmin = userRole === 'ADMIN';
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
@@ -30,11 +32,11 @@ export default async function AdminLayout({
                     <div className="p-6">
                         <div className="flex items-center gap-3 mb-8">
                             <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-lg">
-                                AD
+                                {userRole.substring(0, 2).toUpperCase()}
                             </div>
                             <div>
-                                <p className="font-medium text-foreground">Admin User</p>
-                                <p className="text-xs text-muted-foreground">Administrator</p>
+                                <p className="font-medium text-foreground">{session?.user?.name || 'User'}</p>
+                                <p className="text-xs text-muted-foreground">{userRole}</p>
                             </div>
                         </div>
                         <nav className="space-y-2">
@@ -58,18 +60,33 @@ export default async function AdminLayout({
                                 <Ticket size={20} />
                                 Tickets
                             </Link>
+                            {/* Materials - Allow Staff? Assuming yes as it is operational */}
                             <Link href="/admin/materials" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
                                 <Package size={20} />
                                 Materials
                             </Link>
-                            <Link href="/admin/financials" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
-                                <DollarSign size={20} />
-                                Financials
-                            </Link>
-                            <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
-                                <Settings size={20} />
-                                Settings
-                            </Link>
+
+                            {/* Super Admin / Owner Only Links */}
+                            {isSuperAdmin && (
+                                <>
+                                    <Link href="/admin/approvals" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                                        <CheckCircle size={20} />
+                                        Approvals
+                                    </Link>
+                                    <Link href="/admin/financials" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                                        <DollarSign size={20} />
+                                        Financials
+                                    </Link>
+                                    <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                                        <Settings size={20} />
+                                        Settings
+                                    </Link>
+                                    <Link href="/admin/activity-logs" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                                        <FileText size={20} />
+                                        Activity Logs
+                                    </Link>
+                                </>
+                            )}
                         </nav>
                     </div>
                     <div className="mt-auto p-6 border-t border-border">

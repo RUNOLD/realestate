@@ -78,14 +78,17 @@ export default async function AdminDashboardPage() {
                         trendBg="bg-red-50"
                         color="amber"
                     />
-                    <DashboardCard
-                        title="Monthly Revenue"
-                        value="₦4.2M"
-                        subtext="vs ₦3.8M last month"
-                        icon={Wallet}
-                        trend="+10.5%"
-                        color="green"
-                    />
+                    {session?.user.role === 'ADMIN' && (
+                        <DashboardCard
+                            title="Monthly Revenue"
+                            value="₦4.2M"
+                            subtext="vs ₦3.8M last month"
+                            icon={Wallet}
+                            trend="+10.5%"
+                            color="green"
+                            href="/admin/financials"
+                        />
+                    )}
                 </div>
 
 

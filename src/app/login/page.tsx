@@ -14,11 +14,13 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
 
-    // useEffect(() => {
-    //     if (state?.success && state?.redirectUrl) {
-    //         router.push(state.redirectUrl);
-    //     }
-    // }, [state, router]);
+    useEffect(() => {
+        if (state?.success && state?.redirectUrl) {
+            console.log("LOGIN SUCCESS: Redirecting to", state.redirectUrl);
+            router.push(state.redirectUrl);
+            router.refresh(); // Ensure the layout updates with new session
+        }
+    }, [state, router]);
 
     return (
         <main className="min-h-screen bg-muted/20 flex flex-col font-sans">

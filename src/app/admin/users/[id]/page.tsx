@@ -10,10 +10,13 @@ import {
     ArrowLeft,
     CheckCircle,
     AlertCircle,
-    Clock
+    Clock,
+    FileText
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { DocumentUpload } from "@/components/dashboard/DocumentUpload";
+import { LogPaymentModal } from "@/components/dashboard/LogPaymentModal";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -29,6 +32,9 @@ export default async function UserDetailPage({ params }: PageProps) {
                 orderBy: { createdAt: 'desc' }
             },
             payments: {
+                orderBy: { createdAt: 'desc' }
+            },
+            documents: {
                 orderBy: { createdAt: 'desc' }
             }
         }
@@ -130,6 +136,47 @@ export default async function UserDetailPage({ params }: PageProps) {
                 {/* RIGHT COLUMN: Tickets & Payments */}
                 <div className="lg:col-span-2 space-y-8">
 
+                    {/* Documents Section */}
+                    <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+                        <div className="p-6 border-b border-border flex justify-between items-center bg-gray-50/50">
+                            <h3 className="font-bold text-lg text-primary flex items-center gap-2">
+                                <FileText size={20} /> Documents
+                            </h3>
+                            <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">
+                                {user.documents.length} Files
+                            </span>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            {/* Upload Area */}
+                            <DocumentUpload userId={user.id} />
+
+                            {/* Document List */}
+                            <div className="space-y-3">
+                                <h4 className="text-sm font-medium text-gray-700">Uploaded Files</h4>
+                                {user.documents.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground italic">No documents uploaded yet.</p>
+                                ) : (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {user.documents.map(doc => (
+                                            <div key={doc.id} className="flex items-start gap-3 p-3 border border-border rounded-lg bg-white">
+                                                <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded flex items-center justify-center shrink-0">
+                                                    <FileText size={20} />
+                                                </div>
+                                                <div className="overflow-hidden">
+                                                    <p className="font-medium text-sm truncate" title={doc.name}>{doc.name}</p>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <span className="text-[10px] font-bold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded uppercase">{doc.category || 'DOC'}</span>
+                                                        <span className="text-xs text-muted-foreground">{new Date(doc.createdAt).toLocaleDateString()}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Complaints / Tickets Section */}
                     <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-border flex justify-between items-center bg-gray-50/50">
@@ -173,6 +220,7 @@ export default async function UserDetailPage({ params }: PageProps) {
                             <h3 className="font-bold text-lg text-primary flex items-center gap-2">
                                 <CreditCard size={20} /> Payment History
                             </h3>
+                            <LogPaymentModal tenantId={user.id} />
                         </div>
                         <div className="divide-y divide-border">
                             {user.payments.length === 0 ? (
@@ -183,12 +231,16 @@ export default async function UserDetailPage({ params }: PageProps) {
                                 user.payments.map(payment => (
                                     <div key={payment.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                                         <div className="flex items-center gap-3">
-                                            <div className={`h-8 w-8 rounded-full flex items-center justify-center bg-green-100 text-green-700`}>
-                                                <CheckCircle size={16} />
+                                            <div className={`h-8 w-8 rounded-full flex items-center justify-center ${payment.approvalStatus === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                                                }`}>
+                                                {payment.approvalStatus === 'PENDING' ? <AlertCircle size={16} /> : <CheckCircle size={16} />}
                                             </div>
                                             <div>
                                                 <p className="font-medium text-sm text-foreground">{payment.method} Payment</p>
                                                 <p className="text-xs text-muted-foreground">Ref: {payment.reference}</p>
+                                                {payment.approvalStatus === 'PENDING' && (
+                                                    <span className="text-[10px] text-amber-600 font-bold">Pending Approval</span>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="text-right">

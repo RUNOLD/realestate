@@ -38,3 +38,37 @@ export async function createMaterial(formData: FormData) {
     revalidatePath("/materials");
     redirect("/admin/materials");
 }
+
+export async function updateMaterial(materialId: string, formData: FormData) {
+    const name = formData.get("name") as string;
+    const category = formData.get("category") as string;
+    const description = formData.get("description") as string;
+    const priceString = formData.get("price") as string;
+    const images = formData.get("images") as string;
+
+    if (!materialId || !name || !category || !description) {
+        throw new Error("Missing required fields");
+    }
+
+    const price = priceString ? parseFloat(priceString) : null;
+
+    try {
+        await prisma.material.update({
+            where: { id: materialId },
+            data: {
+                name,
+                category,
+                description,
+                price: price,
+                images: images,
+            }
+        });
+    } catch (error) {
+        console.error("Failed to update material:", error);
+        throw new Error("Failed to update material");
+    }
+
+    revalidatePath("/admin/materials");
+    revalidatePath("/materials");
+    redirect("/admin/materials");
+}
