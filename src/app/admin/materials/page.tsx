@@ -5,17 +5,31 @@ import {
     Plus,
     Edit,
     Trash2,
-    Search,
     Filter,
     Package,
     MoreHorizontal,
     AlertCircle
 } from "lucide-react";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { Search } from "@/components/admin/Search";
 
-export default async function AdminMaterialsPage() {
+interface PageProps {
+    searchParams: Promise<{ query?: string }>;
+}
+
+export default async function AdminMaterialsPage({ searchParams }: PageProps) {
+    const { query } = await searchParams;
+
+    const where = query ? {
+        OR: [
+            { name: { contains: query, mode: 'insensitive' as const } },
+            { category: { contains: query, mode: 'insensitive' as const } }
+        ]
+    } : {};
+
     // Fetch data
     const materials = await prisma.material.findMany({
+        where,
         orderBy: { createdAt: 'desc' }
     });
 
@@ -56,12 +70,7 @@ export default async function AdminMaterialsPage() {
                 {/* 2. Controls Toolbar */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
                     <div className="relative w-full sm:w-80">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search materials..."
-                            className="w-full pl-9 pr-4 py-2 h-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/5 bg-white shadow-sm transition-all"
-                        />
+                        <Search placeholder="Search materials..." />
                     </div>
                     <Button variant="outline" className="border-gray-200 text-gray-700 bg-white gap-2">
                         <Filter size={16} /> Filter

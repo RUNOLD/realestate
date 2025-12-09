@@ -2,19 +2,31 @@ import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { Edit, Trash2, Mail, Shield, ExternalLink } from "lucide-react";
+import { ApproveButton } from "@/components/admin/ApproveButton";
+import { Search } from "@/components/admin/Search";
 
 interface PageProps {
-    searchParams: Promise<{ role?: string }>;
+    searchParams: Promise<{ role?: string; query?: string }>;
 }
 
 export default async function AdminUsersPage({ searchParams }: PageProps) {
-    const { role } = await searchParams;
+    const { role, query } = await searchParams;
 
     // If specific role requested (e.g. TENANT), show that.
     // If NO role requested (default "Users" view), EXCLUDE tenants to show only Staff/Admins.
-    const where = role
+    let where: any = role
         ? { role: role.toUpperCase() as any }
         : { role: { not: 'TENANT' } };
+
+    if (query) {
+        where = {
+            ...where,
+            OR: [
+                { name: { contains: query, mode: 'insensitive' } },
+                { email: { contains: query, mode: 'insensitive' } }
+            ]
+        };
+    }
 
     const users = await prisma.user.findMany({
         where,
@@ -32,6 +44,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
                     <h1 className="text-3xl font-serif font-bold text-primary">{pageTitle}</h1>
                     <p className="text-muted-foreground">{pageDescription}</p>
                 </div>
+                <Search placeholder="Search name or email..." />
             </div>
 
             <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
@@ -89,6 +102,9 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2">
+                                                {user.status === 'PENDING' && (
+                                                    <ApproveButton id={user.id} type="USER" compact />
+                                                )}
                                                 <Link href={`/admin/users/${user.id}`}>
                                                     <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
                                                         <ExternalLink size={16} />

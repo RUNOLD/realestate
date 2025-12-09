@@ -1,4 +1,4 @@
-'use server';
+﻿'use server';
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -353,7 +353,26 @@ export async function createTenant(prevState: any, formData: FormData) {
         return { error: "Missing required fields" };
     }
 
+    if (password.length < 6) {
+        return { error: "Password must be at least 6 characters long." };
+    }
+
     try {
+        // 1. Check for existing user
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email: email },
+                    { phone: phone || undefined } // Only check phone if provided
+                ]
+            }
+        });
+
+        if (existingUser) {
+            if (existingUser.email === email) return { error: " a user with this email already exists." };
+            if (phone && existingUser.phone === phone) return { error: "A user with this phone number already exists." };
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const userRole = (session.user as any).role;
 
@@ -388,7 +407,7 @@ export async function createTenant(prevState: any, formData: FormData) {
         return { success: true, message: status === 'PENDING' ? "Tenant created and pending approval." : "Tenant created successfully." };
     } catch (e) {
         console.error("Create Tenant Error:", e);
-        return { error: "Failed to create tenant. Email might be in use." };
+        return { error: "Failed to create tenant. Please try again." };
     }
 }
 
@@ -405,7 +424,20 @@ export async function createPayment(prevState: any, formData: FormData) {
         return { error: "Missing required fields" };
     }
 
+    if (amount <= 0) {
+        return { error: "Amount must be greater than zero." };
+    }
+
     try {
+        // Check for duplicate reference (Assuming reference should be unique)
+        const existingPayment = await prisma.payment.findUnique({
+            where: { reference }
+        });
+
+        if (existingPayment) {
+            return { error: "A payment with this reference ID already exists." };
+        }
+
         const userRole = (session.user as any).role;
         // Staff created payments are PENDING approval
         const approvalStatus = userRole === 'STAFF' ? 'PENDING' : 'APPROVED';
@@ -587,5 +619,58 @@ export async function deleteMaterial(materialId: string) {
     } catch (e) {
         console.error("Delete Material Error:", e);
         return { error: "Failed to delete material" };
+    }
+}
+
+
+
+
+
+export async function markMessageAsRead(messageId: string) {
+    const session = await auth();
+    // Allow ADMIN and STAFF
+    if (!session?.user?.id || ((session.user as any).role !== 'ADMIN' && (session.user as any).role !== 'STAFF')) {
+        return { error: "Unauthorized" };
+    }
+
+    try {
+        await prisma.contactSubmission.update({
+            where: { id: messageId },
+            data: { status: 'READ' }
+        });
+
+        revalidatePath("/admin/inbox");
+        return { success: true };
+    } catch (e) {
+        console.error("Mark Message Read Error:", e);
+        return { error: "Failed to update message status" };
+    }
+}
+
+export async function deleteMessage(messageId: string) {
+    const session = await auth();
+    // Only ADMIN can delete
+    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') {
+        return { error: "Unauthorized" };
+    }
+
+    try {
+        await prisma.contactSubmission.delete({
+            where: { id: messageId }
+        });
+
+        await createActivityLog(
+            session.user.id,
+            ActionType.DELETE,
+            EntityType.TICKET, // Using TICKET as proxy for now
+            messageId,
+            { details: "Contact Message Deleted" }
+        );
+
+        revalidatePath("/admin/inbox");
+        return { success: true };
+    } catch (e) {
+        console.error("Delete Message Error:", e);
+        return { error: "Failed to delete message" };
     }
 }

@@ -1,31 +1,100 @@
 'use client';
 
-
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import {
-    Mail,
     Phone,
+    Mail,
     MapPin,
     MessageSquare,
     Clock,
     ArrowRight,
     CheckCircle2
 } from "lucide-react";
-import { useActionState } from 'react';
+import { useActionState, Suspense } from 'react';
 import { submitContact } from '@/app/lib/actions';
-import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
-export default function ContactPage() {
+function ContactForm() {
     const [state, dispatch, isPending] = useActionState(submitContact, null);
+    const searchParams = useSearchParams();
+    const subjectParam = searchParams.get('subject');
+
+    // If coming from a property, pre-fill context
+    const defaultSubject = subjectParam ? "Property Inquiry" : "Property Inquiry";
+    const defaultMessage = subjectParam
+        ? `${subjectParam}. I would like more information/to schedule a viewing.`
+        : "";
 
     return (
+        <form action={dispatch} className="space-y-5">
+            <div className="grid md:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground/80">Full Name</label>
+                    <Input name="name" placeholder="John Doe" className="bg-muted/10 h-12" required />
+                </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground/80">Email Address</label>
+                    <Input name="email" type="email" placeholder="john@example.com" className="bg-muted/10 h-12" required />
+                </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground/80">Phone Number</label>
+                    <Input name="phone" placeholder="+234..." className="bg-muted/10 h-12" />
+                </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground/80">I'm interested in...</label>
+                    <select
+                        name="subject"
+                        defaultValue={defaultSubject}
+                        className="flex h-12 w-full rounded-md border border-input bg-muted/10 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        <option>Property Inquiry</option>
+                        <option>Schedule Inspection</option>
+                        <option>Property Management</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground/80">Your Message</label>
+                <textarea
+                    name="message"
+                    rows={5}
+                    defaultValue={defaultMessage}
+                    className="w-full p-4 bg-muted/10 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                    placeholder="Tell us about your property needs..."
+                    required
+                />
+            </div>
+
+            {state?.error && (
+                <div className="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-md flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-600" /> {state.error}
+                </div>
+            )}
+            {state?.success && (
+                <div className="text-green-700 text-sm font-medium bg-green-50 p-3 rounded-md flex items-center gap-2">
+                    <CheckCircle2 size={16} /> Message sent successfully! We'll allow 24h for a response.
+                </div>
+            )}
+
+            <Button type="submit" className="w-full h-12 text-base font-bold shadow-lg hover:shadow-xl transition-all" disabled={isPending}>
+                {isPending ? 'Processing...' : 'Send Message'}
+            </Button>
+        </form>
+    );
+}
+
+export default function ContactPage() {
+    return (
         <main className="min-h-screen bg-muted/20 font-sans">
-
-
             {/* 1. Trust-Building Hero Section */}
             <div className="bg-primary text-primary-foreground relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10 pattern-grid-lg"></div> {/* Optional texture */}
+                <div className="absolute inset-0 opacity-10 pattern-grid-lg"></div>
                 <div className="max-w-4xl mx-auto text-center py-24 px-4 relative z-10">
                     <span className="text-accent font-bold tracking-wider uppercase text-sm mb-2 block">
                         We are here to help
@@ -90,8 +159,8 @@ export default function ContactPage() {
                             </div>
                         </div>
 
-                        {/* WhatsApp CTA - High Conversion Element */}
-                        <div className="bg-[#25D366] text-white p-6 rounded-2xl shadow-lg flex items-center justify-between hover:bg-[#20bd5a] transition-colors cursor-pointer">
+                        {/* WhatsApp CTA */}
+                        <a href="https://wa.me/2348050758674?text=Hello%20Ayoola%20Property%2C%20I%20would%20like%20to%20make%20an%20inquiry%20regarding%20your%20services." target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white p-6 rounded-2xl shadow-lg flex items-center justify-between hover:bg-[#20bd5a] transition-colors cursor-pointer block">
                             <div>
                                 <h3 className="font-bold text-lg flex items-center gap-2">
                                     <MessageSquare size={20} /> Chat on WhatsApp
@@ -101,7 +170,7 @@ export default function ContactPage() {
                             <Button variant="ghost" className="bg-white/20 text-white hover:bg-white/30">
                                 Chat Now
                             </Button>
-                        </div>
+                        </a>
                     </div>
 
                     {/* 3. Streamlined Form (Right Side) */}
@@ -110,68 +179,14 @@ export default function ContactPage() {
                             <h2 className="text-2xl font-bold text-primary mb-2">Send us a Message</h2>
                             <p className="text-muted-foreground mb-8">Fill out the form below and an agent will be in touch shortly.</p>
 
-                            <form action={dispatch} className="space-y-5">
-                                <div className="grid md:grid-cols-2 gap-5">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-foreground/80">Full Name</label>
-                                        <Input name="name" placeholder="John Doe" className="bg-muted/10 h-12" required />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-foreground/80">Email Address</label>
-                                        <Input name="email" type="email" placeholder="john@example.com" className="bg-muted/10 h-12" required />
-                                    </div>
-                                </div>
-
-                                <div className="grid md:grid-cols-2 gap-5">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-foreground/80">Phone Number</label>
-                                        <Input name="phone" placeholder="+234..." className="bg-muted/10 h-12" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-foreground/80">I'm interested in...</label>
-                                        <select
-                                            name="subject"
-                                            className="flex h-12 w-full rounded-md border border-input bg-muted/10 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        >
-                                            <option>Property Inquiry</option>
-                                            <option>Schedule Inspection</option>
-                                            <option>Property Management</option>
-                                            <option>Other</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-foreground/80">Your Message</label>
-                                    <textarea
-                                        name="message"
-                                        rows={5}
-                                        className="w-full p-4 bg-muted/10 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
-                                        placeholder="Tell us about your property needs..."
-                                        required
-                                    />
-                                </div>
-
-                                {state?.error && (
-                                    <div className="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-md flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-red-600" /> {state.error}
-                                    </div>
-                                )}
-                                {state?.success && (
-                                    <div className="text-green-700 text-sm font-medium bg-green-50 p-3 rounded-md flex items-center gap-2">
-                                        <CheckCircle2 size={16} /> Message sent successfully! We'll allow 24h for a response.
-                                    </div>
-                                )}
-
-                                <Button type="submit" className="w-full h-12 text-base font-bold shadow-lg hover:shadow-xl transition-all" disabled={isPending}>
-                                    {isPending ? 'Processing...' : 'Send Message'}
-                                </Button>
-                            </form>
+                            <Suspense fallback={<div className="h-64 flex items-center justify-center">Loading form...</div>}>
+                                <ContactForm />
+                            </Suspense>
                         </div>
                     </div>
                 </div>
 
-                {/* 4. FAQ Section for SEO and User Help */}
+                {/* 4. FAQ Section */}
                 <div className="mt-20 max-w-4xl mx-auto text-center">
                     <h2 className="text-2xl font-bold text-primary mb-8">Frequently Asked Questions</h2>
                     <div className="grid md:grid-cols-2 gap-6 text-left">

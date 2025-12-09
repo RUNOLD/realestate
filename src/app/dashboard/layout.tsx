@@ -13,7 +13,8 @@ import {
     Ticket,
     Package,
     CheckCircle,
-    DollarSign
+    DollarSign,
+    Mail
 } from "lucide-react";
 import { handleSignOut } from "@/app/lib/actions";
 import { auth } from "@/auth";
@@ -77,6 +78,10 @@ export default async function DashboardLayout({
                             {/* STAFF & ADMIN VIEW */}
                             {userRole !== 'TENANT' && (
                                 <>
+                                    <Link href="/admin/inbox" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                                        <Mail size={20} />
+                                        Inbox
+                                    </Link>
                                     <Link href="/admin/properties" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
                                         <Building2 size={20} />
                                         Properties
@@ -97,6 +102,10 @@ export default async function DashboardLayout({
                                         <Package size={20} />
                                         Materials
                                     </Link>
+                                    <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                                        <Settings size={20} />
+                                        Settings
+                                    </Link>
                                 </>
                             )}
 
@@ -111,10 +120,7 @@ export default async function DashboardLayout({
                                         <DollarSign size={20} />
                                         Financials
                                     </Link>
-                                    <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
-                                        <Settings size={20} />
-                                        Settings
-                                    </Link>
+
                                 </>
                             )}
                         </nav>

@@ -50,12 +50,12 @@ export default async function MaterialsPage() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <Link href="/contact" className="inline-flex items-center justify-center px-8 py-4 bg-yellow-500 text-black font-bold rounded-md hover:bg-yellow-400 transition-colors">
+                            <Link href="/contact?subject=Bulk Quote Supply" className="inline-flex items-center justify-center px-8 py-4 bg-yellow-500 text-black font-bold rounded-md hover:bg-yellow-400 transition-colors">
                                 Request Bulk Quote <ArrowRight className="ml-2 w-5 h-5" />
                             </Link>
-                            <div className="inline-flex items-center justify-center px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-medium rounded-md">
+                            <a href="tel:+2348050758674" className="inline-flex items-center justify-center px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-medium rounded-md hover:bg-white/20 transition-colors">
                                 <Phone className="mr-2 w-5 h-5" /> Call for Pricing
-                            </div>
+                            </a>
                         </div>
                     </div>
                 </div>

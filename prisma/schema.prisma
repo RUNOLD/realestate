@@ -18,6 +18,8 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
+  resetToken    String?   @unique
+  resetTokenExpiry DateTime?
   role          String    @default("USER") // USER, TENANT, ADMIN, STAFF
   status        String    @default("ACTIVE") // ACTIVE, PENDING (for Staff created tenants)
   

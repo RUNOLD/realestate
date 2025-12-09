@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/Button";
 import {
     Mail,
     Phone,
-    Calendar,
     Shield,
     Ticket,
     CreditCard,
@@ -17,13 +16,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DocumentUpload } from "@/components/dashboard/DocumentUpload";
 import { LogPaymentModal } from "@/components/dashboard/LogPaymentModal";
+import { CreateLeaseModal } from "@/components/admin/CreateLeaseModal";
 
 interface PageProps {
     params: Promise<{ id: string }>;
 }
 
-export default async function UserDetailPage({ params }: PageProps) {
-    const { id } = await params;
+export default async function UserDetailPage(props: PageProps) {
+    const params = await props.params;
+    const { id } = params;
 
     const user = await prisma.user.findUnique({
         where: { id },
@@ -38,6 +39,11 @@ export default async function UserDetailPage({ params }: PageProps) {
                 orderBy: { createdAt: 'desc' }
             }
         }
+    });
+
+    // Fetch available properties for lease creation
+    const availableProperties = await prisma.property.findMany({
+        where: { status: 'AVAILABLE' }
     });
 
     if (!user) {
@@ -130,6 +136,16 @@ export default async function UserDetailPage({ params }: PageProps) {
                         <p className="text-sm text-blue-800">
                             When speaking with this tenant, remember to check for any outstanding high-priority tickets first.
                         </p>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            Lease Management
+                        </h3>
+                        <div className="text-sm text-gray-600 mb-4">
+                            Assign this user to a property to start a tenancy.
+                        </div>
+                        <CreateLeaseModal userId={user.id} properties={availableProperties} />
                     </div>
                 </div>
 

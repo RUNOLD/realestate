@@ -45,6 +45,7 @@ export async function updateMaterial(materialId: string, formData: FormData) {
     const description = formData.get("description") as string;
     const priceString = formData.get("price") as string;
     const images = formData.get("images") as string;
+    const inStock = formData.get("inStock") === 'true'; // Handle boolean from select/checkbox
 
     if (!materialId || !name || !category || !description) {
         throw new Error("Missing required fields");
@@ -61,6 +62,7 @@ export async function updateMaterial(materialId: string, formData: FormData) {
                 description,
                 price: price,
                 images: images,
+                inStock: inStock
             }
         });
     } catch (error) {

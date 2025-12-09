@@ -32,6 +32,12 @@ export function Navbar({ user }: { user?: any }) {
                                 <Link href="/properties" className="hover:text-accent transition-colors px-3 py-2 rounded-md text-sm font-medium">
                                     Properties
                                 </Link>
+                                <Link href="/services" className="hover:text-accent transition-colors px-3 py-2 rounded-md text-sm font-medium">
+                                    Services
+                                </Link>
+                                <Link href="/about" className="hover:text-accent transition-colors px-3 py-2 rounded-md text-sm font-medium">
+                                    About Us
+                                </Link>
                                 <Link href="/materials" className="hover:text-accent transition-colors px-3 py-2 rounded-md text-sm font-medium">
                                     Materials
                                 </Link>
@@ -77,6 +83,12 @@ export function Navbar({ user }: { user?: any }) {
                                 </Link>
                                 <Link href="/properties" className="block hover:text-accent px-3 py-2 rounded-md text-base font-medium">
                                     Properties
+                                </Link>
+                                <Link href="/services" className="block hover:text-accent px-3 py-2 rounded-md text-base font-medium">
+                                    Services
+                                </Link>
+                                <Link href="/about" className="block hover:text-accent px-3 py-2 rounded-md text-base font-medium">
+                                    About Us
                                 </Link>
                                 <Link href="/materials" className="block hover:text-accent px-3 py-2 rounded-md text-base font-medium">
                                     Materials

@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
 
+import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { ArrowLeft, MapPin, CheckCircle, Phone, Mail } from "lucide-react";
@@ -103,12 +103,18 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                             <p className="text-muted-foreground mb-6">Contact our agents to schedule a viewing or request more information.</p>
 
                             <div className="space-y-4">
-                                <Button className="w-full gap-2" variant="luxury" size="lg">
+                                <a
+                                    href="tel:+2348050758674"
+                                    className="w-full h-10 inline-flex items-center justify-center gap-2 rounded-md bg-accent text-accent-foreground hover:bg-accent/90 px-4 py-2 font-medium transition-colors"
+                                >
                                     <Phone size={18} /> Call Agent
-                                </Button>
-                                <Button className="w-full gap-2" variant="outline" size="lg">
+                                </a>
+                                <Link
+                                    href={`/contact?subject=Inquiry about ${property.title}`}
+                                    className="w-full h-10 inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground px-4 py-2 font-medium transition-colors"
+                                >
                                     <Mail size={18} /> Send Message
-                                </Button>
+                                </Link>
                             </div>
 
                             <hr className="my-6 border-border" />

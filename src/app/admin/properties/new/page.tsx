@@ -2,13 +2,13 @@ import { createProperty } from "@/app/actions/property";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Link from "next/link";
-import { 
-    ArrowLeft, 
-    Save, 
-    Home, 
-    MapPin, 
-    DollarSign, 
-    FileText, 
+import {
+    ArrowLeft,
+    Save,
+    Home,
+    MapPin,
+    DollarSign,
+    FileText,
     ImageIcon,
     Activity
 } from "lucide-react";
@@ -17,7 +17,7 @@ export default function NewPropertyPage() {
     return (
         <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6">
             <div className="max-w-4xl mx-auto space-y-6">
-                
+
                 {/* Header with clear navigation */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
@@ -35,17 +35,17 @@ export default function NewPropertyPage() {
 
                 <form action={createProperty}>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        
+
                         {/* LEFT COLUMN - Main Details (2/3 width) */}
                         <div className="lg:col-span-2 space-y-6">
-                            
+
                             {/* Section 1: Basic Info */}
                             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                                 <div className="flex items-center gap-2 mb-4 text-gray-900 font-semibold border-b border-gray-100 pb-2">
                                     <Home className="h-4 w-4 text-blue-600" />
                                     <h2>Property Details</h2>
                                 </div>
-                                
+
                                 <div className="space-y-4">
                                     <div className="space-y-2">
                                         <label htmlFor="title" className="text-sm font-medium text-gray-700">Listing Title <span className="text-red-500">*</span></label>
@@ -56,13 +56,14 @@ export default function NewPropertyPage() {
                                         <div className="space-y-2">
                                             <label htmlFor="type" className="text-sm font-medium text-gray-700">Property Type</label>
                                             <div className="relative">
-                                                <select 
-                                                    id="type" 
-                                                    name="type" 
+                                                <select
+                                                    id="type"
+                                                    name="type"
                                                     required
+                                                    defaultValue=""
                                                     className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 appearance-none"
                                                 >
-                                                    <option value="" disabled selected>Select Type...</option>
+                                                    <option value="" disabled>Select Type...</option>
                                                     <option value="Apartment">Apartment / Flat</option>
                                                     <option value="House">House / Duplex</option>
                                                     <option value="Land">Land</option>
@@ -70,7 +71,7 @@ export default function NewPropertyPage() {
                                                 </select>
                                                 {/* Dropdown Chevron */}
                                                 <div className="absolute right-3 top-3.5 pointer-events-none text-gray-400">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                                                 </div>
                                             </div>
                                         </div>
@@ -117,13 +118,13 @@ export default function NewPropertyPage() {
 
                         {/* RIGHT COLUMN - Status & Actions (1/3 width) */}
                         <div className="space-y-6">
-                            
+
                             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                                 <div className="flex items-center gap-2 mb-4 text-gray-900 font-semibold border-b border-gray-100 pb-2">
                                     <Activity className="h-4 w-4 text-green-600" />
                                     <h2>Status & Value</h2>
                                 </div>
-                                
+
                                 <div className="space-y-4">
                                     <div className="space-y-2">
                                         <label htmlFor="price" className="text-sm font-medium text-gray-700">Price</label>
@@ -147,7 +148,7 @@ export default function NewPropertyPage() {
                                                 <option value="MAINTENANCE">🟠 Maintenance</option>
                                             </select>
                                             <div className="absolute right-3 top-3.5 pointer-events-none text-gray-400">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                                             </div>
                                         </div>
                                     </div>

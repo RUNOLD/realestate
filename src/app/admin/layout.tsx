@@ -40,7 +40,7 @@ export default async function AdminLayout({
                             </div>
                         </div>
                         <nav className="space-y-2">
-                            <Link href="/admin" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                            <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
                                 <LayoutDashboard size={20} />
                                 Dashboard
                             </Link>
@@ -77,16 +77,18 @@ export default async function AdminLayout({
                                         <DollarSign size={20} />
                                         Financials
                                     </Link>
-                                    <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
-                                        <Settings size={20} />
-                                        Settings
-                                    </Link>
                                     <Link href="/admin/activity-logs" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
                                         <FileText size={20} />
                                         Activity Logs
                                     </Link>
                                 </>
                             )}
+
+                            {/* Settings - Available to All (Profile, Notifications etc) */}
+                            <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                                <Settings size={20} />
+                                Settings
+                            </Link>
                         </nav>
                     </div>
                     <div className="mt-auto p-6 border-t border-border">

@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { TicketForm } from "@/components/dashboard/TicketForm";
+import { PayRentButton } from "@/components/dashboard/PayRentButton";
+import { QuickActions } from "@/components/dashboard/QuickActions";
 import {
     AlertCircle,
     CheckCircle,
@@ -60,9 +62,18 @@ export default async function DashboardPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
                         <h3 className="text-sm font-medium text-muted-foreground mb-2">Next Rent Payment</h3>
-                        <div className="text-2xl font-bold text-primary mb-1">₦0.00</div>
-                        <div className="text-sm text-green-600 font-medium flex items-center gap-1">
-                            <CheckCircle size={14} /> You are up to date!
+                        <div className="text-2xl font-bold text-primary mb-3">₦2,500,000</div>
+
+                        <div className="mb-3">
+                            <PayRentButton
+                                email={session.user.email || 'tenant@example.com'}
+                                amount={2500000}
+                                userId={session.user.id!}
+                            />
+                        </div>
+
+                        <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                            <Clock size={12} /> Due in 25 days
                         </div>
                     </div>
 
@@ -122,91 +133,193 @@ export default async function DashboardPage() {
     }
 
     // --- STAFF & ADMIN VIEW ---
-    // Mock Date for the header
-    const currentDate = new Date().toLocaleDateString('en-GB', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    });
+
+    // 1. Fetch KPI Data securely
+    let totalProperties = 0;
+    let occupiedProperties = 0;
+    let totalTenants = 0;
+    let openTickets = 0;
+    let highPriorityTickets = 0;
+    let totalMaterials = 0;
+    let lowStockMaterials = 0;
+    let monthlyRevenue = 0;
+    let recentTickets: any[] = [];
+    let recentPayments: any[] = [];
+    let expiringLeases: any[] = [];
+
+    try {
+        const thirtyDaysFromNow = new Date();
+        thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+        const results = await Promise.all([
+            prisma.property.count(),
+            prisma.property.count({ where: { status: 'RENTED' } }),
+            prisma.user.count({ where: { role: 'TENANT' } }),
+            prisma.ticket.count({ where: { status: { notIn: ['CLOSED', 'RESOLVED'] } } }),
+            0, // highPriorityTickets placeholder
+            prisma.material.count(),
+            prisma.material.count({ where: { inStock: false } }),
+            prisma.ticket.findMany({
+                where: { status: { not: 'CLOSED' } },
+                take: 5,
+                orderBy: { createdAt: 'desc' },
+                include: { user: true }
+            }),
+            prisma.payment.findMany({
+                take: 6,
+                orderBy: { createdAt: 'desc' },
+                include: { user: true }
+            }),
+            prisma.lease.findMany({
+                where: {
+                    isActive: true,
+                    endDate: {
+                        lte: thirtyDaysFromNow,
+                        gte: new Date()
+                    }
+                },
+                include: {
+                    user: true,
+                    property: true
+                },
+                take: 5
+            })
+        ]);
+
+        [
+            totalProperties,
+            occupiedProperties,
+            totalTenants,
+            openTickets,
+            highPriorityTickets,
+            totalMaterials,
+            lowStockMaterials,
+            recentTickets,
+            recentPayments,
+            expiringLeases
+        ] = results;
+
+        // Revenue Calculation
+        const currentMonthStart = new Date();
+        currentMonthStart.setDate(1);
+        const revenueItems = await prisma.payment.findMany({
+            where: {
+                status: 'SUCCESS',
+                createdAt: { gte: currentMonthStart }
+            },
+            select: { amount: true }
+        });
+        monthlyRevenue = revenueItems.reduce((sum, p) => sum + p.amount, 0);
+
+    } catch (error) {
+        console.error("Dashboard Data Fetch Error:", error);
+    }
 
     return (
         <div className="space-y-8">
             {/* 1. Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                 <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">{currentDate}</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                        {new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
                     <h1 className="text-3xl font-serif font-bold text-primary">Welcome back, {session.user.name ?? 'Staff'}</h1>
                     <p className="text-muted-foreground">Here is what's happening with the portfolio today.</p>
                 </div>
                 <div className="flex gap-3">
-                    <Button variant="outline" className="bg-background hover:bg-accent/10">
-                        <Search className="mr-2 h-4 w-4" /> Search
-                    </Button>
-                    <Button variant="luxury" className="shadow-lg">
-                        <Plus className="mr-2 h-4 w-4" /> Quick Action
-                    </Button>
+                    <Link href="/admin/properties">
+                        <Button variant="outline" className="bg-background hover:bg-accent/10">
+                            <Search className="mr-2 h-4 w-4" /> Search
+                        </Button>
+                    </Link>
+                    <QuickActions />
                 </div>
-            </div>
+            </div >
 
             {/* 2. KPI Overview Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            < div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" >
                 <DashboardCard
                     title="Total Properties"
-                    value="24"
-                    subtext="18 Occupied • 6 Vacant"
+                    value={totalProperties.toString()}
+                    subtext={`${occupiedProperties} Occupied • ${totalProperties - occupiedProperties} Vacant`}
                     icon={Building2}
-                    trend="+12%"
+                    trend="Live"
                     color="blue"
                     href="/admin/properties"
                 />
                 <DashboardCard
                     title="Active Tenants"
-                    value="142"
-                    subtext="98% collection rate"
+                    value={totalTenants.toString()}
+                    subtext="Registered Tenants"
                     icon={Users}
-                    trend="+5%"
+                    trend="Live"
                     color="indigo"
                     href="/admin/users?role=TENANT"
                 />
                 <DashboardCard
-                    title="Open Tickets"
-                    value="8"
-                    subtext="3 High Priority"
-                    icon={Ticket}
-                    trend="+2"
-                    trendColor="text-red-600"
-                    trendBg="bg-red-50"
-                    color="amber"
-                    color="amber"
-                    href="/admin/tickets"
-                />
-                <DashboardCard
                     title="Materials In Stock"
-                    value="124"
-                    subtext="Low stock alert: 3 items"
+                    value={totalMaterials.toString()}
+                    subtext={`Low stock items: ${lowStockMaterials}`}
                     icon={Package}
-                    trend="Stable"
+                    trend="Live"
                     color="cyan"
                     href="/admin/materials"
                 />
 
                 {/* REVENUE - ADMIN ONLY */}
-                {isAdmin && (
-                    <DashboardCard
-                        title="Monthly Revenue"
-                        value="₦4.2M"
-                        subtext="vs ₦3.8M last month"
-                        icon={Wallet}
-                        trend="+10.5%"
-                        color="green"
-                        href="/admin/financials"
-                    />
-                )}
-            </div>
+                {
+                    isAdmin && (
+                        <DashboardCard
+                            title="Monthly Revenue"
+                            value={`₦${monthlyRevenue.toLocaleString()}`}
+                            subtext="Current Month"
+                            icon={Wallet}
+                            trend="Live"
+                            color="green"
+                            href="/admin/financials"
+                        />
+                    )
+                }
+            </div >
+
+            {/* ALERT: Expiring Leases */}
+            {expiringLeases.length > 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-4">
+                    <div className="bg-amber-100 p-2 rounded-full text-amber-700 shrink-0 mt-0.5">
+                        <Clock size={20} />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-amber-900">Attention Needed: Expiring Leases</h3>
+                        <p className="text-amber-800 text-sm mt-1">
+                            You have {expiringLeases.length} lease{expiringLeases.length !== 1 ? 's' : ''} expiring within the next 30 days. Please review them for renewal.
+                        </p>
+                        <ul className="mt-3 space-y-1">
+                            {expiringLeases.map((lease) => (
+                                <li key={lease.id} className="text-sm text-amber-900 flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
+                                    <span className="font-semibold">{lease.user.name}</span>
+                                    <span className="text-amber-700">at</span>
+                                    <span className="font-medium">{lease.property.title}</span>
+                                    <span className="text-amber-600">({new Date(lease.endDate!).toLocaleDateString()})</span>
+                                </li>
+                            ))}
+                        </ul>
+                        <div className="mt-3">
+                            <Link href="/admin/users?role=TENANT">
+                                <Button variant="outline" size="sm" className="bg-white border-amber-200 text-amber-800 hover:bg-amber-100 hover:text-amber-900">
+                                    Manage Tenants
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* 3. Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            < div className="grid grid-cols-1 lg:grid-cols-3 gap-8" >
 
                 {/* LEFT COLUMN: Maintenance (2/3 width) */}
-                <div className="lg:col-span-2 space-y-6">
+                < div className="lg:col-span-2 space-y-6" >
                     <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
                         <div className="p-6 border-b border-border flex justify-between items-center">
                             <div>
@@ -217,82 +330,59 @@ export default async function DashboardPage() {
                         </div>
 
                         <div className="divide-y divide-border">
-                            {/* Static Data from Admin Page - Ideally this comes from DB */}
-                            <TicketItem
-                                title="Major Leak in Unit 4B"
-                                status="High Priority"
-                                statusColor="red"
-                                description="Kitchen sink pipe burst. Tenant reports flooding."
-                                meta="Reported by Sarah J. • 2 hours ago"
-                                icon={AlertCircle}
-                                iconColor="red"
-                            />
-                            <TicketItem
-                                title="AC Maintenance Required"
-                                status="Pending"
-                                statusColor="amber"
-                                description="Scheduled seasonal maintenance for Block C."
-                                meta="Assigned to Tech A. • 5 hours ago"
-                                icon={Ticket}
-                                iconColor="amber"
-                            />
-                            <TicketItem
-                                title="Lobby Light Replacement"
-                                status="Resolved"
-                                statusColor="green"
-                                description="Replaced 4 halogen bulbs with LED."
-                                meta="Fixed by Mike • Yesterday"
-                                icon={CheckCircle}
-                                iconColor="green"
-                            />
+                            {recentTickets.length === 0 ? (
+                                <div className="p-6 text-center text-muted-foreground">No recent tickets.</div>
+                            ) : (
+                                recentTickets.map((ticket) => (
+                                    <TicketItem
+                                        key={ticket.id}
+                                        title={ticket.subject}
+                                        status={ticket.status}
+                                        statusColor={ticket.status === 'OPEN' ? 'amber' : ticket.priority === 'HIGH' ? 'red' : 'green'}
+                                        description={ticket.description ? ticket.description.substring(0, 60) + '...' : 'No description'}
+                                        meta={`Reported by ${ticket.user?.name || 'Unknown'} • ${new Date(ticket.createdAt).toLocaleDateString()}`}
+                                        icon={ticket.priority === 'HIGH' ? AlertCircle : Ticket}
+                                        iconColor={ticket.priority === 'HIGH' ? 'red' : 'amber'}
+                                    />
+                                ))
+                            )}
                         </div>
                     </div>
-                </div>
+                </div >
 
                 {/* RIGHT COLUMN: Finances or Quick Stats (1/3 width) */}
-                <div className="lg:col-span-1 space-y-6">
+                < div className="lg:col-span-1 space-y-6" >
                     <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden h-full">
                         <div className="p-6 border-b border-border">
                             <h3 className="font-bold text-foreground">Recent Activity</h3>
                         </div>
 
                         <div className="divide-y divide-border">
-                            {/* Reusing PaymentRow logic but maybe adapting for generic activity if not admin? 
-                                 Admin page showed Payments. Staying consistent. */}
-                            <PaymentRow
-                                initials="OJ"
-                                name="Ola Johnson"
-                                detail="Unit 12 • Rent"
-                                amount="₦120,000"
-                                status="Success"
-                                color="blue"
-                            />
-                            <PaymentRow
-                                initials="MA"
-                                name="Mary Adebayo"
-                                detail="Unit 5A • Service"
-                                amount="₦45,000"
-                                status="Success"
-                                color="purple"
-                            />
-                            <PaymentRow
-                                initials="DK"
-                                name="David King"
-                                detail="Unit 2B • Utility"
-                                amount="₦15,000"
-                                status="Failed"
-                                color="red"
-                            />
+                            {recentPayments.length === 0 ? (
+                                <div className="p-6 text-center text-muted-foreground">No recent activity.</div>
+                            ) : (
+                                recentPayments.map((payment) => (
+                                    <PaymentRow
+                                        key={payment.id}
+                                        initials={payment.user?.name ? payment.user.name.substring(0, 2).toUpperCase() : '??'}
+                                        name={payment.user?.name || 'Unknown User'}
+                                        detail={payment.method} // Or property unit if we had it
+                                        amount={`₦${payment.amount.toLocaleString()}`}
+                                        status={payment.status}
+                                        color={['blue', 'purple', 'orange', 'red'][Math.floor(Math.random() * 4)]} // Just random for visual variety
+                                    />
+                                ))
+                            )}
                         </div>
 
                         <div className="p-4 bg-muted/30 border-t border-border text-center">
                             <Button variant="link" className="text-sm text-muted-foreground">View All Activity</Button>
                         </div>
                     </div>
-                </div>
+                </div >
 
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
 
@@ -314,7 +404,6 @@ function DashboardCard({ title, value, subtext, icon: Icon, trend, trendColor = 
     const colors = {
         blue: "bg-blue-50 text-blue-600",
         indigo: "bg-indigo-50 text-indigo-600",
-        amber: "bg-amber-50 text-amber-600",
         amber: "bg-amber-50 text-amber-600",
         green: "bg-green-50 text-green-600",
         cyan: "bg-cyan-50 text-cyan-600",

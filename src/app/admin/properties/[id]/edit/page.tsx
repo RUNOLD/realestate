@@ -14,7 +14,9 @@ import {
 } from "lucide-react";
 import { notFound } from "next/navigation";
 
-export default async function EditPropertyPage({ params }: { params: { id: string } }) {
+export default async function EditPropertyPage(props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
+
     const property = await prisma.property.findUnique({
         where: { id: params.id }
     });

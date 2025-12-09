@@ -6,7 +6,6 @@ import {
     Edit,
     Trash2,
     MapPin,
-    Search,
     Filter,
     Home,
     BedDouble,
@@ -14,12 +13,34 @@ import {
     MoreVertical
 } from "lucide-react";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { Search } from "@/components/admin/Search";
 
-export default async function AdminPropertiesPage() {
-    // Fetch data
-    const properties = await prisma.property.findMany({
-        orderBy: { createdAt: 'desc' }
-    });
+interface PageProps {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function AdminPropertiesPage({ searchParams }: PageProps) {
+    const params = await searchParams;
+    const query = typeof params.query === 'string' ? params.query : undefined;
+
+    // Fetch data with search filter
+    const where = query ? {
+        OR: [
+            { title: { contains: query } }, // Removed mode: insensitive for debugging stability on SQLite
+            { location: { contains: query } }
+        ]
+    } : {};
+
+    let properties = [];
+    try {
+        properties = await prisma.property.findMany({
+            where,
+            orderBy: { createdAt: 'desc' }
+        });
+    } catch (error) {
+        console.error("Failed to fetch properties:", error);
+        // Fallback or empty array
+    }
 
     // Calculate stats for the header
     const totalProperties = properties.length;
@@ -58,14 +79,7 @@ export default async function AdminPropertiesPage() {
                     </div>
 
                     <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <div className="relative w-full sm:w-64">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search by address..."
-                                className="w-full pl-9 pr-4 py-1.5 text-sm border-none bg-transparent focus:outline-none focus:ring-0"
-                            />
-                        </div>
+                        <Search placeholder="Search by address or title..." />
                         <div className="h-6 w-px bg-gray-200 mx-2"></div>
                         <Button variant="ghost" size="icon" className="text-gray-500">
                             <Filter size={16} />
