@@ -25,7 +25,7 @@ export async function createMaterial(formData: FormData) {
                 category,
                 description,
                 price: price,
-                images: images ? JSON.parse(images) : ["https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?q=80&w=2000&auto=format&fit=crop"], // Default placeholder
+                images: images || "[\"https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?q=80&w=2000&auto=format&fit=crop\"]", // Default placeholder JSON
                 inStock: true
             }
         });
@@ -61,7 +61,7 @@ export async function updateMaterial(materialId: string, formData: FormData) {
                 category,
                 description,
                 price: price,
-                images: images ? JSON.parse(images) : undefined,
+                images: images || undefined,
                 inStock: inStock
             }
         });

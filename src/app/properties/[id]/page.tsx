@@ -30,7 +30,12 @@ export default async function PropertyDetailPage({ params }: PageProps) {
             {/* Hero Image Section */}
             <div className="relative h-[50vh] bg-gray-900">
                 <img
-                    src={property.images && property.images.length > 0 ? property.images[0] : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
+                    src={(() => {
+                        try {
+                            const parsed = JSON.parse((property.images as any) || '[]');
+                            return parsed.length > 0 ? parsed[0] : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop";
+                        } catch (e) { return "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"; }
+                    })()}
                     alt={property.title}
                     className="w-full h-full object-cover opacity-60"
                 />
