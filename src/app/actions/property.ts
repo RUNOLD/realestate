@@ -27,7 +27,7 @@ export async function createProperty(formData: FormData) {
                 location,
                 type,
                 status: status || "AVAILABLE",
-                images: images || "[]", // SQLite: Store as JSON String
+                images: images ? JSON.parse(images) : [],
             }
         });
     } catch (error) {
@@ -62,7 +62,7 @@ export async function updateProperty(propertyId: string, formData: FormData) {
                 location,
                 type,
                 status: status || "AVAILABLE",
-                images: images || "[]",
+                images: images ? JSON.parse(images) : [],
             }
         });
     } catch (error) {

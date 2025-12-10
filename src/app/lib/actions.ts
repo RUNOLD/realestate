@@ -196,7 +196,7 @@ export async function createAdminTicket(prevState: any, formData: FormData) {
                 status: "PENDING", // Initial status
                 approvalStatus: "APPROVED", // Auto-approve if created by admin
                 requiresApproval: false,
-                images: images || "[]",
+                images: images ? JSON.parse(images as string) : [],
             }
         });
 

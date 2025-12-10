@@ -101,12 +101,7 @@ export default async function MaterialsPage() {
                                 {/* Image Area */}
                                 <div className="relative h-64 bg-slate-100 overflow-hidden">
                                     <img
-                                        src={(() => {
-                                            try {
-                                                const parsed = JSON.parse((material.images as any) || '[]');
-                                                return parsed.length > 0 ? parsed[0] : "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?q=80&w=2000&auto=format&fit=crop";
-                                            } catch (e) { return "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?q=80&w=2000&auto=format&fit=crop"; }
-                                        })()}
+                                        src={material.images.length > 0 ? material.images[0] : "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?q=80&w=2000&auto=format&fit=crop"}
                                         alt={material.name}
                                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                                     />

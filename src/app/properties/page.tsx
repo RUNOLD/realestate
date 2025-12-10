@@ -147,12 +147,7 @@ export default async function PropertiesPage({
                                     <article className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border border-border h-full flex flex-col">
                                         <div className="relative h-72 overflow-hidden">
                                             <img
-                                                src={(() => {
-                                                    try {
-                                                        const parsed = JSON.parse((property.images as any) || '[]');
-                                                        return parsed.length > 0 ? parsed[0] : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop";
-                                                    } catch (e) { return "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"; }
-                                                })()}
+                                                src={property.images.length > 0 ? property.images[0] : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
                                                 alt={property.title}
                                                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                                             />

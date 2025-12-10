@@ -1,118 +1,203 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// This usage of Prisma Schema is for PostgreSQL
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// ... Enums (Prisma handles mapping, keeping as is) ...
+// Enums
+enum Role {
+  ADMIN
+  STAFF
+  TENANT
+  USER // Fallback/Default
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  REJECTED
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
+  SOLD
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ApprovalStatus {
+  PENDING_MANAGER
+  PENDING_ADMIN
+  APPROVED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
 
 model User {
   id            String    @id @default(cuid())
   name          String?
-  email         String?   @unique
-  phone         String?   @unique
+  email         String    @unique
+  phone         String?   // New: For Login
   emailVerified DateTime?
   image         String?
   password      String?
-  resetToken    String?   @unique
-  resetTokenExpiry DateTime?
-  role          String    @default("USER") // SQLite doesn't support enums well, Prisma emulates or we use String. Let's start with String to be safe or keep Enum if Prisma handles it in client. Prisma SQLite supports Enums (mapped to string). Keeping Enums in Schema for Type safety in Client.
-  status        String    @default("ACTIVE") // Using String for SQLite compatibility usually safer, but let's try keeping Enum first. Actually, for SQLite migration usually it's better to verify. Prisma docs say "SQLite: Enums are supported". Okay.
+  role          Role      @default(USER)
+  status        UserStatus @default(ACTIVE) // Approval flow
 
-  // Tenant Profile Fields
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Tenant Specifics
   nextOfKinName  String?
   nextOfKinPhone String?
   employerName   String?
   jobTitle       String?
   isEmployed     Boolean   @default(false)
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  tickets       Ticket[]
-  payments      Payment[]
-  activityLogs  ActivityLog[]
-  leases        Lease[]
-  documents     Document[]
-  rentModifications RentModificationLog[] @relation("AdminRentModifications")
-  ticketComments TicketComment[]
+  // Relations
+  tickets         Ticket[]
+  leases          Lease[]
+  payments        Payment[]
+  activityLogs    ActivityLog[]
+  contactSubmissions ContactSubmission[]
+  documents       Document[]
+  comments        TicketComment[]
+  managedProperties Property[] @relation("PropertyManager") // Staff managing properties
+  rentModifications RentModificationLog[] @relation("AdminModifier")
 }
 
 model Property {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   title       String
   description String
+  address     String
   price       Float
-  location    String
-  status      String   @default("AVAILABLE") // Enums with SQLite sometimes tricky, using String is robust.
-  type        String
-  images      String   @default("[]") // SQLite: Store as JSON String
-  features    String?  @default("[]")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  status      PropertyStatus @default(AVAILABLE)
+  program     String?        // e.g. "Lagos HOMS", "Rent-to-Own"
+  
+  images      String[]       // Postgres Array for images
+  features    String[]       // Postgres Array for features
+  
+  // Relations
   leases      Lease[]
-  documents   Document[]
+  managerId   String?        // Staff responsible
+  manager     User?          @relation("PropertyManager", fields: [managerId], references: [id])
+  
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 }
 
-model Material {
+model Lease {
   id          String   @id @default(cuid())
-  name        String
-  description String
-  category    String
-  price       Float?
-  images      String   @default("[]") // SQLite: Store as JSON String
-  inStock     Boolean  @default(true)
+  startDate   DateTime
+  endDate     DateTime? // Indefinite or fixed
+  rentAmount  Float
+  isActive    Boolean  @default(true)
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  rentLogs    RentModificationLog[]
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
 model Ticket {
-  id             String       @id @default(cuid())
+  id             String         @id @default(cuid())
   subject        String
-  description    String
-  category       String
-  status         String       @default("PENDING")
-  approvalStatus String       @default("PENDING_MANAGER")
-  requiresApproval Boolean    @default(true)
-  priority       String       @default("MEDIUM")
-  images         String       @default("[]") // SQLite: Store as JSON String
+  description    String?
+  status         TicketStatus   @default(OPEN)
+  priority       TicketPriority @default(MEDIUM)
+  category       String // Plumbing, Electrical, etc.
+  
+  images         String[]     // Postgres Array
+  
   userId         String
-  user           User         @relation(fields: [userId], references: [id])
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  assignedToId   String?
+  // assignedTo  User? ... (Future: Staff assignment)
+
+  // Approval Workflow
+  requiresApproval Boolean        @default(false)
+  approvalStatus   ApprovalStatus @default(APPROVED) // Default approved unless requires approval
+  approvedById     String?        // Admin who approved
+
   comments       TicketComment[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 }
 
 model TicketComment {
   id        String   @id @default(cuid())
-  ticketId  String
-  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
   content   String
   createdAt DateTime @default(now())
+  
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Payment {
-  id          String        @id @default(cuid())
-  amount      Float
-  reference   String        @unique
-  status      String        @default("PENDING")
-  approvalStatus String     @default("APPROVED")
-  method      String
-  userId      String
-  user        User          @relation(fields: [userId], references: [id])
-  leaseId     String?
-  lease       Lease?        @relation(fields: [leaseId], references: [id])
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  amount         Float
+  currency       String        @default("NGN")
+  reference      String        @unique
+  method         String        // 'Paystack', 'Transfer', 'Cash'
+  status         String        // 'SUCCESS', 'PENDING', 'FAILED' (Simple string for API mapping)
+  
+  approvalStatus ApprovalStatus @default(APPROVED) // If manual transfer, needs approval
+
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime      @default(now())
+}
+
+model Material {
+  id          String   @id @default(cuid())
+  name        String
+  category    String
+  quantity    Int
+  minThreshold Int     @default(5)
+  inStock     Boolean  @default(true)
+  location    String?  // 'Store A', 'Site B'
+
+  images      String[] // Postgres Array
+
+  updatedAt   DateTime @updatedAt
 }
 
 model ContactSubmission {
@@ -121,63 +206,52 @@ model ContactSubmission {
   email     String
   phone     String?
   message   String
-  status    String   @default("NEW") // Could be an enum, but sticking to provided requests
-  createdAt DateTime @default(now())
-}
-
-// --- Digital Transparency System Models ---
-
-model ActivityLog {
-  id        String   @id @default(cuid())
+  status    String   @default("UNREAD") // READ, UNREAD, REPLIED
+  
+  // Optional linkage if logged in
   userId    String?
   user      User?    @relation(fields: [userId], references: [id])
-  action    String   // Keeping as string or could use ActionType enum if strict
-  entity    String
-  entityId  String?
-  details   String?
+
   createdAt DateTime @default(now())
 }
 
-model Lease {
+model Document {
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  type      String   // 'LEASE', 'RECEIPT', 'ID'
+  category  String?  // 'Kyc', 'Contract'
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model ActivityLog {
   id          String   @id @default(cuid())
+  action      String   // LOGIN, CREATE, UPDATE, DELETE, APPROVE
+  entity      String   // TICKET, USER, PAYMENT
+  entityId    String?
+  details     String?  // JSON string of changes
+  
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  propertyId  String
-  property    Property @relation(fields: [propertyId], references: [id])
-  startDate   DateTime
-  endDate     DateTime?
-  rentAmount  Float
-  isActive    Boolean  @default(true)
-  documents   Document[]
-  rentHistory RentModificationLog[]
-  payments    Payment[]
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 }
 
 model RentModificationLog {
   id             String   @id @default(cuid())
   leaseId        String
-  lease          Lease    @relation(fields: [leaseId], references: [id])
-  adminId        String
-  admin          User     @relation("AdminRentModifications", fields: [adminId], references: [id])
+  lease          Lease    @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  
   previousAmount Float
   newAmount      Float
   reason         String?
+  
+  adminId        String
+  admin          User     @relation(fields: [adminId], references: [id])
+  
   createdAt      DateTime @default(now())
-}
-
-model Document {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
-  propertyId String?
-  property   Property? @relation(fields: [propertyId], references: [id])
-  leaseId    String?
-  lease      Lease?    @relation(fields: [leaseId], references: [id])
-  type       String
-  category   String?
-  url        String
-  name       String
-  createdAt  DateTime  @default(now())
 }
