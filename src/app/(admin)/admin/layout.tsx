@@ -40,7 +40,7 @@ export default async function AdminLayout({
                             </div>
                         </div>
                         <nav className="space-y-2">
-                            <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                            <Link href="/admin" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
                                 <LayoutDashboard size={20} />
                                 Dashboard
                             </Link>

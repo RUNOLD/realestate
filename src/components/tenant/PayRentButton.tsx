@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Wallet, Loader2 } from "lucide-react";
 import { useState } from 'react';
 import { verifyPayment } from '@/app/lib/payment_actions';
+import { useRouter } from 'next/navigation';
 
 interface PayRentButtonProps {
     email: string;
@@ -13,6 +14,7 @@ interface PayRentButtonProps {
 }
 
 export function PayRentButton({ email, amount, userId }: PayRentButtonProps) {
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
 
     // Default to test key if env is missing, or use a specific mock flow
@@ -35,6 +37,7 @@ export function PayRentButton({ email, amount, userId }: PayRentButtonProps) {
 
         if (result.success) {
             alert("Payment successful! Your balance has been updated.");
+            router.refresh();
         } else {
             alert("Payment recorded by provider but server verification failed: " + result.error);
         }
@@ -62,7 +65,7 @@ export function PayRentButton({ email, amount, userId }: PayRentButtonProps) {
         <Button
             onClick={handlePay}
             disabled={loading}
-            
+
             className="w-full shadow-md"
         >
             {loading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Wallet className="mr-2 h-4 w-4" />}

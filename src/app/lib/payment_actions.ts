@@ -5,23 +5,24 @@ import { revalidatePath } from "next/cache";
 
 export async function verifyPayment(reference: string, amount: number, userId: string): Promise<{ success: boolean; error?: string }> {
     try {
+        // 1. Handle Mock/Dev Mode Verification FIRST
+        if (reference.startsWith('mock_')) {
+            await prisma.payment.create({
+                data: {
+                    amount: amount,
+                    reference: reference,
+                    status: 'SUCCESS',
+                    userId: userId,
+                    method: 'Paystack (Mock)'
+                }
+            });
+            revalidatePath('/dashboard');
+            return { success: true };
+        }
+
         const secretKey = process.env.PAYSTACK_SECRET_KEY;
 
         if (!secretKey) {
-             // For Dev without keys, we might simulate success if it's a specific mock ref
-             if (reference.startsWith('mock_')) {
-                 await prisma.payment.create({
-                     data: {
-                         amount: amount, // Paystack amount is in kobo usually, but we stored as passed (Naira)
-                         reference: reference,
-                         status: 'SUCCESS',
-                         userId: userId,
-                         method: 'Paystack (Mock)'
-                     }
-                 });
-                 revalidatePath('/dashboard');
-                 return { success: true };
-             }
             return { success: false, error: "Server misconfiguration: No Secret Key" };
         }
 
