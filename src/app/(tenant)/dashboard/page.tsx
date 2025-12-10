@@ -1,10 +1,12 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import Link from 'next/link';
 import { redirect } from "next/navigation";
 import { TicketForm } from "@/components/tenant/TicketForm";
-import { PayRentButton } from "@/components/tenant/PayRentButton";
+import { PayRentButtonClient } from "@/components/tenant/PayRentButtonClient";
 import { QuickActions } from "@/components/tenant/QuickActions";
 import {
     AlertCircle,
@@ -65,7 +67,7 @@ export default async function DashboardPage() {
                         <div className="text-2xl font-bold text-primary mb-3">₦2,500,000</div>
 
                         <div className="mb-3">
-                            <PayRentButton
+                            <PayRentButtonClient
                                 email={session.user.email || 'tenant@example.com'}
                                 amount={2500000}
                                 userId={session.user.id!}

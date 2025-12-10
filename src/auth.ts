@@ -25,17 +25,16 @@ async function getUser(identifier: string) {
 export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig,
     trustHost: true,
-    secret: process.env.AUTH_SECRET || 'any-secret-string-for-dev-mode',
     providers: [
         Credentials({
             async authorize(credentials) {
                 const parsedCredentials = z
-                    .object({ email: z.string(), password: z.string().min(6) })
+                    .object({ identifier: z.string(), password: z.string().min(6) })
                     .safeParse(credentials);
 
                 if (parsedCredentials.success) {
-                    const { email, password } = parsedCredentials.data;
-                    const user = await getUser(email);
+                    const { identifier, password } = parsedCredentials.data;
+                    const user = await getUser(identifier);
                     if (!user) return null;
 
                     let passwordsMatch = false;

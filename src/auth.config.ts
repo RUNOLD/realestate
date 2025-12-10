@@ -4,6 +4,7 @@ export const authConfig = {
     pages: {
         signIn: '/login',
     },
+    secret: process.env.AUTH_SECRET || 'any-secret-string-for-dev-mode',
     callbacks: {
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user;
@@ -11,11 +12,16 @@ export const authConfig = {
             const isOnAdmin = nextUrl.pathname.startsWith('/admin');
             const userRole = (auth?.user as any)?.role;
 
+            console.log(`[Middleware] Path: ${nextUrl.pathname}, LoggedIn: ${isLoggedIn}, Role: ${userRole}`);
+
             if (isOnAdmin) {
                 if (isLoggedIn) {
                     // Strict Role Check for Admin Routes
-                    return userRole === 'ADMIN' || userRole === 'STAFF';
+                    const allowed = userRole === 'ADMIN' || userRole === 'STAFF';
+                    console.log(`[Middleware] Admin Access: ${allowed ? 'GRANTED' : 'DENIED'}`);
+                    return allowed;
                 }
+                console.log(`[Middleware] Admin Access: DENIED (Not Logged In)`);
                 return false; // Redirect unauthenticated users to login page
             }
 

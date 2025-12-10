@@ -33,10 +33,10 @@ export async function authenticate(
 
         console.log("LOGIN DEBUG: User found:", user);
 
-        // Unified Dashboard: Redirect everyone to /dashboard
-        // if (user?.role === 'ADMIN' || user?.role === 'STAFF') {
-        //    redirectUrl = '/admin';
-        // }
+        // Role-based redirection
+        if (user?.role === 'ADMIN' || user?.role === 'STAFF') {
+            redirectUrl = '/admin';
+        }
 
         console.log("LOGIN DEBUG: Redirecting to:", redirectUrl);
 
@@ -49,6 +49,7 @@ export async function authenticate(
         });
 
         // If we get here, sign in was successful (otherwise it throws)
+        console.log("LOGIN ACTION SUCCESS: User Role:", user?.role, "Redirecting to:", redirectUrl);
         return { success: true, redirectUrl };
 
     } catch (error) {
