@@ -1,7 +1,7 @@
 'use client';
 
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
     Phone,
     Mail,
@@ -72,8 +72,24 @@ function ContactForm() {
             </div>
 
             {state?.error && (
-                <div className="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-md flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-600" /> {state.error}
+                <div className="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-md flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                        {typeof state.error === 'string' ? (
+                            state.error
+                        ) : (
+                            <span>Please check the form for errors.</span>
+                        )}
+                    </div>
+                    {typeof state.error !== 'string' && (
+                        <ul className="list-disc list-inside pl-4 text-xs">
+                            {Object.entries(state.error).map(([key, messages]) => (
+                                <li key={key}>
+                                    <span className="capitalize">{key}:</span> {(messages as string[]).join(", ")}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </div>
             )}
             {state?.success && (

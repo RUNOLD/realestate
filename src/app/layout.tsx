@@ -12,8 +12,9 @@ export const metadata: Metadata = {
   description: "Luxury Property Management and Sourcing Services",
 };
 
-import { auth } from "../auth";
+import { auth } from "@/auth";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 export default async function RootLayout({
   children,
@@ -32,6 +33,7 @@ export default async function RootLayout({
         >
           <Navbar user={session?.user} />
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

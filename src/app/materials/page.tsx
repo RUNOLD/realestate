@@ -101,7 +101,7 @@ export default async function MaterialsPage() {
                                 {/* Image Area */}
                                 <div className="relative h-64 bg-slate-100 overflow-hidden">
                                     <img
-                                        src={material.images}
+                                        src={material.images[0] || "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?q=80&w=2000&auto=format&fit=crop"}
                                         alt={material.name}
                                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                                     />

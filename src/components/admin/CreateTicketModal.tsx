@@ -1,8 +1,8 @@
 'use client';
 
 import { createAdminTicket } from "@/app/lib/actions";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useActionState, useState, useEffect } from "react";
 import { X, Loader2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -120,7 +120,19 @@ export function CreateTicketModal({ tenants }: { tenants: any[] }) {
                     </div>
 
                     {/* Errors / Success */}
-                    {state?.error && <p className="text-red-500 text-sm font-medium">{state.error}</p>}
+                    {state?.error && (
+                        <div className="text-red-600 text-sm font-medium bg-red-50 p-2 rounded-md">
+                            {typeof state.error === 'string' ? (
+                                state.error
+                            ) : (
+                                <ul className="list-disc list-inside">
+                                    {Object.entries(state.error).map(([key, messages]) => (
+                                        <li key={key}>{(messages as string[]).join(", ")}</li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                    )}
                     {state?.success && <p className="text-green-600 text-sm font-medium">Ticket created successfully!</p>}
 
                     {/* Actions */}

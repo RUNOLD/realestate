@@ -1,0 +1,2 @@
+﻿src/components/admin/CreateLeaseModal.tsx(93,86): error TS2322: Type 'string | { userId?: string[] | undefined; propertyId?: string[] | undefined; rentAmount?: string[] | undefined; startDate?: string[] | undefined; endDate?: string[] | undefined; }' is not assignable to type 'ReactNode'.
+  Type '{ userId?: string[] | undefined; propertyId?: string[] | undefined; rentAmount?: string[] | undefined; startDate?: string[] | undefined; endDate?: string[] | undefined; }' is not assignable to type 'ReactNode'.

@@ -1,8 +1,8 @@
 'use client';
 
 
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useActionState, useState, useEffect } from 'react';
 import { authenticate } from '@/app/lib/actions';
@@ -116,7 +116,7 @@ export default function LoginPage() {
 
                             <Button
                                 type="submit"
-                                variant="luxury"
+                                
                                 className="w-full text-base font-bold h-12 shadow-lg hover:shadow-xl transition-all"
                                 disabled={isPending}
                             >

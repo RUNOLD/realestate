@@ -2,8 +2,8 @@
 
 import { useActionState } from "react";
 import { resetPassword } from "@/app/lib/auth_actions";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Lock, Loader2, CheckCircle2 } from "lucide-react";

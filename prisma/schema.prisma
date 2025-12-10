@@ -6,22 +6,78 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// Enums for Strict Type Safety
+enum Role {
+  USER
+  TENANT
+  ADMIN
+  STAFF
+}
+
+enum UserStatus {
+  ACTIVE
+  PENDING
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  RENTED
+  SOLD
+  MAINTENANCE
+}
+
+enum TicketStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  EMERGENCY
+}
+
+enum ApprovalStatus {
+  PENDING_MANAGER
+  PENDING_ADMIN
+  APPROVED
+  PENDING // General fallback
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum ActionType {
+  LOGIN
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  APPROVE
 }
 
 model User {
   id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
-  phone         String?   @unique // Added for phone authentication
+  phone         String?   @unique
   emailVerified DateTime?
   image         String?
   password      String?
   resetToken    String?   @unique
   resetTokenExpiry DateTime?
-  role          String    @default("USER") // USER, TENANT, ADMIN, STAFF
-  status        String    @default("ACTIVE") // ACTIVE, PENDING (for Staff created tenants)
+  role          Role      @default(USER)
+  status        UserStatus @default(ACTIVE)
   
   // Tenant Profile Fields
   nextOfKinName  String?
@@ -39,6 +95,7 @@ model User {
   leases        Lease[]
   documents     Document[]
   rentModifications RentModificationLog[] @relation("AdminRentModifications")
+  ticketComments TicketComment[]
 }
 
 model Property {
@@ -47,10 +104,10 @@ model Property {
   description String
   price       Float
   location    String
-  status      String   @default("AVAILABLE") // AVAILABLE, RENTED, SOLD, MAINTENANCE
-  type        String // e.g., Apartment, House, Office
-  images      String // JSON string or comma-separated URLs
-  features    String? // JSON string of features
+  status      PropertyStatus @default(AVAILABLE)
+  type        String
+  images      String[] // Postgres Array for images
+  features    String? // Retaining JSON string for flexible features, or could be String[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -63,40 +120,50 @@ model Material {
   name        String
   description String
   category    String
-  price       Float?   // Optional, as it might be "Contact for price"
-  images      String // JSON string or comma-separated URLs
+  price       Float?
+  images      String[] // Postgres Array
   inStock     Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-
 model Ticket {
   id             String       @id @default(cuid())
   subject        String
   description    String
-  category       String       // PLUMBING, ELECTRICAL, STRUCTURAL, OTHER
-  status         String       @default("PENDING") // PENDING, IN_PROGRESS, RESOLVED, CLOSED
-  approvalStatus String       @default("PENDING_MANAGER") // PENDING_MANAGER, PENDING_ADMIN, APPROVED
+  category       String
+  status         TicketStatus @default(PENDING)
+  approvalStatus ApprovalStatus @default(PENDING_MANAGER)
   requiresApproval Boolean    @default(true)
-  priority       String       @default("MEDIUM") // LOW, MEDIUM, HIGH, EMERGENCY
-  images         String?      // JSON string of image URLs
+  priority       TicketPriority @default(MEDIUM)
+  images         String[]     // Postgres Array
   userId         String
   user           User         @relation(fields: [userId], references: [id])
+  comments       TicketComment[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+}
+
+model TicketComment {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
 }
 
 model Payment {
   id          String        @id @default(cuid())
   amount      Float
-  reference   String        @unique // Payment gateway reference
-  status      String        @default("PENDING") // PENDING, SUCCESS, FAILED
-  approvalStatus String     @default("APPROVED") // APPROVED, PENDING (for Staff created payments)
-  method      String        // e.g., Paystack, Transfer
+  reference   String        @unique
+  status      PaymentStatus @default(PENDING)
+  approvalStatus ApprovalStatus @default(APPROVED)
+  method      String
   userId      String
   user        User          @relation(fields: [userId], references: [id])
-  leaseId     String?       // Optional link to specific lease
+  leaseId     String?
   lease       Lease?        @relation(fields: [leaseId], references: [id])
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -108,7 +175,7 @@ model ContactSubmission {
   email     String
   phone     String?
   message   String
-  status    String   @default("NEW") // NEW, READ, ARCHIVED
+  status    String   @default("NEW") // Could be an enum, but sticking to provided requests
   createdAt DateTime @default(now())
 }
 
@@ -116,12 +183,12 @@ model ContactSubmission {
 
 model ActivityLog {
   id        String   @id @default(cuid())
-  userId    String?  // Can be null if system action, but usually having a user actor is good
-  user      User?    @relation(fields: [userId], references: [id]) // The actor
-  action    String   // LOGIN, CREATE, READ, UPDATE, DELETE, APPROVE
-  entity    String   // USER, PROPERTY, TICKET, PAYMENT, LEASE
-  entityId  String?  // ID of the affected record
-  details   String?  // JSON string for extra details (diffs, etc.)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String   // Keeping as string or could use ActionType enum if strict
+  entity    String
+  entityId  String?
+  details   String?
   createdAt DateTime @default(now())
 }
 
@@ -146,7 +213,7 @@ model RentModificationLog {
   id             String   @id @default(cuid())
   leaseId        String
   lease          Lease    @relation(fields: [leaseId], references: [id])
-  adminId        String   // The admin who made the change
+  adminId        String
   admin          User     @relation("AdminRentModifications", fields: [adminId], references: [id])
   previousAmount Float
   newAmount      Float
@@ -162,8 +229,8 @@ model Document {
   property   Property? @relation(fields: [propertyId], references: [id])
   leaseId    String?
   lease      Lease?    @relation(fields: [leaseId], references: [id])
-  type       String    // LEASE_AGREEMENT, RECEIPT, ID_CARD, OTHER
-  category   String?   // KYC, AGREEMENT, GUARANTOR, HANDOVER
+  type       String
+  category   String?
   url        String
   name       String
   createdAt  DateTime  @default(now())

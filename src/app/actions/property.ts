@@ -27,7 +27,7 @@ export async function createProperty(formData: FormData) {
                 location,
                 type,
                 status: status || "AVAILABLE",
-                images: images || "[]", // Default to empty JSON array string if empty
+                images: images ? JSON.parse(images) : [], // Default to empty JSON array string if empty
                 features: "[]"
             }
         });
@@ -63,7 +63,7 @@ export async function updateProperty(propertyId: string, formData: FormData) {
                 location,
                 type,
                 status: status || "AVAILABLE",
-                images: images || "[]",
+                images: images ? JSON.parse(images) : [],
             }
         });
     } catch (error) {

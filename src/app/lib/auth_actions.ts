@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import { sendEmail } from "@/lib/mail";
 import { getResetPasswordTemplate } from "@/app/lib/mail_templates";
 
-export async function requestPasswordReset(formData: FormData) {
+export async function requestPasswordReset(prevState: any, formData: FormData) {
     const email = formData.get("email") as string;
 
     if (!email) {

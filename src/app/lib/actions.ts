@@ -76,17 +76,25 @@ import { createActivityLog, ActionType, EntityType } from "@/lib/logger";
 
 // ... existing authenticate function ...
 
+import { CreateTicketSchema, ContactSchema } from "@/lib/schemas";
+
 export async function createTicket(prevState: any, formData: FormData) {
     const session = await auth();
     if (!session?.user?.id) return { error: "Not authenticated" };
 
-    const subject = formData.get("subject") as string;
-    const description = formData.get("description") as string;
-    const category = formData.get("category") as string;
+    const rawData = {
+        subject: formData.get("subject"),
+        description: formData.get("description"),
+        category: formData.get("category"),
+    };
 
-    if (!subject || !description || !category) {
-        return { error: "Missing required fields" };
+    const validatedFields = CreateTicketSchema.safeParse(rawData);
+
+    if (!validatedFields.success) {
+        return { error: validatedFields.error.flatten().fieldErrors, message: "Validation failed" };
     }
+
+    const { subject, description, category } = validatedFields.data;
 
     try {
         const ticket = await prisma.ticket.create({
@@ -96,13 +104,11 @@ export async function createTicket(prevState: any, formData: FormData) {
                 category: category as any,
                 userId: session.user.id,
                 status: "PENDING",
-                // Transparency System: Set initial approval status
                 approvalStatus: "PENDING_MANAGER",
                 requiresApproval: true,
             }
         });
 
-        // Log the activity
         await createActivityLog(
             session.user.id,
             ActionType.CREATE,
@@ -122,14 +128,20 @@ export async function createTicket(prevState: any, formData: FormData) {
 
 
 export async function submitContact(prevState: any, formData: FormData) {
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
-    const phone = formData.get("phone") as string;
-    const message = formData.get("message") as string;
+    const rawData = {
+        name: formData.get("name"),
+        email: formData.get("email"),
+        phone: formData.get("phone"),
+        message: formData.get("message"),
+    };
 
-    if (!name || !email || !message) {
-        return { error: "Please fill in all required fields." };
+    const validatedFields = ContactSchema.safeParse(rawData);
+
+    if (!validatedFields.success) {
+        return { error: validatedFields.error.flatten().fieldErrors, message: "Validation failed" };
     }
+
+    const { name, email, phone, message } = validatedFields.data;
 
     try {
         await prisma.contactSubmission.create({
@@ -147,23 +159,30 @@ export async function submitContact(prevState: any, formData: FormData) {
     }
 }
 
+import { CreateAdminTicketSchema } from "@/lib/schemas";
+
 export async function createAdminTicket(prevState: any, formData: FormData) {
     const session = await auth();
-    // Allow ADMIN and STAFF to create tickets
     if (!session?.user?.id || ((session.user as any).role !== 'ADMIN' && (session.user as any).role !== 'STAFF')) {
         return { error: "Unauthorized" };
     }
 
-    const userId = formData.get("userId") as string; // Requester
-    const subject = formData.get("subject") as string;
-    const description = formData.get("description") as string;
-    const category = formData.get("category") as string;
-    const priority = formData.get("priority") as string;
-    const images = formData.get("images") as string; // Expecting JSON string for now
+    const rawData = {
+        userId: formData.get("userId"),
+        subject: formData.get("subject"),
+        description: formData.get("description"),
+        category: formData.get("category"),
+        priority: formData.get("priority"),
+        images: formData.get("images"),
+    };
 
-    if (!userId || !subject || !description || !category || !priority) {
-        return { error: "Missing required fields" };
+    const validatedFields = CreateAdminTicketSchema.safeParse(rawData);
+
+    if (!validatedFields.success) {
+        return { error: validatedFields.error.flatten().fieldErrors, message: "Validation failed" };
     }
+
+    const { userId, subject, description, category, priority, images } = validatedFields.data;
 
     try {
         const ticket = await prisma.ticket.create({
@@ -176,11 +195,10 @@ export async function createAdminTicket(prevState: any, formData: FormData) {
                 status: "PENDING", // Initial status
                 approvalStatus: "APPROVED", // Auto-approve if created by admin
                 requiresApproval: false,
-                images: images || "[]",
+                images: images ? JSON.parse(images as string) : [],
             }
         });
 
-        // Log the activity
         await createActivityLog(
             session.user.id,
             ActionType.CREATE,
@@ -243,9 +261,27 @@ export async function approveTicket(ticketId: string, role: 'MANAGER' | 'ADMIN')
     }
 }
 
-export async function createLease(userId: string, propertyId: string, rentAmount: number, startDate: Date, endDate?: Date) {
+import { CreateLeaseSchema } from "@/lib/schemas";
+
+export async function createLease(prevState: any, formData: FormData) {
     const session = await auth();
     if (!session?.user?.id || (session.user as any).role !== 'ADMIN') return { error: "Unauthorized" };
+
+    const rawData = {
+        userId: formData.get("userId"),
+        propertyId: formData.get("propertyId"),
+        rentAmount: Number(formData.get("rentAmount")),
+        startDate: new Date(formData.get("startDate") as string),
+        endDate: formData.get("endDate") ? new Date(formData.get("endDate") as string) : undefined
+    };
+
+    const validatedFields = CreateLeaseSchema.safeParse(rawData);
+
+    if (!validatedFields.success) {
+        return { error: validatedFields.error.flatten().fieldErrors, message: "Validation failed" };
+    }
+
+    const { userId, propertyId, rentAmount, startDate, endDate } = validatedFields.data;
 
     try {
         const lease = await prisma.lease.create({
@@ -282,9 +318,17 @@ export async function createLease(userId: string, propertyId: string, rentAmount
     }
 }
 
+import { UpdateRentSchema } from "@/lib/schemas";
+
 export async function updateRent(leaseId: string, newAmount: number, reason: string) {
     const session = await auth();
     if (!session?.user?.id || (session.user as any).role !== 'ADMIN') return { error: "Unauthorized" };
+
+    const validatedFields = UpdateRentSchema.safeParse({ leaseId, newAmount, reason });
+
+    if (!validatedFields.success) {
+        return { error: "Validation failed" };
+    }
 
     try {
         const lease = await prisma.lease.findUnique({ where: { id: leaseId } });
@@ -335,27 +379,30 @@ export async function updateRent(leaseId: string, newAmount: number, reason: str
 
 import bcrypt from 'bcryptjs';
 
+import { CreateTenantSchema } from "@/lib/schemas";
+
 export async function createTenant(prevState: any, formData: FormData) {
     const session = await auth();
     if (!session?.user?.id) return { error: "Not authenticated" };
 
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
-    const phone = formData.get("phone") as string;
-    const password = formData.get("password") as string;
+    const rawData = {
+        name: formData.get("name"),
+        email: formData.get("email"),
+        phone: formData.get("phone"),
+        password: formData.get("password"),
+        nextOfKinName: formData.get("nextOfKinName"),
+        nextOfKinPhone: formData.get("nextOfKinPhone"),
+        employerName: formData.get("employerName"),
+        jobTitle: formData.get("jobTitle"),
+    };
 
-    const nextOfKinName = formData.get("nextOfKinName") as string;
-    const nextOfKinPhone = formData.get("nextOfKinPhone") as string;
-    const employerName = formData.get("employerName") as string;
-    const jobTitle = formData.get("jobTitle") as string;
+    const validatedFields = CreateTenantSchema.safeParse(rawData);
 
-    if (!name || !email || !password) {
-        return { error: "Missing required fields" };
+    if (!validatedFields.success) {
+        return { error: validatedFields.error.flatten().fieldErrors, message: "Validation failed" };
     }
 
-    if (password.length < 6) {
-        return { error: "Password must be at least 6 characters long." };
-    }
+    const { name, email, phone, password, nextOfKinName, nextOfKinPhone, employerName, jobTitle } = validatedFields.data;
 
     try {
         // 1. Check for existing user
@@ -369,7 +416,7 @@ export async function createTenant(prevState: any, formData: FormData) {
         });
 
         if (existingUser) {
-            if (existingUser.email === email) return { error: " a user with this email already exists." };
+            if (existingUser.email === email) return { error: "A user with this email already exists." };
             if (phone && existingUser.phone === phone) return { error: "A user with this phone number already exists." };
         }
 
@@ -411,22 +458,26 @@ export async function createTenant(prevState: any, formData: FormData) {
     }
 }
 
+import { CreatePaymentSchema } from "@/lib/schemas";
+
 export async function createPayment(prevState: any, formData: FormData) {
     const session = await auth();
     if (!session?.user?.id) return { error: "Not authenticated" };
 
-    const amount = parseFloat(formData.get("amount") as string);
-    const reference = formData.get("reference") as string;
-    const method = formData.get("method") as string;
-    const tenantId = formData.get("tenantId") as string;
+    const rawData = {
+        amount: Number(formData.get("amount")),
+        reference: formData.get("reference"),
+        method: formData.get("method"),
+        tenantId: formData.get("tenantId"),
+    };
 
-    if (!amount || !reference || !tenantId) {
-        return { error: "Missing required fields" };
+    const validatedFields = CreatePaymentSchema.safeParse(rawData);
+
+    if (!validatedFields.success) {
+        return { error: validatedFields.error.flatten().fieldErrors, message: "Validation failed" };
     }
 
-    if (amount <= 0) {
-        return { error: "Amount must be greater than zero." };
-    }
+    const { amount, reference, method, tenantId } = validatedFields.data;
 
     try {
         // Check for duplicate reference (Assuming reference should be unique)
@@ -524,37 +575,39 @@ export async function approvePayment(paymentId: string) {
     }
 }
 
+import { UploadDocumentSchema } from "@/lib/schemas";
+
 export async function uploadDocument(prevState: any, formData: FormData) {
     const session = await auth();
     if (!session?.user?.id) return { error: "Not authenticated" };
 
-    const userId = formData.get("userId") as string;
-    const category = formData.get("category") as string;
-    const file = formData.get("file") as File;
+    const rawData = {
+        userId: formData.get("userId"),
+        category: formData.get("category"),
+    };
 
-    // In a real app we'd upload 'file' to blob storage (S3/R2).
-    // For this local MVP, we will write to the public/uploads directory.
+    const validatedFields = UploadDocumentSchema.safeParse(rawData);
 
-    // 1. Prepare buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    // 2. Prepare directory
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    try {
-        await fs.mkdir(uploadDir, { recursive: true });
-    } catch (e) {
-        // ignore if exists
+    if (!validatedFields.success) {
+        return { error: validatedFields.error.flatten().fieldErrors, message: "Validation failed" };
     }
 
-    // 3. Write file
-    const uniqueName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const filePath = path.join(uploadDir, uniqueName);
-    await fs.writeFile(filePath, buffer);
+    const { userId, category } = validatedFields.data;
+    const file = formData.get("file") as File;
 
-    const fileUrl = `/uploads/${uniqueName}`;
+    if (!file || file.size === 0) {
+        return { error: "No file provided" };
+    }
 
     try {
+        // Upload to Cloudinary
+        // Note: We import dynamically or top-level. Since this is a server action file, top level is fine if we add the import.
+        // But for cleaner replacement here without messing up top imports too much, we can try to import helper actions.
+        // Actually, let's just use the helper we created.
+        const { uploadToCloudinary } = await import("@/lib/cloudinary");
+
+        const fileUrl = await uploadToCloudinary(file, 'realestate_documents');
+
         await prisma.document.create({
             data: {
                 userId,
@@ -568,9 +621,9 @@ export async function uploadDocument(prevState: any, formData: FormData) {
         await createActivityLog(
             session.user.id,
             ActionType.CREATE,
-            EntityType.DOCUMENT, // Assuming this exists or falls back to string
-            userId, // Linking to user
-            { filename: file.name, category }
+            EntityType.DOCUMENT,
+            userId,
+            { filename: file.name, category, url: fileUrl }
         );
 
         revalidatePath(`/admin/users/${userId}`);
@@ -672,5 +725,58 @@ export async function deleteMessage(messageId: string) {
     } catch (e) {
         console.error("Delete Message Error:", e);
         return { error: "Failed to delete message" };
+    }
+}
+
+import { AddCommentSchema } from "@/lib/schemas";
+
+export async function addComment(ticketId: string, content: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Not authenticated" };
+
+    const validatedFields = AddCommentSchema.safeParse({ ticketId, content });
+
+    if (!validatedFields.success) {
+        return { error: "Validation failed" };
+    }
+
+    try {
+        const comment = await prisma.ticketComment.create({
+            data: {
+                ticketId,
+                userId: session.user.id,
+                content,
+            },
+            include: {
+                user: {
+                    select: { name: true, role: true }
+                }
+            }
+        });
+
+        // Trigger Pusher
+        // Dynamic import to avoid build issues if pusher envs are missing
+        try {
+            const { pusherServer } = await import("@/lib/pusher");
+            await pusherServer.trigger(`ticket-${ticketId}`, 'incoming-message', {
+                id: comment.id,
+                content: comment.content,
+                createdAt: comment.createdAt,
+                user: {
+                    name: comment.user.name,
+                    role: comment.user.role,
+                    id: session.user.id
+                }
+            });
+        } catch (pusherError) {
+            console.error("Pusher Trigger Error:", pusherError);
+            // Don't fail the action if realtime fails, just log it.
+        }
+
+        revalidatePath(`/admin/tickets/${ticketId}`);
+        return { success: true };
+    } catch (e) {
+        console.error("Add Comment Error:", e);
+        return { error: "Failed to post comment" };
     }
 }

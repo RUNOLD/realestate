@@ -57,7 +57,7 @@ export default async function Home() {
                 {/* Image Container */}
                 <div className="relative h-64 overflow-hidden">
                   <img
-                    src={property.images && property.images.length > 5 ? property.images : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
+                    src={property.images && property.images.length > 0 ? property.images[0] : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
                     alt={property.title}
                     className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                   />

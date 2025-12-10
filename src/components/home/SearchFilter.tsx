@@ -3,7 +3,7 @@
 import { Search, MapPin, Home, Banknote } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 
 export function SearchFilter() {
     const router = useRouter();
@@ -95,7 +95,7 @@ export function SearchFilter() {
 
                     {/* Search Button */}
                     <div className="md:col-span-2">
-                        <Button type="submit" variant="luxury" className="w-full h-[52px] rounded-xl text-base shadow-lg hover:shadow-primary/20 sm:mb-[1px]">
+                        <Button type="submit"  className="w-full h-[52px] rounded-xl text-base shadow-lg hover:shadow-primary/20 sm:mb-[1px]">
                             <Search size={20} className="mr-2" />
                             Search
                         </Button>

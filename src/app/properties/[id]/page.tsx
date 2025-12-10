@@ -1,6 +1,6 @@
 
 import { prisma } from "@/lib/prisma";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft, MapPin, CheckCircle, Phone, Mail } from "lucide-react";
 import { notFound } from "next/navigation";
@@ -30,7 +30,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
             {/* Hero Image Section */}
             <div className="relative h-[50vh] bg-gray-900">
                 <img
-                    src={property.images && property.images.length > 5 ? property.images : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
+                    src={property.images && property.images.length > 0 ? property.images[0] : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
                     alt={property.title}
                     className="w-full h-full object-cover opacity-60"
                 />
