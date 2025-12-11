@@ -251,7 +251,7 @@ model RentModificationLog {
   reason         String?
   
   adminId        String
-  admin          User     @relation(fields: [adminId], references: [id])
+  admin          User     @relation("AdminModifier", fields: [adminId], references: [id])
   
   createdAt      DateTime @default(now())
 }
