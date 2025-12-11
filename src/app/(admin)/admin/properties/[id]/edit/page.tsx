@@ -70,7 +70,7 @@ export default async function EditPropertyPage(props: { params: Promise<{ id: st
                                                 <select
                                                     id="type"
                                                     name="type"
-                                                    defaultValue={property.type}
+                                                    defaultValue={property.type ?? ""}
                                                     required
                                                     className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 appearance-none"
                                                 >

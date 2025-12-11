@@ -20,7 +20,7 @@ export default async function ApprovalQueuePage() {
 
     // Fetch Pending Payments
     const pendingPayments = await prisma.payment.findMany({
-        where: { approvalStatus: 'PENDING' },
+        where: { approvalStatus: 'PENDING_ADMIN' },
         include: { user: true },
         orderBy: { createdAt: 'desc' }
     });

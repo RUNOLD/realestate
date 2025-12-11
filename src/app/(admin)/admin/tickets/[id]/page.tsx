@@ -70,7 +70,7 @@ export default async function TicketDetailsPage({ params }: { params: Promise<{ 
                                 <span className="text-xs px-2.5 py-0.5 bg-gray-100 rounded-full text-gray-600 font-medium">
                                     {ticket.category}
                                 </span>
-                                <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${ticket.priority === 'EMERGENCY' ? 'bg-red-100 text-red-800' :
+                                <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${ticket.priority === 'URGENT' ? 'bg-red-100 text-red-800' :
                                     ticket.priority === 'HIGH' ? 'bg-orange-100 text-orange-800' :
                                         'bg-blue-50 text-blue-800'
                                     }`}>

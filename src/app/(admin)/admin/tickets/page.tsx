@@ -24,7 +24,7 @@ export default async function AdminTicketsPage() {
 
     // 2. Calculate Stats
     const totalTickets = tickets.length;
-    const openTickets = tickets.filter(t => t.status === 'PENDING').length;
+    const openTickets = tickets.filter(t => t.status === 'OPEN').length;
     const resolvedTickets = tickets.filter(t => t.status === 'RESOLVED').length;
 
     // 3. Fetch Tenants for Create Modal
