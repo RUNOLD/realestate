@@ -50,7 +50,7 @@ export default async function MaintenancePage() {
                                     <div className="flex items-center gap-2">
                                         <h4 className="font-semibold text-lg">{ticket.subject}</h4>
                                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${ticket.status === 'RESOLVED' ? 'bg-green-50 text-green-700 border-green-200' :
-                                            ticket.status === 'PENDING' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                                            ticket.status === 'OPEN' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
                                                 'bg-gray-50 text-gray-700 border-gray-200'
                                             }`}>
                                             {ticket.status}

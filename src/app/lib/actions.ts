@@ -104,7 +104,7 @@ export async function createTicket(prevState: any, formData: FormData) {
                 description,
                 category: category as any,
                 userId: session.user.id,
-                status: "PENDING",
+                status: "OPEN",
                 approvalStatus: "PENDING_MANAGER",
                 requiresApproval: true,
             }
@@ -191,9 +191,9 @@ export async function createAdminTicket(prevState: any, formData: FormData) {
                 subject,
                 description,
                 category: category as any,
-                priority: priority,
+                priority: priority as any,
                 userId,
-                status: "PENDING", // Initial status
+                status: "OPEN", // Initial status
                 approvalStatus: "APPROVED", // Auto-approve if created by admin
                 requiresApproval: false,
                 images: images ? JSON.parse(images as string) : [],
@@ -492,7 +492,7 @@ export async function createPayment(prevState: any, formData: FormData) {
 
         const userRole = (session.user as any).role;
         // Staff created payments are PENDING approval
-        const approvalStatus = userRole === 'STAFF' ? 'PENDING' : 'APPROVED';
+        const approvalStatus = userRole === 'STAFF' ? 'PENDING_ADMIN' : 'APPROVED';
 
         const payment = await prisma.payment.create({
             data: {
@@ -514,7 +514,7 @@ export async function createPayment(prevState: any, formData: FormData) {
         );
 
         revalidatePath(`/admin/users/${tenantId}`);
-        return { success: true, message: approvalStatus === 'PENDING' ? "Payment recorded and pending approval." : "Payment recorded." };
+        return { success: true, message: approvalStatus === 'PENDING_ADMIN' ? "Payment recorded and pending approval." : "Payment recorded." };
     } catch (e) {
         console.error("Create Payment Error:", e);
         return { error: "Failed to record payment" };

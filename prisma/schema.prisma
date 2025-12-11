@@ -66,6 +66,8 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
+  resetToken    String?
+  resetTokenExpiry DateTime?
   role          Role      @default(USER)
   status        UserStatus @default(ACTIVE) // Approval flow
 
@@ -95,10 +97,11 @@ model Property {
   id          String         @id @default(cuid())
   title       String
   description String
-  address     String
+  location    String
   price       Float
   status      PropertyStatus @default(AVAILABLE)
   program     String?        // e.g. "Lagos HOMS", "Rent-to-Own"
+  type        String?        // e.g. "Apartment", "House"
   
   images      String[]       // Postgres Array for images
   features    String[]       // Postgres Array for features
@@ -190,13 +193,16 @@ model Material {
   id          String   @id @default(cuid())
   name        String
   category    String
-  quantity    Int
+  description String?
+  price       Float?
+  quantity    Int      @default(0)
   minThreshold Int     @default(5)
   inStock     Boolean  @default(true)
   location    String?  // 'Store A', 'Site B'
 
   images      String[] // Postgres Array
 
+  createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
@@ -235,8 +241,8 @@ model ActivityLog {
   entityId    String?
   details     String?  // JSON string of changes
   
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   createdAt   DateTime @default(now())
 }

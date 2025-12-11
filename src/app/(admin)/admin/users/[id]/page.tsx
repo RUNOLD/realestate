@@ -247,14 +247,14 @@ export default async function UserDetailPage(props: PageProps) {
                                 user.payments.map(payment => (
                                     <div key={payment.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                                         <div className="flex items-center gap-3">
-                                            <div className={`h-8 w-8 rounded-full flex items-center justify-center ${payment.approvalStatus === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                                            <div className={`h-8 w-8 rounded-full flex items-center justify-center ${payment.approvalStatus === 'PENDING_ADMIN' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
                                                 }`}>
-                                                {payment.approvalStatus === 'PENDING' ? <AlertCircle size={16} /> : <CheckCircle size={16} />}
+                                                {payment.approvalStatus === 'PENDING_ADMIN' ? <AlertCircle size={16} /> : <CheckCircle size={16} />}
                                             </div>
                                             <div>
                                                 <p className="font-medium text-sm text-foreground">{payment.method} Payment</p>
                                                 <p className="text-xs text-muted-foreground">Ref: {payment.reference}</p>
-                                                {payment.approvalStatus === 'PENDING' && (
+                                                {payment.approvalStatus === 'PENDING_ADMIN' && (
                                                     <span className="text-[10px] text-amber-600 font-bold">Pending Approval</span>
                                                 )}
                                             </div>
