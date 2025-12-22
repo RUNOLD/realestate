@@ -1,0 +1,9 @@
+Testing URL: postgresql://postgres.iduznqwrpeooswuxjtun:****@aws-0-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+  - Error Name: PrismaClientInitializationError
+  - Error Code: undefined
+  - Error Message:  Invalid `prisma.user.count()` invocation in C:\Users\ayool\Desktop\realestate2111\test_ireland_pooler.js:23:45    20 });   21    22 try { → 23     const count = await prisma.user.count( Error querying the database: FATAL: Tenant or user not found
+Testing URL: postgresql://postgres:****@aws-0-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+  - Error Name: PrismaClientInitializationError
+  - Error Code: undefined
+  - Error Message:  Invalid `prisma.user.count()` invocation in C:\Users\ayool\Desktop\realestate2111\test_ireland_pooler.js:23:45    20 });   21    22 try { → 23     const count = await prisma.user.count( Error querying the database: FATAL: Tenant or user not found
+❌ All failed.

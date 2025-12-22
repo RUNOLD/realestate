@@ -1,0 +1,9 @@
+Testing eu-central-1: ❌  Invalid `prisma.user.count()` invocation in C:\Users\ayool\Desktop\realestate2111\discover_all.js:2
+Testing eu-west-1: ❌  Invalid `prisma.user.count()` invocation in C:\Users\ayool\Desktop\realestate2111\discover_all.js:2
+Testing eu-west-2: ❌  Invalid `prisma.user.count()` invocation in C:\Users\ayool\Desktop\realestate2111\discover_all.js:2
+Testing eu-west-3: ❌  Invalid `prisma.user.count()` invocation in C:\Users\ayool\Desktop\realestate2111\discover_all.js:2
+Testing eu-north-1: ❌  Invalid `prisma.user.count()` invocation in C:\Users\ayool\Desktop\realestate2111\discover_all.js:2
+Testing us-east-1: ❌  Invalid `prisma.user.count()` invocation in C:\Users\ayool\Desktop\realestate2111\discover_all.js:2
+Testing us-east-2: ❌  Invalid `prisma.user.count()` invocation in C:\Users\ayool\Desktop\realestate2111\discover_all.js:2
+Testing us-west-1: ❌  Invalid `prisma.user.count()` invocation in C:\Users\ayool\Desktop\realestate2111\discover_all.js:2
+Testing us-west-2: ❌  Invalid `prisma.user.count()` invocation in C:\Users\ayool\Desktop\realestate2111\discover_all.js:2

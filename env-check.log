@@ -7,4 +7,4 @@ DATABASE_URL exists: true
 
 --- Database Connection Check ---
 Successfully connected to Database. User count: 3
-First user found: ayoolaabdulmuiz2018@gmail.com (Role: STAFF)
+First user found: admin@ayoolaproperty.com (Role: ADMIN)

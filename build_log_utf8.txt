@@ -1,0 +1,69 @@
+﻿
+> realestate2111@0.1.0 build
+> next build
+
+   Ôû▓ Next.js 16.0.7 (Turbopack)
+   - Environments: .env
+
+node.exe :  ÔÜá The "middleware" file convention is deprecated. Please 
+use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( ÔÜá The "middl...leware-to- 
+   proxy:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   Creating an optimized production build ...
+(node:2000) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://
+/C:/Users/ayool/Desktop/realestate2111/tailwind.config.ts?id=1765324363450
+ is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a 
+performance overhead.
+To eliminate this warning, add "type": "module" to 
+C:\Users\ayool\Desktop\realestate2111\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ Ô£ô Compiled successfully in 30.0s
+   Running TypeScript ...
+Failed to compile.
+
+./src/app/(admin)/admin/inbox/page.tsx:78:47
+Type error: Type '() => Promise<{ error: string; success?: undefined; } | 
+{ success: boolean; error?: undefined; }>' is not assignable to type 
+'string | ((formData: FormData) => void | Promise<void>) | undefined'.
+  Type '() => Promise<{ error: string; success?: undefined; } | { 
+success: boolean; error?: undefined; }>' is not assignable to type 
+'(formData: FormData) => void | Promise<void>'.
+    Type 'Promise<{ error: string; success?: undefined; } | { success: 
+boolean; error?: undefined; }>' is not assignable to type 'void | 
+Promise<void>'.
+      Type 'Promise<{ error: string; success?: undefined; } | { success: 
+boolean; error?: undefined; }>' is not assignable to type 'Promise<void>'.
+        Type '{ error: string; success?: undefined; } | { success: 
+boolean; error?: undefined; }' is not assignable to type 'void'.
+          Type '{ error: string; success?: undefined; }' is not 
+assignable to type 'void'.
+
+[0m [90m 76 |[39m                                 
+[33m<[39m[33mdiv[39m className[33m=[39m[32m"flex md:flex-col gap-2 
+min-w-[140px]"[39m[33m>[39m
+ [90m 77 |[39m                                     
+{msg[33m.[39mstatus [33m===[39m [32m'NEW'[39m [33m&&[39m (
+[31m[1m>[22m[39m[90m 78 |[39m                                       
+  [33m<[39m[33mform[39m action[33m=[39m{markMessageAsRead[33m.[39m
+bind([36mnull[39m[33m,[39m msg[33m.[39mid)}[33m>[39m
+ [90m    |[39m                                               
+[31m[1m^[22m[39m
+ [90m 79 |[39m                                             
+[33m<[39m[33mButton[39m type[33m=[39m[32m"submit"[39m 
+variant[33m=[39m[32m"outline"[39m className[33m=[39m[32m"w-full 
+justify-start gap-2 text-blue-600 border-blue-200 
+hover:bg-blue-50"[39m[33m>[39m
+ [90m 80 |[39m                                                 
+[33m<[39m[33mCheckCircle[39m size[33m=[39m{[35m16[39m} 
+[33m/[39m[33m>[39m [33mMark[39m [33mRead[39m
+ [90m 81 |[39m                                             
+[33m<[39m[33m/[39m[33mButton[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null

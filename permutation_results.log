@@ -1,0 +1,49 @@
+--- Stockholm Permutation Log ---
+Testing: postgresql://postgres.iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://postgres.iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:6543/iduznqwrpeooswuxjtun?pgbouncer=true
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://postgres.iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:5432/postgres
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://postgres.iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:5432/iduznqwrpeooswuxjtun
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:6543/iduznqwrpeooswuxjtun?pgbouncer=true
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:5432/postgres
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:5432/iduznqwrpeooswuxjtun
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://postgres:****@aws-0-eu-north-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://postgres:****@aws-0-eu-north-1.pooler.supabase.com:6543/iduznqwrpeooswuxjtun?pgbouncer=true
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://postgres:****@aws-0-eu-north-1.pooler.supabase.com:5432/postgres
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://postgres:****@aws-0-eu-north-1.pooler.supabase.com:5432/iduznqwrpeooswuxjtun
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://postgres.iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://postgres.iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:6543/iduznqwrpeooswuxjtun?pgbouncer=true
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://postgres.iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:5432/postgres
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://postgres.iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:5432/iduznqwrpeooswuxjtun
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:6543/iduznqwrpeooswuxjtun?pgbouncer=true
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:5432/postgres
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://iduznqwrpeooswuxjtun:****@aws-0-eu-north-1.pooler.supabase.com:5432/iduznqwrpeooswuxjtun
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://postgres:****@aws-0-eu-north-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://postgres:****@aws-0-eu-north-1.pooler.supabase.com:6543/iduznqwrpeooswuxjtun?pgbouncer=true
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://postgres:****@aws-0-eu-north-1.pooler.supabase.com:5432/postgres
+[FAIL] FATAL: Tenant or user not found
+Testing: postgresql://postgres:****@aws-0-eu-north-1.pooler.supabase.com:5432/iduznqwrpeooswuxjtun
+[FAIL] FATAL: Tenant or user not found
