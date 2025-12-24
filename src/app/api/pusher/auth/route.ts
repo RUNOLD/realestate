@@ -1,6 +1,8 @@
 import { auth } from "@/auth";
 import { pusherServer } from "@/lib/pusher";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
     const session = await auth();
 
