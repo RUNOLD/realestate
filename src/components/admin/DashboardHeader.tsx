@@ -35,21 +35,21 @@ export function DashboardHeader({ currentDate }: DashboardHeaderProps) {
 
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-            <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">{currentDate}</p>
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900">Welcome back, Admin</h1>
-                <p className="text-gray-500">Here is what's happening with your portfolio today.</p>
+            <div className="space-y-1">
+                <p className="text-sm font-semibold tracking-wide text-muted-foreground uppercase opacity-80">{currentDate}</p>
+                <h1 className="text-3xl font-black tracking-tight text-foreground">Welcome back, Admin</h1>
+                <p className="text-muted-foreground font-medium">Here is what's happening with your portfolio today.</p>
             </div>
             <div className="flex gap-3">
-                <Button variant="outline" className="bg-white hover:bg-gray-50 group" onClick={() => setIsSearchOpen(true)}>
-                    <Search className="mr-2 h-4 w-4 text-gray-400 group-hover:text-gray-900" />
-                    <span className="hidden sm:inline">Search</span>
+                <Button variant="outline" className="group" onClick={() => setIsSearchOpen(true)}>
+                    <Search className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+                    <span className="hidden sm:inline">Search Portfolio</span>
                     <span className="sm:hidden">Find</span>
                 </Button>
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button className="bg-gray-900 text-white hover:bg-black shadow-lg shadow-gray-900/20">
+                        <Button className="font-bold shadow-lg shadow-primary/20">
                             <Plus className="mr-2 h-4 w-4" /> Quick Action
                         </Button>
                     </DropdownMenuTrigger>

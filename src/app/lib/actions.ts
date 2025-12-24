@@ -841,3 +841,83 @@ export async function addComment(ticketId: string, content: string) {
         return { error: "Failed to post comment" };
     }
 }
+
+export async function terminateLease(leaseId: string) {
+    const session = await auth();
+    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') return { error: "Unauthorized" };
+
+    try {
+        const lease = await prisma.lease.findUnique({
+            where: { id: leaseId },
+            include: { property: true }
+        });
+
+        if (!lease) return { error: "Lease not found" };
+
+        await prisma.$transaction([
+            prisma.lease.update({
+                where: { id: leaseId },
+                data: { isActive: false }
+            }),
+            prisma.property.update({
+                where: { id: lease.propertyId },
+                data: { status: 'AVAILABLE' }
+            })
+        ]);
+
+        await createActivityLog(
+            session.user.id,
+            ActionType.UPDATE,
+            EntityType.LEASE,
+            leaseId,
+            { details: "Lease Terminated", propertyId: lease.propertyId }
+        );
+
+        revalidatePath("/admin/properties");
+        revalidatePath(`/admin/properties/${lease.propertyId}`);
+        revalidatePath(`/admin/users/${lease.userId}`);
+        return { success: true };
+    } catch (e) {
+        console.error("Terminate Lease Error:", e);
+        return { error: "Failed to terminate lease" };
+    }
+}
+
+export async function deleteLease(leaseId: string) {
+    const session = await auth();
+    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') return { error: "Unauthorized" };
+
+    try {
+        const lease = await prisma.lease.findUnique({
+            where: { id: leaseId }
+        });
+
+        if (!lease) return { error: "Lease not found" };
+
+        await prisma.$transaction([
+            prisma.lease.delete({
+                where: { id: leaseId }
+            }),
+            prisma.property.update({
+                where: { id: lease.propertyId },
+                data: { status: 'AVAILABLE' }
+            })
+        ]);
+
+        await createActivityLog(
+            session.user.id,
+            ActionType.DELETE,
+            EntityType.LEASE,
+            leaseId,
+            { details: "Lease Deleted", propertyId: lease.propertyId }
+        );
+
+        revalidatePath("/admin/properties");
+        revalidatePath(`/admin/properties/${lease.propertyId}`);
+        revalidatePath(`/admin/users/${lease.userId}`);
+        return { success: true };
+    } catch (e) {
+        console.error("Delete Lease Error:", e);
+        return { error: "Failed to delete lease" };
+    }
+}

@@ -1,7 +1,5 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 interface SendEmailProps {
     to: string;
     subject: string;
@@ -25,6 +23,7 @@ export async function sendEmail({ to, subject, html }: SendEmailProps) {
     }
 
     try {
+        const resend = new Resend(apiKey);
         const data = await resend.emails.send({
             from: 'Ayoola Property <onboarding@resend.dev>', // Update this with verified domain later
             to: to,

@@ -16,8 +16,8 @@ export default async function AdminPropertiesPage({ searchParams }: PageProps) {
     // Fetch data with search filter
     const where = query ? {
         OR: [
-            { title: { contains: query } },
-            { location: { contains: query } }
+            { title: { contains: query, mode: 'insensitive' as const } },
+            { location: { contains: query, mode: 'insensitive' as const } }
         ]
     } : {};
 

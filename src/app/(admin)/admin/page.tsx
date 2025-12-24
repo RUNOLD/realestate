@@ -81,7 +81,7 @@ export default async function AdminDashboardPage() {
     });
 
     return (
-        <div className="min-h-screen bg-gray-50/50 p-6 sm:p-8">
+        <div className="min-h-screen bg-background p-6 sm:p-8">
             <div className="max-w-7xl mx-auto space-y-8">
 
                 {/* 1. Header Section */}
@@ -135,11 +135,11 @@ export default async function AdminDashboardPage() {
 
                     {/* LEFT COLUMN: Maintenance (2/3 width) */}
                     <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+                            <div className="p-6 border-b border-border flex justify-between items-center">
                                 <div>
-                                    <h3 className="font-bold text-gray-900">Recent Maintenance Requests</h3>
-                                    <p className="text-sm text-gray-500">You have {openTicketsCount} requests pending review.</p>
+                                    <h3 className="font-extrabold text-foreground tracking-tight">Recent Maintenance Requests</h3>
+                                    <p className="text-sm text-muted-foreground">You have {openTicketsCount} requests pending review.</p>
                                 </div>
                                 <Link href="/admin/tickets">
                                     <Button variant="ghost" className="text-sm text-blue-600 hover:text-blue-700">View All</Button>
@@ -158,14 +158,14 @@ export default async function AdminDashboardPage() {
                                             </div>
                                             <div className="flex-1">
                                                 <div className="flex justify-between items-start">
-                                                    <h4 className="font-semibold text-gray-900 text-sm">{ticket.subject}</h4>
-                                                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${ticket.priority === 'HIGH' || ticket.priority === 'URGENT' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
+                                                    <h4 className="font-bold text-foreground text-sm uppercase tracking-tight">{ticket.subject}</h4>
+                                                    <span className={`text-[10px] uppercase font-black px-3 py-1 rounded-full ${ticket.priority === 'HIGH' || ticket.priority === 'URGENT' ? 'bg-red-500/20 text-red-500' : 'bg-amber-500/20 text-amber-500'
                                                         }`}>
                                                         {ticket.priority}
                                                     </span>
                                                 </div>
-                                                <p className="text-sm text-gray-600 mt-1 line-clamp-1">{ticket.description || 'No description provided'}</p>
-                                                <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                                                <p className="text-sm text-muted-foreground mt-1 line-clamp-1 italic">{ticket.description || 'No description provided'}</p>
+                                                <div className="flex items-center gap-3 mt-2 text-[11px] font-semibold text-muted-foreground/80">
                                                     <span>Reported by {ticket.user.name}</span>
                                                     <span>•</span>
                                                     <span>{formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}</span>
@@ -183,11 +183,11 @@ export default async function AdminDashboardPage() {
 
                     {/* RIGHT COLUMN: Finances (1/3 width) */}
                     <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-full">
-                            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                                <h3 className="font-bold text-gray-900">Recent Payments</h3>
+                        <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden h-full">
+                            <div className="p-6 border-b border-border flex justify-between items-center">
+                                <h3 className="font-extrabold text-foreground tracking-tight">Recent Payments</h3>
                                 <Link href="/admin/financials">
-                                    <Button variant="ghost" size="sm" className="text-xs">View All</Button>
+                                    <Button variant="ghost" size="sm" className="text-xs font-bold uppercase tracking-widest">View All</Button>
                                 </Link>
                             </div>
 
@@ -231,14 +231,14 @@ interface DashboardCardProps {
 
 function DashboardCard({ title, value, subtext, icon: Icon, trend, trendColor = "text-green-600", trendBg = "bg-green-50", color, href }: DashboardCardProps) {
     const colors = {
-        blue: "bg-blue-50 text-blue-600",
-        indigo: "bg-indigo-50 text-indigo-600",
-        amber: "bg-amber-50 text-amber-600",
-        green: "bg-green-50 text-green-600",
+        blue: "bg-blue-500/20 text-blue-500",
+        indigo: "bg-indigo-500/20 text-indigo-500",
+        amber: "bg-amber-500/20 text-amber-500",
+        green: "bg-green-500/20 text-green-500",
     };
 
     const Content = () => (
-        <div className={`bg-white p-6 rounded-xl shadow-sm border border-gray-200 transition-all ${href ? 'hover:shadow-md cursor-pointer hover:border-indigo-200' : 'hover:shadow-md'}`}>
+        <div className={`bg-card p-6 rounded-xl shadow-sm border border-border transition-all ${href ? 'hover:shadow-xl hover:scale-[1.02] cursor-pointer hover:border-primary/50' : 'hover:shadow-md'}`}>
             <div className="flex justify-between items-start mb-4">
                 <div className={`p-2.5 rounded-lg ${colors[color as keyof typeof colors] || colors.blue}`}>
                     <Icon size={22} />
@@ -250,9 +250,9 @@ function DashboardCard({ title, value, subtext, icon: Icon, trend, trendColor = 
                 )}
             </div>
             <div>
-                <h3 className="text-sm font-medium text-gray-500">{title}</h3>
-                <div className="text-2xl font-bold text-gray-900 mt-1">{value}</div>
-                <p className="text-xs text-gray-400 mt-1">{subtext}</p>
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/80 mb-1">{title}</h3>
+                <div className="text-2xl font-black text-foreground tracking-tight">{value}</div>
+                <p className="text-xs font-medium text-muted-foreground mt-1.5">{subtext}</p>
             </div>
         </div>
     );
@@ -275,18 +275,18 @@ function PaymentRow({ initials, name, detail, amount, status, color }: { initial
     return (
         <div className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer">
             <div className="flex items-center gap-3">
-                <div className={`h-9 w-9 rounded-full flex items-center justify-center font-bold text-xs ${bgColors[color as keyof typeof bgColors]}`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-black text-xs ${bgColors[color as keyof typeof bgColors]}`}>
                     {initials}
                 </div>
                 <div>
-                    <h4 className="font-medium text-sm text-gray-900">{name}</h4>
-                    <p className="text-xs text-gray-500">{detail}</p>
+                    <h4 className="font-bold text-sm text-foreground tracking-tight">{name}</h4>
+                    <p className="text-xs font-medium text-muted-foreground">{detail}</p>
                 </div>
             </div>
             <div className="text-right">
-                <p className="font-semibold text-sm text-gray-900">{amount}</p>
-                <p className={`text-[10px] font-medium uppercase tracking-wide ${status === 'Success' ? 'text-green-600' :
-                    status === 'Pending' ? 'text-amber-600' : 'text-red-600'
+                <p className="font-black text-sm text-foreground tracking-tight">{amount}</p>
+                <p className={`text-[10px] font-black uppercase tracking-widest ${status === 'SUCCESS' ? 'text-blue-500' :
+                    status === 'PENDING' ? 'text-amber-500' : 'text-red-500'
                     }`}>{status}</p>
             </div>
         </div>
