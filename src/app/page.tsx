@@ -200,12 +200,12 @@ export default async function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/properties">
-              <button className="px-8 py-4 bg-white text-primary rounded-lg hover:bg-gray-100 transition-colors font-bold w-full sm:w-auto">
+              <button className="px-8 py-4 bg-primary-foreground text-primary rounded-lg hover:bg-primary-foreground/90 transition-colors font-bold w-full sm:w-auto">
                 Browse Properties
               </button>
             </Link>
             <Link href="/contact">
-              <button className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-lg hover:bg-white/10 transition-colors font-bold w-full sm:w-auto">
+              <button className="px-8 py-4 bg-transparent border-2 border-primary-foreground text-primary-foreground rounded-lg hover:bg-primary-foreground/10 transition-colors font-bold w-full sm:w-auto">
                 Contact Us
               </button>
             </Link>
