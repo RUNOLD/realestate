@@ -1,7 +1,8 @@
 export const dynamic = 'force-dynamic';
 
 import { auth } from "@/auth";
-import { pusherServer } from "@/lib/pusher";
+// Removed at-runtime import to prevent build crashes
+// import { pusherServer } from "@/lib/pusher";
 
 export async function POST(req: Request) {
     const session = await auth();
@@ -9,6 +10,9 @@ export async function POST(req: Request) {
     if (!session?.user?.id) {
         return new Response("Unauthorized", { status: 401 });
     }
+
+    // Dynamic import to avoid build-time issues with environment variables
+    const { pusherServer } = await import("@/lib/pusher");
 
     const data = await req.text();
     const [socketId, channelName] = data.split("&").map((str) => str.split("=")[1]);
