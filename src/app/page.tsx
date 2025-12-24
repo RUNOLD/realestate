@@ -79,19 +79,19 @@ export default async function Home() {
                     {property.location}
                   </div>
 
-                  {/* Amenities Row - Mock data if not in DB, assuming standard fields */}
+                  {/* Amenities Row */}
                   <div className="flex items-center justify-between py-4 border-t border-border/60 mt-auto">
                     <div className="flex items-center gap-1 text-muted-foreground text-sm">
                       <BedDouble size={16} />
-                      <span className="font-medium text-foreground">3</span> <span className="text-xs">Beds</span>
+                      <span className="font-medium text-foreground">{property.bedrooms ?? 0}</span> <span className="text-xs">Beds</span>
                     </div>
                     <div className="flex items-center gap-1 text-muted-foreground text-sm">
                       <Bath size={16} />
-                      <span className="font-medium text-foreground">2</span> <span className="text-xs">Baths</span>
+                      <span className="font-medium text-foreground">{property.bathrooms ?? 0}</span> <span className="text-xs">Baths</span>
                     </div>
                     <div className="flex items-center gap-1 text-muted-foreground text-sm">
                       <Maximize size={16} />
-                      <span className="font-medium text-foreground">1,200</span> <span className="text-xs">sqft</span>
+                      <span className="font-medium text-foreground">{property.sqft?.toLocaleString() ?? 0}</span> <span className="text-xs">sqft</span>
                     </div>
                   </div>
 

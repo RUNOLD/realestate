@@ -13,9 +13,27 @@ export async function createProperty(formData: FormData) {
     const status = formData.get("status") as "AVAILABLE" | "RENTED" | "SOLD" | "MAINTENANCE";
     const images = formData.get("images") as string;
 
+    // Specifications
+    const bedrooms = formData.get("bedrooms") ? parseInt(formData.get("bedrooms") as string) : null;
+    const bathrooms = formData.get("bathrooms") ? parseInt(formData.get("bathrooms") as string) : null;
+    const sqft = formData.get("sqft") ? parseInt(formData.get("sqft") as string) : null;
+
     // Basic validation
     if (!title || !description || isNaN(price) || !location || !type) {
         throw new Error("Missing required fields");
+    }
+
+    // Safe image handling
+    let imageArray: string[] = [];
+    if (images) {
+        try {
+            // Try parsing if it's a JSON array string
+            const parsed = JSON.parse(images);
+            imageArray = Array.isArray(parsed) ? parsed : [images];
+        } catch {
+            // If not JSON, treat it as a single URL string
+            imageArray = [images];
+        }
     }
 
     try {
@@ -27,7 +45,10 @@ export async function createProperty(formData: FormData) {
                 location,
                 type,
                 status: status || "AVAILABLE",
-                images: images ? JSON.parse(images) : [],
+                images: imageArray,
+                bedrooms,
+                bathrooms,
+                sqft,
             }
         });
     } catch (error) {
@@ -48,8 +69,24 @@ export async function updateProperty(propertyId: string, formData: FormData) {
     const status = formData.get("status") as "AVAILABLE" | "RENTED" | "SOLD" | "MAINTENANCE";
     const images = formData.get("images") as string;
 
+    // Specifications
+    const bedrooms = formData.get("bedrooms") ? parseInt(formData.get("bedrooms") as string) : null;
+    const bathrooms = formData.get("bathrooms") ? parseInt(formData.get("bathrooms") as string) : null;
+    const sqft = formData.get("sqft") ? parseInt(formData.get("sqft") as string) : null;
+
     if (!propertyId || !title || !description || isNaN(price) || !location || !type) {
         throw new Error("Missing required fields");
+    }
+
+    // Safe image handling
+    let imageArray: string[] = [];
+    if (images) {
+        try {
+            const parsed = JSON.parse(images);
+            imageArray = Array.isArray(parsed) ? parsed : [images];
+        } catch {
+            imageArray = [images];
+        }
     }
 
     try {
@@ -62,7 +99,10 @@ export async function updateProperty(propertyId: string, formData: FormData) {
                 location,
                 type,
                 status: status || "AVAILABLE",
-                images: images ? JSON.parse(images) : [],
+                images: imageArray,
+                bedrooms,
+                bathrooms,
+                sqft,
             }
         });
     } catch (error) {

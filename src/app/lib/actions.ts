@@ -380,7 +380,7 @@ export async function updateRent(leaseId: string, newAmount: number, reason: str
 
 import bcrypt from 'bcryptjs';
 
-import { CreateTenantSchema } from "@/lib/schemas";
+import { CreateTenantSchema, CreateStaffSchema } from "@/lib/schemas";
 
 export async function createTenant(prevState: any, formData: FormData) {
     const session = await auth();
@@ -456,6 +456,66 @@ export async function createTenant(prevState: any, formData: FormData) {
     } catch (e) {
         console.error("Create Tenant Error:", e);
         return { error: "Failed to create tenant. Please try again." };
+    }
+}
+
+export async function createStaff(prevState: any, formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') {
+        return { error: "Unauthorized. Only admins can create staff." };
+    }
+
+    const rawData = {
+        name: formData.get("name"),
+        email: formData.get("email"),
+        phone: formData.get("phone"),
+        password: formData.get("password"),
+        role: formData.get("role"),
+    };
+
+    const validatedFields = CreateStaffSchema.safeParse(rawData);
+
+    if (!validatedFields.success) {
+        return { error: validatedFields.error.flatten().fieldErrors, message: "Validation failed" };
+    }
+
+    const { name, email, phone, password, role } = validatedFields.data;
+
+    try {
+        const existingUser = await prisma.user.findUnique({
+            where: { email }
+        });
+
+        if (existingUser) {
+            return { error: "A user with this email already exists." };
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = await prisma.user.create({
+            data: {
+                name,
+                email,
+                phone: phone || null,
+                password: hashedPassword,
+                role: role as any,
+                status: 'ACTIVE',
+            }
+        });
+
+        await createActivityLog(
+            session.user.id,
+            ActionType.CREATE,
+            EntityType.USER,
+            user.id,
+            { name, role, status: 'ACTIVE' }
+        );
+
+        revalidatePath("/admin/team");
+        return { success: true, message: `Staff member ${name} created successfully as ${role}.` };
+    } catch (e) {
+        console.error("Create Staff Error:", e);
+        return { error: "Failed to create staff member. Please try again." };
     }
 }
 

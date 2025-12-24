@@ -2,13 +2,13 @@ import { createMaterial } from "@/app/actions/material";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { 
-    ArrowLeft, 
-    Save, 
-    Package, 
-    Tag, 
-    DollarSign, 
-    ImageIcon, 
+import {
+    ArrowLeft,
+    Save,
+    Package,
+    Tag,
+    DollarSign,
+    ImageIcon,
     FileText,
     Info
 } from "lucide-react";
@@ -17,7 +17,7 @@ export default function NewMaterialPage() {
     return (
         <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6">
             <div className="max-w-3xl mx-auto space-y-6">
-                
+
                 {/* Header Section */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
@@ -31,7 +31,7 @@ export default function NewMaterialPage() {
                             <p className="text-sm text-gray-500">Create a new item in your inventory catalog.</p>
                         </div>
                     </div>
-                    
+
                     {/* Action Buttons (Top - for easy access) */}
                     <div className="hidden sm:flex gap-3">
                         <Link href="/admin/materials">
@@ -47,7 +47,7 @@ export default function NewMaterialPage() {
                     </div>
 
                     <form action={createMaterial} className="p-6 sm:p-8 space-y-8">
-                        
+
                         {/* Section 1: Basic Information */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
@@ -62,11 +62,11 @@ export default function NewMaterialPage() {
                                     <label htmlFor="name" className="text-sm font-medium text-gray-700">
                                         Material Name <span className="text-red-500">*</span>
                                     </label>
-                                    <Input 
-                                        id="name" 
-                                        name="name" 
-                                        placeholder="e.g. Dangote Cement (50kg)" 
-                                        required 
+                                    <Input
+                                        id="name"
+                                        name="name"
+                                        placeholder="e.g. Dangote Cement (50kg)"
+                                        required
                                         className="h-11"
                                     />
                                     <p className="text-xs text-gray-500">Use the standard market name for better searchability.</p>
@@ -106,13 +106,14 @@ export default function NewMaterialPage() {
                                         Category <span className="text-red-500">*</span>
                                     </label>
                                     <div className="relative">
-                                        <select 
-                                            id="category" 
-                                            name="category" 
+                                        <select
+                                            id="category"
+                                            name="category"
                                             required
+                                            defaultValue=""
                                             className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
                                         >
-                                            <option value="" disabled selected>Select a category...</option>
+                                            <option value="" disabled>Select a category...</option>
                                             <option value="Cement">Cement</option>
                                             <option value="Steel">Steel / Iron Rods</option>
                                             <option value="Sand">Sand & Gravel</option>
@@ -122,7 +123,7 @@ export default function NewMaterialPage() {
                                             <option value="Other">Other</option>
                                         </select>
                                         <div className="absolute right-3 top-3 pointer-events-none text-gray-400">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                                         </div>
                                     </div>
                                 </div>
@@ -133,12 +134,12 @@ export default function NewMaterialPage() {
                                     </label>
                                     <div className="relative">
                                         <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                                        <Input 
-                                            id="price" 
-                                            name="price" 
-                                            type="number" 
+                                        <Input
+                                            id="price"
+                                            name="price"
+                                            type="number"
                                             step="0.01"
-                                            placeholder="0.00" 
+                                            placeholder="0.00"
                                             className="pl-9 h-11"
                                         />
                                     </div>
@@ -165,10 +166,10 @@ export default function NewMaterialPage() {
                                 </label>
                                 <div className="flex gap-2">
                                     <div className="relative flex-1">
-                                        <Input 
-                                            id="images" 
-                                            name="images" 
-                                            placeholder="https://example.com/image.jpg" 
+                                        <Input
+                                            id="images"
+                                            name="images"
+                                            placeholder="https://example.com/image.jpg"
                                             className="h-11 font-mono text-xs"
                                         />
                                     </div>

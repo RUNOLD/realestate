@@ -107,6 +107,10 @@ model Property {
   images      String[]       // Postgres Array for images
   features    String[]       // Postgres Array for features
   
+  bedrooms    Int?
+  bathrooms   Int?
+  sqft        Int?
+  
   // Relations
   leases      Lease[]
   managerId   String?        // Staff responsible

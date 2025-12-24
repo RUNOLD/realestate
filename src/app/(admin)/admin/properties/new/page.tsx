@@ -85,6 +85,21 @@ export default function NewPropertyPage() {
                                         </div>
                                     </div>
 
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="space-y-2">
+                                            <label htmlFor="bedrooms" className="text-sm font-medium text-gray-700">Bedrooms</label>
+                                            <Input id="bedrooms" name="bedrooms" type="number" placeholder="0" min="0" className="h-11" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label htmlFor="bathrooms" className="text-sm font-medium text-gray-700">Bathrooms</label>
+                                            <Input id="bathrooms" name="bathrooms" type="number" placeholder="0" min="0" className="h-11" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label htmlFor="sqft" className="text-sm font-medium text-gray-700">Sqft</label>
+                                            <Input id="sqft" name="sqft" type="number" placeholder="0" min="0" className="h-11" />
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-2">
                                         <label htmlFor="description" className="text-sm font-medium text-gray-700">Description</label>
                                         <div className="relative">
@@ -157,7 +172,7 @@ export default function NewPropertyPage() {
 
                             {/* Action Buttons */}
                             <div className="flex flex-col gap-3">
-                                <Button type="submit"  className="w-full h-12 text-base shadow-md bg-gray-900 hover:bg-black text-white">
+                                <Button type="submit" className="w-full h-12 text-base shadow-md bg-gray-900 hover:bg-black text-white">
                                     <Save className="mr-2 h-4 w-4" /> Publish Property
                                 </Button>
                                 <Link href="/admin/properties" className="w-full">

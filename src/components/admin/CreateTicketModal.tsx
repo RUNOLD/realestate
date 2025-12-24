@@ -58,9 +58,10 @@ export function CreateTicketModal({ tenants }: { tenants: any[] }) {
                         <select
                             name="userId"
                             required
+                            defaultValue=""
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                            <option value="" disabled selected>Select a tenant...</option>
+                            <option value="" disabled>Select a tenant...</option>
                             {tenants.map(t => (
                                 <option key={t.id} value={t.id}>{t.name} ({t.email})</option>
                             ))}
@@ -82,9 +83,14 @@ export function CreateTicketModal({ tenants }: { tenants: any[] }) {
                         </div>
                         <div className="space-y-1.5">
                             <label className="text-sm font-medium text-gray-700">Priority</label>
-                            <select name="priority" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                            <select
+                                name="priority"
+                                required
+                                defaultValue="MEDIUM"
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
                                 <option value="LOW">Low</option>
-                                <option value="MEDIUM" selected>Medium</option>
+                                <option value="MEDIUM">Medium</option>
                                 <option value="HIGH">High</option>
                                 <option value="EMERGENCY">Emergency</option>
                             </select>

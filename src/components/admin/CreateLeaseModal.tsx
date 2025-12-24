@@ -57,9 +57,10 @@ export function CreateLeaseModal({ userId, properties }: { userId: string, prope
                         <select
                             name="propertyId"
                             required
+                            defaultValue=""
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                            <option value="" disabled selected>Select a property...</option>
+                            <option value="" disabled>Select a property...</option>
                             {properties.map(p => (
                                 <option key={p.id} value={p.id}>
                                     {p.title} ({p.location}) - ₦{p.price.toLocaleString()}

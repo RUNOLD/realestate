@@ -16,6 +16,9 @@ import {
 
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { formatDistanceToNow } from "date-fns";
+import { DashboardHeader } from "@/components/admin/DashboardHeader";
 
 export default async function AdminDashboardPage() {
     const session = await auth();
@@ -23,7 +26,56 @@ export default async function AdminDashboardPage() {
         redirect("/login");
     }
 
-    // Mock Date for the header
+    // 1. Fetch Real Stats from DB
+    const [
+        totalProperties,
+        occupiedProperties,
+        activeTenants,
+        openTicketsCount,
+        highPriorityTickets,
+        recentTickets,
+        recentPayments,
+    ] = await Promise.all([
+        prisma.property.count(),
+        prisma.lease.count({ where: { isActive: true } }),
+        prisma.user.count({ where: { role: 'TENANT', status: 'ACTIVE' } }),
+        prisma.ticket.count({ where: { status: 'OPEN' } }),
+        prisma.ticket.count({ where: { status: 'OPEN', priority: 'HIGH' } }),
+        prisma.ticket.findMany({
+            orderBy: { createdAt: 'desc' },
+            take: 3,
+            include: { user: true }
+        }),
+        prisma.payment.findMany({
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+            include: { user: true }
+        })
+    ]);
+
+    // Monthly Revenue (Current Month)
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const revenueData = await prisma.payment.aggregate({
+        where: {
+            status: 'SUCCESS',
+            createdAt: { gte: firstDayOfMonth }
+        },
+        _sum: { amount: true }
+    });
+
+    const vacantProperties = totalProperties - occupiedProperties;
+    const monthlyRevenue = revenueData._sum.amount || 0;
+
+    // Formatting Helpers
+    const formatCurrency = (val: number) =>
+        new Intl.NumberFormat('en-NG', {
+            style: 'currency',
+            currency: 'NGN',
+            maximumFractionDigits: 0
+        }).format(val);
+
+    // Date for header
     const currentDate = new Date().toLocaleDateString('en-GB', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
@@ -33,36 +85,22 @@ export default async function AdminDashboardPage() {
             <div className="max-w-7xl mx-auto space-y-8">
 
                 {/* 1. Header Section */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-                    <div>
-                        <p className="text-sm font-medium text-gray-500 mb-1">{currentDate}</p>
-                        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Welcome back, Admin</h1>
-                        <p className="text-gray-500">Here is what's happening with your portfolio today.</p>
-                    </div>
-                    <div className="flex gap-3">
-                        <Button variant="outline" className="bg-white hover:bg-gray-50">
-                            <Search className="mr-2 h-4 w-4" /> Search
-                        </Button>
-                        <Button className="bg-gray-900 text-white hover:bg-black shadow-lg shadow-gray-900/20">
-                            <Plus className="mr-2 h-4 w-4" /> Quick Action
-                        </Button>
-                    </div>
-                </div>
+                <DashboardHeader currentDate={currentDate} />
 
                 {/* 2. KPI Overview Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <DashboardCard
                         title="Total Properties"
-                        value="24"
-                        subtext="18 Occupied • 6 Vacant"
+                        value={totalProperties.toString()}
+                        subtext={`${occupiedProperties} Occupied • ${vacantProperties} Vacant`}
                         icon={Building2}
                         trend="+12%"
                         color="blue"
                     />
                     <DashboardCard
                         title="Active Tenants"
-                        value="142"
-                        subtext="98% collection rate"
+                        value={activeTenants.toString()}
+                        subtext="Across all properties"
                         icon={Users}
                         trend="+5%"
                         color="indigo"
@@ -70,19 +108,20 @@ export default async function AdminDashboardPage() {
                     />
                     <DashboardCard
                         title="Open Tickets"
-                        value="8"
-                        subtext="3 High Priority"
+                        value={openTicketsCount.toString()}
+                        subtext={`${highPriorityTickets} High Priority`}
                         icon={Ticket}
-                        trend="+2"
+                        trend={openTicketsCount > 0 ? `+${openTicketsCount}` : undefined}
                         trendColor="text-red-600"
                         trendBg="bg-red-50"
                         color="amber"
+                        href="/admin/tickets"
                     />
                     {session?.user.role === 'ADMIN' && (
                         <DashboardCard
                             title="Monthly Revenue"
-                            value="₦4.2M"
-                            subtext="vs ₦3.8M last month"
+                            value={formatCurrency(monthlyRevenue)}
+                            subtext="Paid this month"
                             icon={Wallet}
                             trend="+10.5%"
                             color="green"
@@ -90,11 +129,6 @@ export default async function AdminDashboardPage() {
                         />
                     )}
                 </div>
-
-
-
-
-
 
                 {/* 3. Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -105,74 +139,44 @@ export default async function AdminDashboardPage() {
                             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                                 <div>
                                     <h3 className="font-bold text-gray-900">Recent Maintenance Requests</h3>
-                                    <p className="text-sm text-gray-500">You have 8 requests pending review.</p>
+                                    <p className="text-sm text-gray-500">You have {openTicketsCount} requests pending review.</p>
                                 </div>
-                                <Button variant="ghost" className="text-sm text-blue-600 hover:text-blue-700">View All</Button>
+                                <Link href="/admin/tickets">
+                                    <Button variant="ghost" className="text-sm text-blue-600 hover:text-blue-700">View All</Button>
+                                </Link>
                             </div>
 
                             <div className="divide-y divide-gray-100">
-                                {/* Ticket Item 1 */}
-                                <div className="p-4 hover:bg-gray-50 transition-colors flex items-start gap-4 group">
-                                    <div className="mt-1 h-10 w-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
-                                        <AlertCircle size={20} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex justify-between items-start">
-                                            <h4 className="font-semibold text-gray-900 text-sm">Major Leak in Unit 4B</h4>
-                                            <span className="text-xs font-medium bg-red-50 text-red-700 px-2.5 py-0.5 rounded-full">High Priority</span>
+                                {recentTickets.length === 0 ? (
+                                    <div className="p-8 text-center text-gray-400 text-sm">No maintenance requests found.</div>
+                                ) : recentTickets.map((ticket) => (
+                                    <Link key={ticket.id} href={`/admin/tickets/${ticket.id}`}>
+                                        <div className="p-4 hover:bg-gray-50 transition-colors flex items-start gap-4 group">
+                                            <div className={`mt-1 h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${ticket.priority === 'HIGH' || ticket.priority === 'URGENT' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'
+                                                }`}>
+                                                <AlertCircle size={20} />
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex justify-between items-start">
+                                                    <h4 className="font-semibold text-gray-900 text-sm">{ticket.subject}</h4>
+                                                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${ticket.priority === 'HIGH' || ticket.priority === 'URGENT' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
+                                                        }`}>
+                                                        {ticket.priority}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-gray-600 mt-1 line-clamp-1">{ticket.description || 'No description provided'}</p>
+                                                <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                                                    <span>Reported by {ticket.user.name}</span>
+                                                    <span>•</span>
+                                                    <span>{formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}</span>
+                                                </div>
+                                            </div>
+                                            <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <MoreHorizontal size={16} />
+                                            </Button>
                                         </div>
-                                        <p className="text-sm text-gray-600 mt-1">Kitchen sink pipe burst. Tenant reports flooding.</p>
-                                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
-                                            <span>Reported by Sarah J.</span>
-                                            <span>•</span>
-                                            <span>2 hours ago</span>
-                                        </div>
-                                    </div>
-                                    <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <MoreHorizontal size={16} />
-                                    </Button>
-                                </div>
-
-                                {/* Ticket Item 2 */}
-                                <div className="p-4 hover:bg-gray-50 transition-colors flex items-start gap-4 group">
-                                    <div className="mt-1 h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
-                                        <Ticket size={20} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex justify-between items-start">
-                                            <h4 className="font-semibold text-gray-900 text-sm">AC Maintenance Required</h4>
-                                            <span className="text-xs font-medium bg-amber-50 text-amber-700 px-2.5 py-0.5 rounded-full">Pending</span>
-                                        </div>
-                                        <p className="text-sm text-gray-600 mt-1">Scheduled seasonal maintenance for Block C.</p>
-                                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
-                                            <span>Assigned to Tech A.</span>
-                                            <span>•</span>
-                                            <span>5 hours ago</span>
-                                        </div>
-                                    </div>
-                                    <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <MoreHorizontal size={16} />
-                                    </Button>
-                                </div>
-
-                                {/* Ticket Item 3 */}
-                                <div className="p-4 hover:bg-gray-50 transition-colors flex items-start gap-4 group">
-                                    <div className="mt-1 h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
-                                        <CheckCircle size={20} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex justify-between items-start">
-                                            <h4 className="font-semibold text-gray-900 text-sm">Lobby Light Replacement</h4>
-                                            <span className="text-xs font-medium bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full">Resolved</span>
-                                        </div>
-                                        <p className="text-sm text-gray-600 mt-1">Replaced 4 halogen bulbs with LED.</p>
-                                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
-                                            <span>Fixed by Mike</span>
-                                            <span>•</span>
-                                            <span>Yesterday</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                    </Link>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -180,47 +184,27 @@ export default async function AdminDashboardPage() {
                     {/* RIGHT COLUMN: Finances (1/3 width) */}
                     <div className="lg:col-span-1 space-y-6">
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-full">
-                            <div className="p-6 border-b border-gray-100">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                                 <h3 className="font-bold text-gray-900">Recent Payments</h3>
+                                <Link href="/admin/financials">
+                                    <Button variant="ghost" size="sm" className="text-xs">View All</Button>
+                                </Link>
                             </div>
 
                             <div className="divide-y divide-gray-100">
-                                <PaymentRow
-                                    initials="OJ"
-                                    name="Ola Johnson"
-                                    detail="Unit 12 • Rent"
-                                    amount="₦120,000"
-                                    status="Success"
-                                    color="blue"
-                                />
-                                <PaymentRow
-                                    initials="MA"
-                                    name="Mary Adebayo"
-                                    detail="Unit 5A • Service"
-                                    amount="₦45,000"
-                                    status="Success"
-                                    color="purple"
-                                />
-                                <PaymentRow
-                                    initials="CN"
-                                    name="Chinedu N."
-                                    detail="Unit 8 • Rent"
-                                    amount="₦95,000"
-                                    status="Pending"
-                                    color="orange"
-                                />
-                                <PaymentRow
-                                    initials="DK"
-                                    name="David King"
-                                    detail="Unit 2B • Utility"
-                                    amount="₦15,000"
-                                    status="Failed"
-                                    color="red"
-                                />
-                            </div>
-
-                            <div className="p-4 bg-gray-50 border-t border-gray-100 text-center">
-                                <Button variant="link" className="text-sm text-gray-600">View All Transactions</Button>
+                                {recentPayments.length === 0 ? (
+                                    <div className="p-8 text-center text-gray-400 text-sm">No recent payments.</div>
+                                ) : recentPayments.map((payment) => (
+                                    <PaymentRow
+                                        key={payment.id}
+                                        initials={(payment.user.name || 'U').substring(0, 2).toUpperCase()}
+                                        name={payment.user.name || 'Unknown User'}
+                                        detail={`${payment.method} • ${payment.reference.substring(0, 8)}`}
+                                        amount={formatCurrency(payment.amount)}
+                                        status={payment.status}
+                                        color={payment.status === 'SUCCESS' ? 'blue' : payment.status === 'PENDING' ? 'orange' : 'red'}
+                                    />
+                                ))}
                             </div>
                         </div>
                     </div>

@@ -11,20 +11,27 @@ interface PageProps {
 }
 
 export default async function AdminUsersPage({ searchParams }: PageProps) {
-    const { role, query } = await searchParams;
+    const { role: roleParam, query: queryParam } = await searchParams;
+    const role = Array.isArray(roleParam) ? roleParam[0] : roleParam;
+    const query = Array.isArray(queryParam) ? queryParam[0] : queryParam;
 
-    // Logic: If role param is present, filter by it (e.g. ?role=TENANT).
-    // If NO role param, show "Staff & Admin" (exclude TENANT).
-    let where: any = role
-        ? { role: role.toUpperCase() as any }
-        : { role: { not: 'TENANT' } };
+    // Build the where clause
+    let where: any = {};
 
-    if (query) {
+    if (role) {
+        where.role = role.toUpperCase() as any;
+    } else {
+        // Default: Show internal staff (exclude tenants)
+        where.role = { not: 'TENANT' };
+    }
+
+    if (query && query.trim() !== '') {
         where = {
             ...where,
             OR: [
-                { name: { contains: query } },
-                { email: { contains: query } }
+                { name: { contains: query, mode: 'insensitive' } },
+                { email: { contains: query, mode: 'insensitive' } },
+                { phone: { contains: query, mode: 'insensitive' } }
             ]
         };
     }
@@ -34,10 +41,11 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
         users = await prisma.user.findMany({
             where,
             orderBy: { createdAt: 'desc' },
-            take: 100 // Limit for safety
+            take: 100
         });
     } catch (e) {
-        console.error(e);
+        console.error("PRISMA ERROR in AdminUsersPage:", e);
+        // We still want the page to load, just with empty data.
     }
 
     const pageTitle = role === 'TENANT' ? 'Active Tenants' : 'Staff & Admin Management';
@@ -57,7 +65,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
                         </Button>
                     </Link>
                 ) : (
-                    <Link href="/admin/users/new">
+                    <Link href="/admin/team/new">
                         <Button className="gap-2">
                             <Plus size={16} /> Add Staff
                         </Button>

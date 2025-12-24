@@ -36,7 +36,7 @@ export default async function DashboardPage() {
 
     // --- TENANT VIEW ---
     if (isTenant) {
-        const [tickets, payments] = await Promise.all([
+        const [tickets, payments, activeLease] = await Promise.all([
             prisma.ticket.findMany({
                 where: { userId: session.user.id },
                 orderBy: { createdAt: 'desc' },
@@ -46,10 +46,15 @@ export default async function DashboardPage() {
                 where: { userId: session.user.id },
                 orderBy: { createdAt: 'desc' },
                 take: 10
+            }),
+            prisma.lease.findFirst({
+                where: { userId: session.user.id, isActive: true },
+                include: { property: true }
             })
         ]);
 
         const activeTickets = tickets.filter(t => t.status !== 'CLOSED' && t.status !== 'RESOLVED');
+        const rentAmount = activeLease?.rentAmount || 0;
 
         return (
             <div className="space-y-8">
@@ -64,18 +69,22 @@ export default async function DashboardPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
                         <h3 className="text-sm font-medium text-muted-foreground mb-2">Next Rent Payment</h3>
-                        <div className="text-2xl font-bold text-primary mb-3">₦2,500,000</div>
-
-                        <div className="mb-3">
-                            <PayRentButtonClient
-                                email={session.user.email || 'tenant@example.com'}
-                                amount={2500000}
-                                userId={session.user.id!}
-                            />
+                        <div className="text-2xl font-bold text-primary mb-3">
+                            {rentAmount > 0 ? `₦${rentAmount.toLocaleString()}` : 'No Active Lease'}
                         </div>
 
+                        {rentAmount > 0 && (
+                            <div className="mb-3">
+                                <PayRentButtonClient
+                                    email={session.user.email || 'tenant@example.com'}
+                                    amount={rentAmount}
+                                    userId={session.user.id!}
+                                />
+                            </div>
+                        )}
+
                         <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-                            <Clock size={12} /> Due in 25 days
+                            <Clock size={12} /> {activeLease?.endDate ? `Expires ${new Date(activeLease.endDate).toLocaleDateString()}` : 'No due date set'}
                         </div>
                     </div>
 
@@ -158,11 +167,10 @@ export default async function DashboardPage() {
             prisma.property.count({ where: { status: 'RENTED' } }),
             prisma.user.count({ where: { role: 'TENANT' } }),
             prisma.ticket.count({ where: { status: { notIn: ['CLOSED', 'RESOLVED'] } } }),
-            0, // highPriorityTickets placeholder
+            prisma.ticket.count({ where: { status: { notIn: ['CLOSED', 'RESOLVED'] }, priority: 'HIGH' } }), // highPriorityTickets
             prisma.material.count(),
             prisma.material.count({ where: { inStock: false } }),
             prisma.ticket.findMany({
-                where: { status: { not: 'CLOSED' } },
                 take: 5,
                 orderBy: { createdAt: 'desc' },
                 include: { user: true }
@@ -326,7 +334,7 @@ export default async function DashboardPage() {
                         <div className="p-6 border-b border-border flex justify-between items-center">
                             <div>
                                 <h3 className="font-bold text-foreground">Recent Maintenance Requests</h3>
-                                <p className="text-sm text-muted-foreground">You have 8 requests pending review.</p>
+                                <p className="text-sm text-muted-foreground">You have {openTickets} requests pending review.</p>
                             </div>
                             <Button variant="ghost" className="text-sm text-primary hover:text-primary/80">View All</Button>
                         </div>

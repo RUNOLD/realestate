@@ -63,3 +63,11 @@ export const AddCommentSchema = z.object({
     ticketId: z.string().min(1, "Ticket ID is required"),
     content: z.string().min(1, "Comment cannot be empty"),
 });
+
+export const CreateStaffSchema = z.object({
+    name: z.string().min(2, "Name is required"),
+    email: z.string().email("Invalid email address"),
+    phone: z.string().optional(),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    role: z.enum(["STAFF", "ADMIN"]).default("STAFF"),
+});

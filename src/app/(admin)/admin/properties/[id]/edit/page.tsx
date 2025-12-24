@@ -95,6 +95,21 @@ export default async function EditPropertyPage(props: { params: Promise<{ id: st
                                         </div>
                                     </div>
 
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="space-y-2">
+                                            <label htmlFor="bedrooms" className="text-sm font-medium text-gray-700">Bedrooms</label>
+                                            <Input id="bedrooms" name="bedrooms" type="number" defaultValue={property.bedrooms ?? ""} placeholder="0" min="0" className="h-11" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label htmlFor="bathrooms" className="text-sm font-medium text-gray-700">Bathrooms</label>
+                                            <Input id="bathrooms" name="bathrooms" type="number" defaultValue={property.bathrooms ?? ""} placeholder="0" min="0" className="h-11" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label htmlFor="sqft" className="text-sm font-medium text-gray-700">Sqft</label>
+                                            <Input id="sqft" name="sqft" type="number" defaultValue={property.sqft ?? ""} placeholder="0" min="0" className="h-11" />
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-2">
                                         <label htmlFor="description" className="text-sm font-medium text-gray-700">Description</label>
                                         <div className="relative">
