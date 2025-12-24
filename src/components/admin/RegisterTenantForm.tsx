@@ -30,6 +30,10 @@ export function RegisterTenantForm() {
                         <label className="text-sm font-medium text-muted-foreground">Initial Password *</label>
                         <Input name="password" type="password" placeholder="******" required />
                     </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">Profile Picture *</label>
+                        <Input name="image" type="file" accept="image/*" required className="file:bg-primary file:text-primary-foreground file:border-0 file:rounded-md file:px-2 file:py-1 file:mr-2 file:hover:bg-primary/90 cursor-pointer" />
+                    </div>
                 </div>
             </div>
 

@@ -23,19 +23,19 @@ export function SearchFilter() {
 
     return (
         <div className="relative z-30 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 sm:-mt-32 pointer-events-none">
-            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 pointer-events-auto">
+            <div className="bg-card/95 backdrop-blur-md rounded-2xl shadow-2xl border border-border/50 p-6 pointer-events-auto">
                 <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
 
                     {/* Location Input */}
                     <div className="md:col-span-4 space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1 flex items-center gap-1">
+                        <label className="text-xs font-bold uppercase tracking-wider text-foreground/70 ml-1 flex items-center gap-1">
                             <MapPin size={14} /> Location
                         </label>
                         <div className="relative group">
                             <input
                                 type="text"
                                 placeholder="E.g. Lekki, Ikoyi, V.I."
-                                className="w-full pl-4 pr-4 py-3 bg-muted/20 border-2 border-transparent focus:border-primary/20 hover:bg-muted/30 rounded-xl outline-none transition-all font-medium text-foreground placeholder:text-muted-foreground/50"
+                                className="w-full pl-4 pr-4 py-3 bg-muted/20 border-2 border-transparent focus:border-primary/20 hover:bg-muted/30 rounded-xl outline-none transition-all font-medium text-foreground placeholder:text-muted-foreground/80"
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
                             />
@@ -44,7 +44,7 @@ export function SearchFilter() {
 
                     {/* Type Select */}
                     <div className="md:col-span-3 space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1 flex items-center gap-1">
+                        <label className="text-xs font-bold uppercase tracking-wider text-foreground/70 ml-1 flex items-center gap-1">
                             <Home size={14} /> Property Type
                         </label>
                         <div className="relative">
@@ -60,7 +60,7 @@ export function SearchFilter() {
                                 <option value="office">Office Space</option>
                             </select>
                             {/* Custom Arrow */}
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/50">
                                 <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
@@ -70,7 +70,7 @@ export function SearchFilter() {
 
                     {/* Price Range Select */}
                     <div className="md:col-span-3 space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1 flex items-center gap-1">
+                        <label className="text-xs font-bold uppercase tracking-wider text-foreground/70 ml-1 flex items-center gap-1">
                             <Banknote size={14} /> Price Range
                         </label>
                         <div className="relative">
@@ -85,7 +85,7 @@ export function SearchFilter() {
                                 <option value="high">Above ₦5M</option>
                             </select>
                             {/* Custom Arrow */}
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/50">
                                 <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
@@ -95,7 +95,7 @@ export function SearchFilter() {
 
                     {/* Search Button */}
                     <div className="md:col-span-2">
-                        <Button type="submit"  className="w-full h-[52px] rounded-xl text-base shadow-lg hover:shadow-primary/20 sm:mb-[1px]">
+                        <Button type="submit" className="w-full h-[52px] rounded-xl text-base shadow-lg hover:shadow-primary/20 sm:mb-[1px]">
                             <Search size={20} className="mr-2" />
                             Search
                         </Button>

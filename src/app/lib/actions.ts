@@ -404,14 +404,19 @@ export async function createTenant(prevState: any, formData: FormData) {
     }
 
     const { name, email, phone, password, nextOfKinName, nextOfKinPhone, employerName, jobTitle } = validatedFields.data;
+    const imageFile = formData.get("image") as File;
+
+    if (!imageFile || imageFile.size === 0) {
+        return { error: "Profile picture is mandatory for account creation." };
+    }
 
     try {
-        // 1. Check for existing user
+        // ... existing user check code ...
         const existingUser = await prisma.user.findFirst({
             where: {
                 OR: [
                     { email: email },
-                    { phone: phone || undefined } // Only check phone if provided
+                    { phone: phone || undefined }
                 ]
             }
         });
@@ -420,6 +425,10 @@ export async function createTenant(prevState: any, formData: FormData) {
             if (existingUser.email === email) return { error: "A user with this email already exists." };
             if (phone && existingUser.phone === phone) return { error: "A user with this phone number already exists." };
         }
+
+        // 2. Upload image to Cloudinary
+        const { uploadToCloudinary } = await import("@/lib/cloudinary");
+        const imageUrl = await uploadToCloudinary(imageFile, 'tenant_profiles');
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const userRole = (session.user as any).role;
@@ -435,6 +444,7 @@ export async function createTenant(prevState: any, formData: FormData) {
                 password: hashedPassword,
                 role: 'TENANT',
                 status,
+                image: imageUrl, // Save uploaded image URL
                 nextOfKinName: nextOfKinName || null,
                 nextOfKinPhone: nextOfKinPhone || null,
                 employerName: employerName || null,

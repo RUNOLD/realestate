@@ -45,6 +45,7 @@ export const CreateTenantSchema = z.object({
     nextOfKinPhone: z.string().optional(),
     employerName: z.string().optional(),
     jobTitle: z.string().optional(),
+    image: z.any().optional(), // Image will be checked in action
 });
 
 export const CreatePaymentSchema = z.object({

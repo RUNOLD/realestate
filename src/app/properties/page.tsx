@@ -69,7 +69,7 @@ export default async function PropertiesPage({
                 </div>
 
                 <div className="relative max-w-7xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-6xl font-serif font-bold text-white mb-6 tracking-tight">
+                    <h1 className="text-4xl md:text-6xl font-serif font-bold text-primary-foreground mb-6 tracking-tight">
                         Find Your Next <span className="text-accent">Dream Home</span>
                     </h1>
                     <p className="text-primary-foreground/80 max-w-2xl mx-auto text-lg md:text-xl mb-10 leading-relaxed">
@@ -78,26 +78,26 @@ export default async function PropertiesPage({
                     </p>
 
                     {/* Search/Filter Bar */}
-                    <div className="max-w-4xl mx-auto text-left text-foreground bg-white p-4 rounded-xl shadow-xl">
+                    <div className="max-w-4xl mx-auto text-left text-foreground bg-card p-4 rounded-xl shadow-xl border border-border/40">
                         <form action="/properties" method="GET" className="flex flex-col md:flex-row gap-4">
-                            <div className="flex-grow relative text-gray-800">
+                            <div className="flex-grow relative text-foreground">
                                 <Search className="absolute left-3 top-3.5 text-muted-foreground w-5 h-5" />
                                 <input
                                     name="location"
                                     type="text"
                                     placeholder="Search by location..."
                                     defaultValue={location}
-                                    className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/20"
+                                    className="w-full pl-10 pr-4 py-3 rounded-lg bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/20 placeholder:text-muted-foreground/70"
                                 />
                             </div>
                             <div className="flex gap-2">
-                                <select name="type" defaultValue={type} className="px-4 py-3 bg-gray-100 text-gray-800 font-medium rounded-lg hover:bg-gray-200 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-primary/20 border border-transparent">
+                                <select name="type" defaultValue={type} className="px-4 py-3 bg-muted/30 text-foreground font-medium rounded-lg hover:bg-muted/50 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-primary/20 border border-transparent">
                                     <option value="">Any Type</option>
                                     <option value="Apartment">Apartment</option>
                                     <option value="house">House</option>
                                     <option value="villa">Villa</option>
                                 </select>
-                                <button type="submit" className="px-8 py-3 bg-accent text-accent-foreground font-bold rounded-lg hover:bg-yellow-600 transition-colors shadow-md whitespace-nowrap">
+                                <button type="submit" className="px-8 py-3 bg-accent text-accent-foreground font-bold rounded-lg hover:bg-accent/90 transition-colors shadow-md whitespace-nowrap">
                                     Search
                                 </button>
                             </div>
@@ -132,7 +132,7 @@ export default async function PropertiesPage({
                         <p className="text-muted-foreground mt-2 max-w-md mx-auto mb-8">
                             We currently don't have properties matching {location ? `"${location}"` : 'your criteria'}, but our inventory changes daily.
                         </p>
-                        <Link href="/properties" className="px-6 py-3 bg-primary text-white rounded-md font-medium hover:bg-primary/90 transition-colors inline-block">
+                        <Link href="/properties" className="px-6 py-3 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 transition-colors inline-block">
                             Clear Filters
                         </Link>
                     </div>
@@ -154,7 +154,7 @@ export default async function PropertiesPage({
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60" />
 
                                             <div className="absolute top-4 right-4 flex gap-2">
-                                                <span className="bg-white/90 backdrop-blur-sm text-primary px-3 py-1 text-xs font-bold rounded-md uppercase shadow-sm">
+                                                <span className="bg-background/90 backdrop-blur-sm text-foreground px-3 py-1 text-xs font-bold rounded-md uppercase shadow-sm">
                                                     {property.type}
                                                 </span>
                                             </div>
@@ -197,7 +197,7 @@ export default async function PropertiesPage({
                                             </div>
 
                                             <div className="mt-4 pt-4 border-t border-border/60">
-                                                <span className="w-full flex items-center justify-center text-sm font-bold text-primary bg-muted/50 py-3 rounded-lg group-hover:bg-primary group-hover:text-white transition-all">
+                                                <span className="w-full flex items-center justify-center text-sm font-bold text-primary bg-muted/50 py-3 rounded-lg group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                                                     View Details
                                                 </span>
                                             </div>
@@ -218,10 +218,10 @@ export default async function PropertiesPage({
                         Our off-market inventory is constantly changing. Tell us what you need, and we'll find it for you.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link href="/contact" className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all">
+                        <Link href="/contact" className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-lg shadow-sm text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all">
                             Request Specific Property
                         </Link>
-                        <a href="tel:+234000000000" className="inline-flex items-center justify-center px-8 py-4 border-2 border-primary text-base font-medium rounded-lg text-primary bg-transparent hover:bg-primary/5 transition-all">
+                        <a href="tel:+234000000000" className="inline-flex items-center justify-center px-8 py-4 border-2 border-primary text-base font-medium rounded-lg text-primary bg-transparent hover:bg-primary/10 transition-all font-bold">
                             <Phone size={18} className="mr-2" /> Call an Agent
                         </a>
                     </div>

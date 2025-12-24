@@ -184,11 +184,11 @@ export function SettingsContent({ user }: SettingsContentProps) {
                                             <div className="flex-1 space-y-6 w-full max-w-lg">
                                                 <div className="space-y-2">
                                                     <label className="text-sm font-medium text-gray-700">Full Name</label>
-                                                    <Input name="name" defaultValue={user.name} required />
+                                                    <Input name="name" defaultValue={user.name} required disabled={user.role === 'TENANT'} className={user.role === 'TENANT' ? "bg-gray-50 text-gray-500" : ""} />
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-sm font-medium text-gray-700">Phone Number</label>
-                                                    <Input name="phone" defaultValue={user.phone || ''} placeholder="+234..." />
+                                                    <Input name="phone" defaultValue={user.phone || ''} placeholder="+234..." disabled={user.role === 'TENANT'} className={user.role === 'TENANT' ? "bg-gray-50 text-gray-500" : ""} />
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-sm font-medium text-gray-700">Email Address</label>
@@ -202,9 +202,9 @@ export function SettingsContent({ user }: SettingsContentProps) {
                                         </div>
 
                                         <div className="pt-4 flex items-center justify-end border-t border-gray-100 mt-6">
-                                            <Button type="submit" disabled={isLoading} className="gap-2">
+                                            <Button type="submit" disabled={isLoading || user.role === 'TENANT'} className="gap-2">
                                                 {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                                                Save Profile
+                                                {user.role === 'TENANT' ? 'Profile Locked' : 'Save Profile'}
                                             </Button>
                                         </div>
                                     </form>

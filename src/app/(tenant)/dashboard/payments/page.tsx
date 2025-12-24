@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { CreditCard, Download, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ReceiptDownloadButton } from "@/components/dashboard/ReceiptDownloadButton";
 
 export default async function PaymentsPage() {
     const session = await auth();
@@ -85,16 +86,17 @@ export default async function PaymentsPage() {
                                         <td className="px-6 py-4 font-medium">₦{payment.amount.toLocaleString()}</td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${payment.status === 'SUCCESS' ? 'bg-green-100 text-green-800' :
-                                                    payment.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                                        'bg-red-100 text-red-800'
+                                                payment.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-red-100 text-red-800'
                                                 }`}>
                                                 {payment.status}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <Button variant="ghost" size="sm" className="h-8 text-xs">
-                                                Download
-                                            </Button>
+                                            <ReceiptDownloadButton
+                                                payment={payment}
+                                                userName={session.user.name || "Tenant"}
+                                            />
                                         </td>
                                     </tr>
                                 ))

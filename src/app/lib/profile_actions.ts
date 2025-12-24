@@ -9,6 +9,11 @@ export async function updateProfile(prevState: any, formData: FormData) {
     const session = await auth();
     if (!session?.user?.id) return { error: "Not authenticated" };
 
+    const userRole = (session.user as any).role;
+    if (userRole === 'TENANT') {
+        return { error: "Tenants are not authorized to update their profile information. Please contact management." };
+    }
+
     const name = formData.get("name") as string;
     const phone = formData.get("phone") as string;
 
