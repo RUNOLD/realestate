@@ -46,5 +46,8 @@ export async function changePassword(prevState: any, formData: FormData) {
         data: { password: hashedPassword }
     });
 
+    revalidatePath("/admin/settings");
+    revalidatePath("/dashboard/settings");
+
     return { success: true };
 }

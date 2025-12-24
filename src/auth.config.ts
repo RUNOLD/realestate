@@ -10,47 +10,51 @@ export const authConfig = {
             const isLoggedIn = !!auth?.user;
             const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
             const isOnAdmin = nextUrl.pathname.startsWith('/admin');
+
+            // Get role safely from session or token (if available)
             const userRole = (auth?.user as any)?.role;
 
-            console.log(`[Middleware] Path: ${nextUrl.pathname}, LoggedIn: ${isLoggedIn}, Role: ${userRole}`);
+            console.log(`[Middleware Check] Path: ${nextUrl.pathname}, LoggedIn: ${isLoggedIn}, Role: ${userRole}`);
 
             if (isOnAdmin) {
-                if (isLoggedIn) {
-                    // Strict Role Check for Admin Routes
-                    const allowed = userRole === 'ADMIN' || userRole === 'STAFF';
-                    console.log(`[Middleware] Admin Access: ${allowed ? 'GRANTED' : 'DENIED'}`);
-                    return allowed;
+                if (!isLoggedIn) return false;
+
+                // Admins and Staff can access Admin routes
+                const hasAdminAccess = userRole === 'ADMIN' || userRole === 'STAFF';
+                if (!hasAdminAccess) {
+                    console.log(`[Middleware Check] Admin Access Denied for role: ${userRole}`);
                 }
-                console.log(`[Middleware] Admin Access: DENIED (Not Logged In)`);
-                return false; // Redirect unauthenticated users to login page
+                return hasAdminAccess;
             }
 
             if (isOnDashboard) {
-                if (isLoggedIn) {
-                    // Strict Role Check for Tenant Dashboard
-                    // Ideally only TENANTs should use /dashboard. 
-                    // Staff/Admins have /admin.
-                    return userRole === 'TENANT';
+                if (!isLoggedIn) return false;
+
+                // Allow TENANT, STAFF, and ADMIN for the dashboard
+                // This prevents Admins from being locked out of tenant-style pages
+                const hasDashboardAccess = userRole === 'TENANT' || userRole === 'ADMIN' || userRole === 'STAFF';
+                if (!hasDashboardAccess) {
+                    console.log(`[Middleware Check] Dashboard Access Denied for role: ${userRole}`);
                 }
-                return false; // Redirect unauthenticated users to login page
+                return hasDashboardAccess;
             }
+
             return true;
         },
-        // We need to extend session to include role
         async session({ session, token }) {
-            if (token.role && session.user) {
-                // @ts-ignore
-                session.user.role = token.role;
+            if (token && session.user) {
+                (session.user as any).role = token.role;
+                (session.user as any).id = token.id;
             }
             return session;
         },
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             if (user) {
-                // @ts-ignore
-                token.role = user.role;
+                token.role = (user as any).role;
+                token.id = user.id;
             }
             return token;
         }
     },
-    providers: [], // Add providers with an empty array for now
+    providers: [],
 } satisfies NextAuthConfig;

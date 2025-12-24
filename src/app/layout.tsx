@@ -32,7 +32,9 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <Navbar user={session?.user} />
-          {children}
+          <div className="pt-24">
+            {children}
+          </div>
           <Toaster />
         </ThemeProvider>
       </body>

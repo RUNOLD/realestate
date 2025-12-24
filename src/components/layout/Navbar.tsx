@@ -3,14 +3,29 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Menu, X, User as UserIcon, LogOut } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { handleSignOut } from "@/app/lib/actions";
 import { usePathname } from "next/navigation";
 
 export function Navbar({ user }: { user?: any }) {
     const [isOpen, setIsOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
     const pathname = usePathname();
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 50) {
+                setScrolled(true);
+            } else {
+                setScrolled(false);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
     const showSignOut = pathname?.startsWith('/admin') || pathname?.startsWith('/dashboard');
 
     const navLinks = [
@@ -23,7 +38,10 @@ export function Navbar({ user }: { user?: any }) {
     ];
 
     return (
-        <nav className="fixed w-full z-50 transition-all duration-300 bg-[#0f172a]/90 backdrop-blur-md border-b border-white/10">
+        <nav className={cn(
+            "fixed w-full z-50 transition-all duration-500 bg-[#0f172a]/90 backdrop-blur-md border-b border-white/10",
+            scrolled ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100"
+        )}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-24">
                     {/* Brand */}
