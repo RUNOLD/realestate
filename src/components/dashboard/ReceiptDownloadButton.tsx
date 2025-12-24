@@ -75,7 +75,7 @@ export function ReceiptDownloadButton({
         <div className="flex justify-between items-end border-b-2 border-[#C5A05B] pb-10 mb-12">
           <div className="flex items-center gap-6">
             {/* Note: Ensure /logo.png exists in your public folder */}
-            <img src="/logo.png" alt="Ayoola " className="h-16 w-auto object-contain brightness-200" />
+            <img src="/logo.png" alt="Ayoola Property Management & Sourcing LTD." className="h-16 w-auto object-contain brightness-200" />
             <div className="border-l border-white/20 pl-6">
               <h1 className="text-3xl font-black tracking-[0.1em] uppercase leading-none">Ayoola</h1>
               <p className="text-[10px] font-bold tracking-[0.3em] text-[#C5A05B] uppercase mt-2">

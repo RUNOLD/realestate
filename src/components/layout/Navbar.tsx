@@ -22,57 +22,58 @@ const NAV_LINKS = [
 
 export function Navbar({ user }: { user?: any }) {
     const [isOpen, setIsOpen] = React.useState(false);
-    const [isVisible, setIsVisible] = React.useState(true);
+    const [isScrolled, setIsScrolled] = React.useState(false);
     const pathname = usePathname();
 
     React.useEffect(() => {
         const handleScroll = () => {
-            setIsVisible(window.scrollY < 10);
-            if (window.scrollY >= 10) setIsOpen(false);
+            setIsScrolled(window.scrollY > 20);
         };
-        window.addEventListener("scroll", handleScroll);
+        window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    // Close menu on navigation
+    React.useEffect(() => {
+        setIsOpen(false);
+    }, [pathname]);
 
     return (
         <nav
             className={cn(
-                "fixed top-0 inset-x-0 z-50 transition-all duration-500 ease-in-out border-b py-4",
-                isVisible
-                    ? "translate-y-0 opacity-100 bg-background/80 backdrop-blur-md border-border"
-                    : "-translate-y-full opacity-0 pointer-events-none border-transparent"
+                "fixed top-0 inset-x-0 z-50 transition-all duration-300 ease-in-out border-b py-3 md:py-4",
+                isScrolled || isOpen
+                    ? "bg-background/95 backdrop-blur-md shadow-md border-border"
+                    : "bg-background/80 backdrop-blur-sm border-transparent"
             )}
         >
-            {/* Adjusted max-width and padding to push content further left */}
             <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8">
-                <div className="flex items-center justify-between h-20">
-
-                    {/* Brand Logo Section: Increased gap and left-alignment */}
-                    <Link href="/" className="flex items-center gap-6 group">
-                        <div className="relative h-16 w-16 sm:h-24 sm:w-24 shrink-0">
+                <div className="flex items-center justify-between h-14 sm:h-20">
+                    {/* Brand Logo Section */}
+                    <Link href="/" className="flex items-center gap-2 sm:gap-4 group min-w-0">
+                        <div className="relative h-10 w-10 sm:h-16 sm:w-16 shrink-0">
                             <Image
                                 src="/logo-white.png"
                                 alt="Ayoola Logo"
                                 fill
-                                className="object-contain invert dark:invert-0 transition-transform group-hover:scale-105"
+                                className="object-contain invert dark:invert-0 transition-opacity"
                                 priority
                             />
                         </div>
 
-                        {/* Added whitespace-nowrap to prevent sub-text from breaking */}
-                        <div className="flex flex-col justify-center border-l-2 border-border/60 pl-6 h-14 whitespace-nowrap">
-                            <span className="text-3xl font-black tracking-tighter uppercase leading-none">
+                        <div className="flex flex-col justify-center border-l border-border/60 pl-3 sm:pl-4 h-8 sm:h-12 min-w-0">
+                            <span className="text-lg sm:text-2xl font-black tracking-tighter uppercase leading-none truncate block">
                                 Ayoola
                             </span>
-                            <span className="text-[10px] font-bold tracking-[0.25em] text-muted-foreground uppercase mt-1">
-                                Property Management & Sourcing LTD.
+                            <span className="text-[7px] sm:text-[9px] font-bold tracking-[0.05em] sm:tracking-[0.15em] text-muted-foreground uppercase mt-0.5 truncate block max-w-[120px] sm:max-w-none">
+                                Property Management & Sourcing Services LTD.
                             </span>
                         </div>
                     </Link>
 
-                    {/* Desktop Navigation */}
-                    <div className="hidden lg:flex items-center gap-10">
-                        <div className="flex items-center gap-8">
+                    {/* Desktop Navigation - Visible on XL (1280px+) */}
+                    <div className="hidden xl:flex items-center gap-8">
+                        <div className="flex items-center gap-6">
                             {NAV_LINKS.map((link) => (
                                 <Link
                                     key={link.href}
@@ -84,17 +85,17 @@ export function Navbar({ user }: { user?: any }) {
                                 >
                                     {link.label}
                                     <span className={cn(
-                                        "absolute -bottom-2 left-0 h-0.5 bg-primary transition-all duration-300",
+                                        "absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300",
                                         pathname === link.href ? "w-full" : "w-0 group-hover:w-full"
                                     )} />
                                 </Link>
                             ))}
                         </div>
 
-                        <div className="flex items-center gap-4 pl-8 border-l border-border">
+                        <div className="flex items-center gap-4 pl-6 border-l border-border">
                             <ModeToggle />
                             {!(pathname?.startsWith("/admin") || pathname?.startsWith("/dashboard")) ? (
-                                <Button asChild size="sm" className="gap-2 px-6 font-bold">
+                                <Button asChild size="sm" className="gap-2 px-5 font-bold rounded-lg shadow-sm">
                                     <Link href="/login">
                                         <UserIcon size={14} />
                                         Portal Login
@@ -102,7 +103,7 @@ export function Navbar({ user }: { user?: any }) {
                                 </Button>
                             ) : (
                                 <form action={handleSignOut}>
-                                    <Button type="submit" variant="destructive" size="sm" className="gap-2 px-6 font-bold transition-all hover:bg-red-600">
+                                    <Button type="submit" variant="destructive" size="sm" className="gap-2 px-5 font-bold rounded-lg shadow-sm">
                                         <LogOut size={14} />
                                         Sign Out
                                     </Button>
@@ -111,44 +112,59 @@ export function Navbar({ user }: { user?: any }) {
                         </div>
                     </div>
 
-                    {/* Mobile Toggle */}
-                    <div className="lg:hidden flex items-center gap-3">
+                    {/* Mobile Toggle Button - Visible below XL */}
+                    <div className="xl:hidden flex items-center gap-2">
                         <ModeToggle />
-                        <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
-                            {isOpen ? <X size={24} /> : <Menu size={24} />}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsOpen(!isOpen)}
+                            className="hover:bg-primary/10 h-10 w-10 transition-colors"
+                            aria-label="Toggle Menu"
+                        >
+                            {isOpen ? (
+                                <X size={24} className="text-primary" />
+                            ) : (
+                                <Menu size={24} className="text-foreground" />
+                            )}
                         </Button>
                     </div>
                 </div>
             </div>
 
-            {/* Mobile Menu */}
+            {/* Mobile Menu Dropdown */}
             <div className={cn(
-                "lg:hidden absolute w-full bg-background border-b transition-all duration-300",
-                isOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"
+                "xl:hidden absolute top-full left-0 w-full bg-background border-b shadow-2xl transition-all duration-300 ease-in-out overflow-hidden z-[60]",
+                isOpen ? "max-h-[100vh] opacity-100 border-border" : "max-h-0 opacity-0 border-transparent"
             )}>
-                <div className="px-8 py-10 space-y-6">
-                    {NAV_LINKS.map((link) => (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            className="block text-2xl font-bold whitespace-nowrap"
-                            onClick={() => setIsOpen(false)}
-                        >
-                            {link.label}
-                        </Link>
-                    ))}
-                    <div className="pt-6 border-t border-border/50">
+                <div className="px-6 py-8 space-y-8 bg-background/50 backdrop-blur-xl">
+                    <div className="space-y-4">
+                        {NAV_LINKS.map((link) => (
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                className={cn(
+                                    "block text-2xl font-black tracking-tighter uppercase transition-colors p-2 rounded-lg",
+                                    pathname === link.href ? "bg-primary/5 text-primary" : "text-foreground hover:text-primary hover:bg-muted"
+                                )}
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
+                    </div>
+
+                    <div className="pt-8 border-t border-border/50">
                         {!(pathname?.startsWith("/admin") || pathname?.startsWith("/dashboard")) ? (
-                            <Button asChild className="w-full gap-2 px-6 font-bold text-lg py-6">
-                                <Link href="/login" onClick={() => setIsOpen(false)}>
-                                    <UserIcon size={18} />
+                            <Button asChild className="w-full gap-3 px-6 font-black text-xl py-7 rounded-xl shadow-xl shadow-primary/20">
+                                <Link href="/login">
+                                    <UserIcon size={24} />
                                     Portal Login
                                 </Link>
                             </Button>
                         ) : (
-                            <form action={handleSignOut}>
-                                <Button type="submit" variant="destructive" className="w-full gap-2 px-6 font-bold text-lg py-6 transition-all hover:bg-red-600">
-                                    <LogOut size={18} />
+                            <form action={handleSignOut} className="w-full">
+                                <Button type="submit" variant="destructive" className="w-full gap-3 px-6 font-black text-xl py-7 rounded-xl shadow-xl shadow-destructive/20">
+                                    <LogOut size={24} />
                                     Sign Out
                                 </Button>
                             </form>
