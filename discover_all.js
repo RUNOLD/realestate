@@ -19,26 +19,28 @@ async function discover() {
         console.log(`Testing ${region}...`);
         log += `Testing ${region}: `;
 
-        const prisma = new PrismaClient({
-            datasources: { db: { url } },
-            log: []
-        });
-
         try {
-            const count = await Promise.race([
-                prisma.user.count(),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 4000))
-            ]);
-            log += `✅ SUCCESS! Count: ${count}\n`;
-            console.log(`✅ SUCCESS in ${region}!`);
-            fs.writeFileSync('discovery.log', log);
-            process.exit(0);
+            const prisma = new PrismaClient({
+                datasources: { db: { url } },
+                log: []
+            });
+
+            try {
+                const count = await Promise.race([
+                    prisma.user.count(),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 4000))
+                ]);
+                log += `✅ SUCCESS! Count: ${count}\n`;
+                console.log(`✅ SUCCESS in ${region}!`);
+                fs.writeFileSync('discovery.log', log);
+                process.exit(0);
+            } finally {
+                await prisma.$disconnect();
+            }
         } catch (e) {
-            const msg = e.message.replace(/\n/g, ' ').substring(0, 100);
+            const msg = e.message;
             log += `❌ ${msg}\n`;
-            console.log(`  - ${msg}`);
-        } finally {
-            await prisma.$disconnect();
+            console.log(`  - ${msg.split('\n')[0]}`); // Log just the first line to keep it clean
         }
         fs.writeFileSync('discovery.log', log);
     }
