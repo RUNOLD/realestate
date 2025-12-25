@@ -16,7 +16,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DocumentUpload } from "@/components/tenant/DocumentUpload";
 import { LogPaymentModal } from "@/components/tenant/LogPaymentModal";
-import { CreateLeaseModal } from "@/components/admin/CreateLeaseModal";
+import { CreateLeaseModal } from "@/components/admin/properties/CreateLeaseModal";
 
 interface PageProps {
     params: Promise<{ id: string }>;

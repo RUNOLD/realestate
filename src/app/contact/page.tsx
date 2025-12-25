@@ -12,7 +12,7 @@ import {
     CheckCircle2
 } from "lucide-react";
 import { useActionState, Suspense } from 'react';
-import { submitContact } from '@/app/lib/actions';
+import { submitContact } from '@/actions/misc';
 import { useSearchParams } from "next/navigation";
 
 function ContactForm() {

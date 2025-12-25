@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Upload, FileText, CheckCircle, Loader2 } from "lucide-react";
-import { uploadDocument } from "@/app/lib/actions";
+import { uploadDocument } from "@/actions/misc";
 
 export function DocumentUpload({ userId }: { userId: string }) {
     const [isDragging, setIsDragging] = useState(false);

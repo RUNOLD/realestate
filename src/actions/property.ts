@@ -1,0 +1,218 @@
+'use server';
+
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
+import { CreateLeaseSchema, UpdateRentSchema } from "@/lib/schemas";
+import { createActivityLog, ActionType, EntityType } from "@/lib/logger";
+
+export async function createLease(prevState: any, formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') return { error: "Unauthorized" };
+
+    const rawData = {
+        userId: formData.get("userId"),
+        propertyId: formData.get("propertyId"),
+        rentAmount: Number(formData.get("rentAmount")),
+        startDate: new Date(formData.get("startDate") as string),
+        endDate: formData.get("endDate") ? new Date(formData.get("endDate") as string) : undefined
+    };
+
+    const validatedFields = CreateLeaseSchema.safeParse(rawData);
+
+    if (!validatedFields.success) {
+        return { error: validatedFields.error.flatten().fieldErrors, message: "Validation failed" };
+    }
+
+    const { userId, propertyId, rentAmount, startDate, endDate } = validatedFields.data;
+
+    try {
+        const lease = await prisma.lease.create({
+            data: {
+                userId,
+                propertyId,
+                rentAmount,
+                startDate,
+                endDate,
+                isActive: true
+            }
+        });
+
+        await prisma.property.update({
+            where: { id: propertyId },
+            data: { status: 'RENTED' }
+        });
+
+        await createActivityLog(
+            session.user.id,
+            ActionType.CREATE,
+            EntityType.LEASE,
+            lease.id,
+            { userId, propertyId, rentAmount }
+        );
+
+        revalidatePath(`/admin/users/${userId}`);
+        revalidatePath("/admin/properties");
+        return { success: true };
+    } catch (e) {
+        console.error("Create Lease Error:", e);
+        return { error: "Failed to create lease" };
+    }
+}
+
+export async function updateRent(leaseId: string, newAmount: number, reason: string) {
+    const session = await auth();
+    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') return { error: "Unauthorized" };
+
+    const validatedFields = UpdateRentSchema.safeParse({ leaseId, newAmount, reason });
+
+    if (!validatedFields.success) {
+        return { error: "Validation failed" };
+    }
+
+    try {
+        const lease = await prisma.lease.findUnique({ where: { id: leaseId } });
+        if (!lease) return { error: "Lease not found" };
+
+        const previousAmount = lease.rentAmount;
+
+        await prisma.$transaction(async (tx) => {
+            await tx.lease.update({
+                where: { id: leaseId },
+                data: { rentAmount: newAmount }
+            });
+
+            await tx.rentModificationLog.create({
+                data: {
+                    leaseId,
+                    adminId: session.user.id,
+                    previousAmount,
+                    newAmount,
+                    reason
+                }
+            });
+
+            await tx.activityLog.create({
+                data: {
+                    userId: session.user.id,
+                    action: 'UPDATE',
+                    entity: 'LEASE',
+                    entityId: leaseId,
+                    details: JSON.stringify({ previousAmount, newAmount, reason })
+                }
+            });
+        });
+
+        revalidatePath(`/admin/tenants/${lease.userId}`);
+        return { success: true };
+
+    } catch (e) {
+        console.error("Update Rent Error:", e);
+        return { error: "Failed to update rent" };
+    }
+}
+
+export async function terminateLease(leaseId: string) {
+    const session = await auth();
+    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') return { error: "Unauthorized" };
+
+    try {
+        const lease = await prisma.lease.findUnique({
+            where: { id: leaseId },
+            include: { property: true }
+        });
+
+        if (!lease) return { error: "Lease not found" };
+
+        await prisma.$transaction([
+            prisma.lease.update({
+                where: { id: leaseId },
+                data: { isActive: false }
+            }),
+            prisma.property.update({
+                where: { id: lease.propertyId },
+                data: { status: 'AVAILABLE' }
+            })
+        ]);
+
+        await createActivityLog(
+            session.user.id,
+            ActionType.UPDATE,
+            EntityType.LEASE,
+            leaseId,
+            { details: "Lease Terminated", propertyId: lease.propertyId }
+        );
+
+        revalidatePath("/admin/properties");
+        revalidatePath(`/admin/properties/${lease.propertyId}`);
+        revalidatePath(`/admin/users/${lease.userId}`);
+        return { success: true };
+    } catch (e) {
+        console.error("Terminate Lease Error:", e);
+        return { error: "Failed to terminate lease" };
+    }
+}
+
+export async function deleteLease(leaseId: string) {
+    const session = await auth();
+    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') return { error: "Unauthorized" };
+
+    try {
+        const lease = await prisma.lease.findUnique({
+            where: { id: leaseId }
+        });
+
+        if (!lease) return { error: "Lease not found" };
+
+        await prisma.$transaction([
+            prisma.lease.delete({
+                where: { id: leaseId }
+            }),
+            prisma.property.update({
+                where: { id: lease.propertyId },
+                data: { status: 'AVAILABLE' }
+            })
+        ]);
+
+        await createActivityLog(
+            session.user.id,
+            ActionType.DELETE,
+            EntityType.LEASE,
+            leaseId,
+            { details: "Lease Deleted", propertyId: lease.propertyId }
+        );
+
+        revalidatePath("/admin/properties");
+        revalidatePath(`/admin/properties/${lease.propertyId}`);
+        revalidatePath(`/admin/users/${lease.userId}`);
+        return { success: true };
+    } catch (e) {
+        console.error("Delete Lease Error:", e);
+        return { error: "Failed to delete lease" };
+    }
+}
+
+export async function deleteProperty(propertyId: string) {
+    const session = await auth();
+    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') return { error: "Unauthorized" };
+
+    try {
+        await prisma.property.delete({
+            where: { id: propertyId }
+        });
+
+        await createActivityLog(
+            session.user.id,
+            ActionType.DELETE,
+            EntityType.PROPERTY,
+            propertyId,
+            { details: "Property Deleted" }
+        );
+
+        revalidatePath("/admin/properties");
+        return { success: true };
+    } catch (e) {
+        console.error("Delete Property Error:", e);
+        return { error: "Failed to delete property" };
+    }
+}

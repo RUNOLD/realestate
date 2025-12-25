@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X, User as UserIcon, LogOut } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { handleSignOut } from "@/app/lib/actions";
+import { handleSignOut } from "@/actions/auth";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 

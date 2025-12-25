@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useActionState, useState, useEffect } from 'react';
-import { authenticate } from '@/app/lib/actions';
+import { authenticate } from '@/actions/auth';
 import { Eye, EyeOff, Lock, User, ArrowLeft, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -116,7 +116,7 @@ export default function LoginPage() {
 
                             <Button
                                 type="submit"
-                                
+
                                 className="w-full text-base font-bold h-12 shadow-lg hover:shadow-xl transition-all"
                                 disabled={isPending}
                             >

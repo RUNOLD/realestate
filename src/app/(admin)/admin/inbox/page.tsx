@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { Mail, Trash2, CheckCircle, Clock, User, Phone } from "lucide-react";
-import { markMessageAsRead, deleteMessage } from "@/app/lib/actions";
+import { markMessageAsRead, deleteMessage } from "@/actions/misc";
 import { Button } from "@/components/ui/button";
 
 export default async function InboxPage() {

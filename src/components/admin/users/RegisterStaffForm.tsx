@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react';
 import { Button } from "@/components/ui/button";
-import { createStaff } from "@/app/lib/actions";
+import { createStaff } from "@/actions/user";
 import { UserPlus, Loader2, ShieldCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

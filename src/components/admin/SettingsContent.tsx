@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { ModeToggle } from "@/components/mode-toggle";
-import { updateProfile, changePassword } from "@/app/lib/profile_actions";
+import { updateProfile, changePassword } from "@/actions/profile";
 
 interface SettingsContentProps {
     user: any;

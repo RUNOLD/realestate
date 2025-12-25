@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Loader2 } from "lucide-react";
-import { approveUser, approvePayment } from "@/app/lib/actions";
+import { approveUser } from "@/actions/user";
+import { approvePayment } from "@/actions/payment";
 
 interface ApproveButtonProps {
     id: string;

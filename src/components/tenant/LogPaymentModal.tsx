@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"; // Assuming you have these or similar
 import { Plus, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { createPayment } from "@/app/lib/actions";
+import { createPayment } from "@/actions/payment";
 
 // Simple custom dialog if shadcn Dialog not fully set up or to avoid complex imports not visible
 // Actually, I'll use a simple inline form wrapper or standard HTML dialog if needed, 

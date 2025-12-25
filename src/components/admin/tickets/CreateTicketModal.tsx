@@ -1,6 +1,6 @@
 'use client';
 
-import { createAdminTicket } from "@/app/lib/actions";
+import { createAdminTicket } from "@/actions/ticket";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useActionState, useState, useEffect } from "react";

@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Trash2, Loader2 } from "lucide-react";
-import { deleteProperty, deleteMaterial } from "@/app/lib/actions";
+import { deleteProperty } from "@/actions/property";
+import { deleteMaterial } from "@/actions/misc";
 
 interface DeleteButtonProps {
     id: string;

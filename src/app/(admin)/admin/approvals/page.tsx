@@ -2,7 +2,8 @@
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, User, CreditCard } from "lucide-react";
-import { approveUser, approvePayment } from "@/app/lib/actions";
+import { approveUser } from "@/actions/user";
+import { approvePayment } from "@/actions/payment";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 

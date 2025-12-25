@@ -4,7 +4,7 @@ import { usePaystackPayment } from 'react-paystack';
 import { Button } from "@/components/ui/button";
 import { Wallet, Loader2 } from "lucide-react";
 import { useState } from 'react';
-import { verifyPayment } from '@/app/lib/payment_actions';
+import { verifyPayment } from '@/actions/payment';
 import { useRouter } from 'next/navigation';
 
 interface PayRentButtonProps {

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Send, User } from "lucide-react";
-import { addComment } from "@/app/lib/actions"; // Server action
+import { addComment } from "@/actions/ticket"; // Server action
 import { pusherClient } from "@/lib/pusher";
 
 interface Comment {

@@ -1,4 +1,4 @@
-import { RegisterStaffForm } from "@/components/admin/RegisterStaffForm";
+import { RegisterStaffForm } from "@/components/admin/users/RegisterStaffForm";
 import Link from "next/link";
 import { ChevronLeft, ShieldCheck } from "lucide-react";
 

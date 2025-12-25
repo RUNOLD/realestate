@@ -1,6 +1,6 @@
 'use client';
 
-import { createLease } from "@/app/lib/actions";
+import { createLease } from "@/actions/property";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useActionState, useState, useEffect } from "react";

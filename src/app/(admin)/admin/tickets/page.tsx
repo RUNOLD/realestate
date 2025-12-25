@@ -11,9 +11,9 @@ import {
     MoreHorizontal,
     User
 } from "lucide-react";
-import { TicketApprovalActions } from "@/components/admin/TicketApprovalActions";
-import { CreateTicketModal } from "@/components/admin/CreateTicketModal";
-import { ExportTicketsButton } from "@/components/admin/ExportTicketsButton";
+import { TicketApprovalActions } from "@/components/admin/tickets/TicketApprovalActions";
+import { CreateTicketModal } from "@/components/admin/tickets/CreateTicketModal";
+import { ExportTicketsButton } from "@/components/admin/tickets/ExportTicketsButton";
 
 export default async function AdminTicketsPage() {
     // 1. Fetch Data

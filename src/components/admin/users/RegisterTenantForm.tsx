@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react';
 import { Button } from "@/components/ui/button";
-import { createTenant } from "@/app/lib/actions"; // Ensure this import path is correct
+import { createTenant } from "@/actions/user";
 import { UserPlus, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 

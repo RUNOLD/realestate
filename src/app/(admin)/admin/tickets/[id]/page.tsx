@@ -1,12 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { notFound, redirect } from "next/navigation";
-import { ChatBox } from "@/components/admin/ChatBox";
+import { ChatBox } from "@/components/admin/tickets/ChatBox";
 import { Badge } from "@/components/ui/badge"; // Ensure this exists or use standard badge
 import { Button } from "@/components/ui/button"; // Reused
 import Link from "next/link";
 import { ArrowLeft, Clock, User, Tag, AlertCircle } from "lucide-react";
-import { approveTicket } from "@/app/lib/actions";
+import { approveTicket } from "@/actions/ticket";
 
 // Small Badge Component if not exists
 function StatusBadge({ status }: { status: string }) {

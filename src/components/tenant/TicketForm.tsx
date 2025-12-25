@@ -1,6 +1,6 @@
 'use client';
 
-import { createTicket } from "@/app/lib/actions";
+import { createTicket } from "@/actions/ticket";
 import { Button } from "@/components/ui/button";
 import { useActionState } from "react";
 

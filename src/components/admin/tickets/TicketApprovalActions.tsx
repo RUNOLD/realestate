@@ -1,6 +1,6 @@
 'use client';
 
-import { approveTicket } from "@/app/lib/actions";
+import { approveTicket } from "@/actions/ticket";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ArrowRightCircle } from "lucide-react";
 import { useTransition } from "react";

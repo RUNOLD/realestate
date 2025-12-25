@@ -1,10 +1,66 @@
-"use server";
+'use server';
 
 import { prisma } from "@/lib/prisma";
+import { signIn, signOut } from "@/auth";
+import { AuthError } from 'next-auth';
 import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
 import { sendEmail } from "@/lib/mail";
-import { getResetPasswordTemplate } from "@/app/lib/mail_templates";
+import { getResetPasswordTemplate } from "@/lib/mail_templates";
+
+export async function authenticate(
+    prevState: any,
+    formData: FormData,
+) {
+    let redirectUrl = '/dashboard';
+
+    try {
+        const identifier = formData.get('identifier') as string;
+        const password = formData.get('password') as string;
+
+        const user = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email: identifier },
+                    { phone: identifier },
+                ]
+            },
+            select: { role: true }
+        });
+
+        if (user?.role === 'ADMIN' || user?.role === 'STAFF') {
+            redirectUrl = '/admin';
+        }
+
+        await signIn('credentials', {
+            identifier,
+            password,
+            redirect: false,
+        });
+
+        return { success: true, redirectUrl };
+
+    } catch (error) {
+        if (error instanceof AuthError) {
+            switch (error.type) {
+                case 'CredentialsSignin':
+                    return { error: 'Invalid credentials.' };
+                default:
+                    return { error: 'Something went wrong.' };
+            }
+        }
+
+        if ((error as Error).message === 'NEXT_REDIRECT' || (error as any).digest?.startsWith('NEXT_REDIRECT')) {
+            return { success: true, redirectUrl };
+        }
+
+        throw error;
+    }
+}
+
+export async function handleSignOut() {
+    await signOut({ redirectTo: '/' });
+}
 
 export async function requestPasswordReset(prevState: any, formData: FormData) {
     const email = formData.get("email") as string;
@@ -18,13 +74,11 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
     });
 
     if (!user) {
-        // We return success even if user not found to prevent enumeration
         return { success: "If an account exists, a reset link has been sent." };
     }
 
-    // Generate token
     const token = randomBytes(32).toString("hex");
-    const expiry = new Date(Date.now() + 3600000); // 1 hour
+    const expiry = new Date(Date.now() + 3600000);
 
     await prisma.user.update({
         where: { id: user.id },
@@ -34,7 +88,6 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
         },
     });
 
-    // Send Email (Real or Mock)
     const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
 
     await sendEmail({
@@ -59,7 +112,6 @@ export async function resetPassword(prevState: any, formData: FormData) {
         return { error: "Passwords do not match" };
     }
 
-    // Find user with valid token
     const user = await prisma.user.findFirst({
         where: {
             resetToken: token,
@@ -73,10 +125,8 @@ export async function resetPassword(prevState: any, formData: FormData) {
         return { error: "Invalid or expired reset token" };
     }
 
-    // Hash new password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Update user
     await prisma.user.update({
         where: { id: user.id },
         data: {

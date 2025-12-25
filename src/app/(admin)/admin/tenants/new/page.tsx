@@ -1,4 +1,4 @@
-import { RegisterTenantForm } from "@/components/admin/RegisterTenantForm";
+import { RegisterTenantForm } from "@/components/admin/users/RegisterTenantForm";
 import Link from "next/link";
 import { ChevronLeft, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";

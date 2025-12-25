@@ -16,7 +16,7 @@ import {
     DollarSign,
     Mail
 } from "lucide-react";
-import { handleSignOut } from "@/app/lib/actions";
+import { handleSignOut } from "@/actions/auth";
 import { auth } from "@/auth";
 
 
