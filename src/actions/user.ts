@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import bcrypt from 'bcryptjs';
-import { CreateTenantSchema, CreateStaffSchema } from "@/lib/schemas";
+import { CreateTenantSchema, CreateStaffSchema, UpdateUserSchema } from "@/lib/schemas";
 import { createActivityLog, ActionType, EntityType } from "@/lib/logger";
 
 export async function createTenant(prevState: any, formData: FormData) {
@@ -84,9 +84,9 @@ export async function createTenant(prevState: any, formData: FormData) {
 
         revalidatePath("/admin/users");
         return { success: true, message: status === 'PENDING' ? "Tenant created and pending approval." : "Tenant created successfully." };
-    } catch (e) {
+    } catch (e: any) {
         console.error("Create Tenant Error:", e);
-        return { error: "Failed to create tenant. Please try again." };
+        return { error: e.message || "Failed to create tenant. Please try again." };
     }
 }
 
@@ -174,5 +174,73 @@ export async function approveUser(userId: string) {
     } catch (e) {
         console.error("Approve User Error:", e);
         return { error: "Failed to approve user" };
+    }
+}
+
+export async function updateUser(prevState: any, formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') {
+        return { error: "Unauthorized. Only admins can edit users." };
+    }
+
+    const rawData = {
+        id: formData.get("id"),
+        name: formData.get("name"),
+        email: formData.get("email"),
+        phone: formData.get("phone"),
+        role: formData.get("role"),
+        status: formData.get("status"),
+    };
+
+    const validatedFields = UpdateUserSchema.safeParse(rawData);
+
+    if (!validatedFields.success) {
+        return { error: validatedFields.error.flatten().fieldErrors, message: "Validation failed" };
+    }
+
+    const { id, name, email, phone, role, status } = validatedFields.data;
+
+    try {
+        const existingUser = await prisma.user.findUnique({
+            where: { id }
+        });
+
+        if (!existingUser) {
+            return { error: "User not found." };
+        }
+
+        // Check for email conflicts
+        if (email !== existingUser.email) {
+            const emailConflict = await prisma.user.findUnique({ where: { email } });
+            if (emailConflict) return { error: "A user with this email already exists." };
+        }
+
+        await prisma.user.update({
+            where: { id },
+            data: {
+                name,
+                email,
+                phone: phone || null,
+                role: role as any,
+                status: status as any,
+            }
+        });
+
+        await createActivityLog(
+            session.user.id,
+            ActionType.UPDATE,
+            EntityType.USER,
+            id,
+            { name, role, status }
+        );
+
+        revalidatePath("/admin/users");
+        revalidatePath(`/admin/users/${id}`);
+        revalidatePath("/admin/team");
+
+        return { success: true, message: `User ${name} updated successfully.` };
+    } catch (e) {
+        console.error("Update User Error:", e);
+        return { error: "Failed to update user. Please try again." };
     }
 }

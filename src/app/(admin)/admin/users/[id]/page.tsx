@@ -174,17 +174,31 @@ export default async function UserDetailPage(props: PageProps) {
                                 ) : (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         {user.documents.map(doc => (
-                                            <div key={doc.id} className="flex items-start gap-3 p-3 border border-border rounded-lg bg-white">
-                                                <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded flex items-center justify-center shrink-0">
-                                                    <FileText size={20} />
-                                                </div>
-                                                <div className="overflow-hidden">
-                                                    <p className="font-medium text-sm truncate" title={doc.name}>{doc.name}</p>
-                                                    <div className="flex items-center gap-2 mt-1">
-                                                        <span className="text-[10px] font-bold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded uppercase">{doc.category || 'DOC'}</span>
-                                                        <span className="text-xs text-muted-foreground">{new Date(doc.createdAt).toLocaleDateString()}</span>
+                                            <div key={doc.id} className="flex items-start justify-between gap-3 p-3 border border-border rounded-lg bg-card hover:bg-muted/30 transition-colors group">
+                                                <div className="flex items-start gap-3 overflow-hidden">
+                                                    <div className="h-10 w-10 bg-blue-500/10 text-blue-600 rounded flex items-center justify-center shrink-0">
+                                                        <FileText size={20} />
+                                                    </div>
+                                                    <div className="overflow-hidden">
+                                                        <p className="font-medium text-sm text-foreground truncate" title={doc.name}>{doc.name}</p>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <span className="text-[10px] font-bold bg-muted text-muted-foreground px-1.5 py-0.5 rounded uppercase">{doc.category || 'DOC'}</span>
+                                                            <span className="text-xs text-muted-foreground">{new Date(doc.createdAt).toLocaleDateString()}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                {doc.url && (
+                                                    <a
+                                                        href={`/api/documents/download?url=${encodeURIComponent(doc.url)}&name=${encodeURIComponent(doc.name)}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="h-8 w-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors opacity-0 group-hover:opacity-100"
+                                                        title="Download Document"
+                                                    >
+                                                        <CheckCircle size={16} className="hidden" />
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+                                                    </a>
+                                                )}
                                             </div>
                                         ))}
                                     </div>

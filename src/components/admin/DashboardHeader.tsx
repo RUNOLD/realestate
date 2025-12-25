@@ -15,6 +15,8 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
+import { handleSignOut } from "@/actions/auth";
+import { LogOut } from "lucide-react";
 
 interface DashboardHeaderProps {
     currentDate: string;
@@ -76,6 +78,13 @@ export function DashboardHeader({ currentDate }: DashboardHeaderProps) {
                             <Link href="/admin/tickets" className="flex items-center w-full">
                                 <TicketIcon className="mr-3 h-4 w-4 text-red-500" /> View Tickets
                             </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            className="cursor-pointer py-2.5 text-red-600 focus:text-red-600 focus:bg-red-50"
+                            onClick={() => handleSignOut()}
+                        >
+                            <LogOut className="mr-3 h-4 w-4" /> Sign Out
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

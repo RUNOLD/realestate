@@ -136,6 +136,8 @@ export default async function TicketDetailsPage({ params }: { params: Promise<{ 
                             }
                         }))}
                         currentUserIds={session.user.id!}
+                        claimedById={(ticket as any).claimedById}
+                        isTenant={false}
                     />
                 </div>
             </div>

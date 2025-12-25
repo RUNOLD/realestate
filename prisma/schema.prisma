@@ -59,6 +59,13 @@ enum PaymentStatus {
   FAILED
 }
 
+enum NotificationType {
+  MAINTENANCE
+  PAYMENT
+  CHAT
+  ALERT
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -92,6 +99,8 @@ model User {
   comments        TicketComment[]
   managedProperties Property[] @relation("PropertyManager") // Staff managing properties
   rentModifications RentModificationLog[] @relation("AdminModifier")
+  claimedTickets   Ticket[]              @relation("TicketClaimant")
+  notifications    Notification[]
 }
 
 model Property {
@@ -155,6 +164,9 @@ model Ticket {
   assignedToId   String?
   // assignedTo  User? ... (Future: Staff assignment)
 
+  claimedById    String?
+  claimant       User?           @relation("TicketClaimant", fields: [claimedById], references: [id])
+
   // Approval Workflow
   requiresApproval Boolean        @default(false)
   approvalStatus   ApprovalStatus @default(APPROVED) // Default approved unless requires approval
@@ -162,8 +174,27 @@ model Ticket {
 
   comments       TicketComment[]
   
+  notifications  Notification[]
+
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type      NotificationType
+  title     String
+  message   String?
+  link      String?          // e.g. /admin/tickets/id
+  isRead    Boolean          @default(false)
+
+  ticketId  String?
+  ticket    Ticket?          @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime         @default(now())
 }
 
 model TicketComment {

@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { CreateTicketSchema, CreateAdminTicketSchema, AddCommentSchema } from "@/lib/schemas";
 import { createActivityLog, ActionType, EntityType } from "@/lib/logger";
+import { createNotification } from "./notification";
+import { NotificationType } from "@prisma/client";
 
 export async function createTicket(prevState: any, formData: FormData) {
     const session = await auth();
@@ -44,6 +46,23 @@ export async function createTicket(prevState: any, formData: FormData) {
             ticket.id,
             { subject, category }
         );
+
+        // Notify Admins and Staff
+        const staffUsers = await prisma.user.findMany({
+            where: { role: { in: ['ADMIN', 'STAFF'] } },
+            select: { id: true }
+        });
+
+        for (const staff of staffUsers) {
+            await createNotification(
+                staff.id,
+                'MAINTENANCE' as any,
+                'New Maintenance Request',
+                `A new ticket "${subject}" has been submitted.`,
+                `/admin/tickets/${ticket.id}`,
+                ticket.id
+            );
+        }
 
         revalidatePath("/dashboard");
         revalidatePath("/admin/tickets");
@@ -111,8 +130,15 @@ export async function createAdminTicket(prevState: any, formData: FormData) {
 
 export async function approveTicket(ticketId: string, role: 'MANAGER' | 'ADMIN') {
     const session = await auth();
-    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') {
+    const userRole = (session?.user as any)?.role;
+
+    if (!session?.user?.id || (userRole !== 'ADMIN' && userRole !== 'STAFF')) {
         return { error: "Unauthorized" };
+    }
+
+    // Role-based authorization: Staff can ONLY perform manager-level review
+    if (userRole === 'STAFF' && role !== 'MANAGER') {
+        return { error: "Staff can only perform manager-level review" };
     }
 
     try {
@@ -146,6 +172,40 @@ export async function approveTicket(ticketId: string, role: 'MANAGER' | 'ADMIN')
     }
 }
 
+export async function resolveTicket(ticketId: string) {
+    const session = await auth();
+    const userRole = (session?.user as any)?.role;
+
+    if (!session?.user?.id || (userRole !== 'ADMIN' && userRole !== 'STAFF')) {
+        return { error: "Unauthorized" };
+    }
+
+    try {
+        await prisma.ticket.update({
+            where: { id: ticketId },
+            data: {
+                status: 'RESOLVED',
+                approvalStatus: 'APPROVED' // Ensure it's marked as approved if resolved directly
+            }
+        });
+
+        await createActivityLog(
+            session.user.id,
+            ActionType.APPROVE, // Reusing APPROVE for resolution log or add RESOLVE to ActionType if available
+            EntityType.TICKET,
+            ticketId,
+            { newStatus: 'RESOLVED' }
+        );
+
+        revalidatePath("/admin/tickets");
+        revalidatePath("/dashboard");
+        return { success: true };
+    } catch (e) {
+        console.error("Resolve Ticket Error:", e);
+        return { error: "Failed to resolve ticket" };
+    }
+}
+
 export async function addComment(ticketId: string, content: string) {
     const session = await auth();
     if (!session?.user?.id) return { error: "Not authenticated" };
@@ -157,6 +217,30 @@ export async function addComment(ticketId: string, content: string) {
     }
 
     try {
+        // Fetch ticket to check ownership/claim status
+        const ticket = await prisma.ticket.findUnique({
+            where: { id: ticketId },
+            select: { userId: true, claimedById: true }
+        });
+
+        if (!ticket) return { error: "Ticket not found" };
+
+        const isTenant = session.user.id === ticket.userId;
+
+        // If not the tenant, enforce claiming logic
+        if (!isTenant) {
+            if (!ticket.claimedById) {
+                // First responder claims the ticket
+                await prisma.ticket.update({
+                    where: { id: ticketId },
+                    data: { claimedById: session.user.id }
+                });
+            } else if (ticket.claimedById !== session.user.id) {
+                // Not the claimant
+                return { error: "This conversation is restricted to the first responder." };
+            }
+        }
+
         const comment = await prisma.ticketComment.create({
             data: {
                 ticketId,
@@ -186,10 +270,38 @@ export async function addComment(ticketId: string, content: string) {
             console.error("Pusher Trigger Error:", pusherError);
         }
 
+        // Notify relevant parties
+        try {
+            if (isTenant) {
+                if (ticket.claimedById) {
+                    await createNotification(
+                        ticket.claimedById,
+                        'CHAT' as any,
+                        'New Message from Tenant',
+                        `New reply on ticket #${ticketId.substring(0, 8)}`,
+                        `/admin/tickets/${ticketId}`,
+                        ticketId
+                    );
+                }
+            } else {
+                await createNotification(
+                    ticket.userId,
+                    'CHAT' as any,
+                    'New Message from Support',
+                    `Staff replied to your ticket #${ticketId.substring(0, 8)}`,
+                    `/dashboard/maintenance`,
+                    ticketId
+                );
+            }
+        } catch (notifError) {
+            console.error("Notification Trigger Error:", notifError);
+        }
+
         revalidatePath(`/admin/tickets/${ticketId}`);
+        revalidatePath(`/dashboard/maintenance`);
         return { success: true };
-    } catch (e) {
+    } catch (e: any) {
         console.error("Add Comment Error:", e);
-        return { error: "Failed to post comment" };
+        return { error: e.message || "Failed to post comment" };
     }
 }

@@ -16,6 +16,9 @@ async function main() {
     log(`NEXTAUTH_SECRET exists: ${!!process.env.NEXTAUTH_SECRET}`);
     log(`POSTGRES_PRISMA_URL exists: ${!!process.env.POSTGRES_PRISMA_URL}`);
     log(`DATABASE_URL exists: ${!!process.env.DATABASE_URL}`);
+    log(`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME exists: ${!!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}`);
+    log(`CLOUDINARY_API_KEY exists: ${!!process.env.CLOUDINARY_API_KEY}`);
+    log(`CLOUDINARY_API_SECRET exists: ${!!process.env.CLOUDINARY_API_SECRET}`);
 
     log("\n--- Database Connection Check ---");
     try {

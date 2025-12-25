@@ -84,9 +84,9 @@ export async function uploadDocument(prevState: any, formData: FormData) {
 
         revalidatePath(`/admin/users/${userId}`);
         return { success: true };
-    } catch (e) {
+    } catch (e: any) {
         console.error("Upload Document Error:", e);
-        return { error: "Failed to upload document" };
+        return { error: e.message || "Failed to upload document" };
     }
 }
 

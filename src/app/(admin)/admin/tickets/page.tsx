@@ -11,13 +11,23 @@ import {
     MoreHorizontal,
     User
 } from "lucide-react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { TicketApprovalActions } from "@/components/admin/tickets/TicketApprovalActions";
 import { CreateTicketModal } from "@/components/admin/tickets/CreateTicketModal";
 import { ExportTicketsButton } from "@/components/admin/tickets/ExportTicketsButton";
 
-export default async function AdminTicketsPage() {
+export default async function AdminTicketsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
+    const { status: filterStatus } = await searchParams;
+
     // 1. Fetch Data
     const tickets = await prisma.ticket.findMany({
+        where: filterStatus && filterStatus !== 'ALL' ? {
+            OR: [
+                { status: filterStatus as any },
+                { approvalStatus: filterStatus as any }
+            ]
+        } : {},
         orderBy: { createdAt: 'desc' },
         include: { user: true }
     });
@@ -93,9 +103,42 @@ export default async function AdminTicketsPage() {
                     <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-gray-50/30">
                         {/* Tabs */}
                         <div className="flex bg-gray-100/80 p-1 rounded-lg">
-                            <button className="px-4 py-1.5 text-sm font-medium bg-white shadow-sm rounded-md text-gray-900">All</button>
-                            <button className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900">Pending</button>
-                            <button className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900">Resolved</button>
+                            <Link
+                                href="/admin/tickets?status=ALL"
+                                className={cn(
+                                    "px-4 py-1.5 text-sm font-medium rounded-md transition-all",
+                                    (!filterStatus || filterStatus === 'ALL') ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-900"
+                                )}
+                            >
+                                All
+                            </Link>
+                            <Link
+                                href="/admin/tickets?status=PENDING_MANAGER"
+                                className={cn(
+                                    "px-4 py-1.5 text-sm font-medium rounded-md transition-all",
+                                    filterStatus === 'PENDING_MANAGER' ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-900"
+                                )}
+                            >
+                                Manager Review
+                            </Link>
+                            <Link
+                                href="/admin/tickets?status=PENDING_ADMIN"
+                                className={cn(
+                                    "px-4 py-1.5 text-sm font-medium rounded-md transition-all",
+                                    filterStatus === 'PENDING_ADMIN' ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-900"
+                                )}
+                            >
+                                Admin Review
+                            </Link>
+                            <Link
+                                href="/admin/tickets?status=RESOLVED"
+                                className={cn(
+                                    "px-4 py-1.5 text-sm font-medium rounded-md transition-all",
+                                    filterStatus === 'RESOLVED' ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-900"
+                                )}
+                            >
+                                Resolved
+                            </Link>
                         </div>
 
                         {/* Search */}
@@ -139,7 +182,13 @@ export default async function AdminTicketsPage() {
                                     </tr>
                                 ) : (
                                     tickets.map((ticket) => (
-                                        <tr key={ticket.id} className="group hover:bg-blue-50/30 transition-colors">
+                                        <tr
+                                            key={ticket.id}
+                                            className={cn(
+                                                "group transition-colors",
+                                                ticket.approvalStatus?.includes('PENDING') ? "bg-amber-50/40 hover:bg-amber-100/40" : "hover:bg-blue-50/30"
+                                            )}
+                                        >
 
                                             {/* Column 1: Subject & ID */}
                                             <td className="px-6 py-4">

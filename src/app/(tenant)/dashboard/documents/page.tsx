@@ -60,11 +60,11 @@ export default async function DocumentsPage() {
                                     </div>
                                 </div>
                                 <a
-                                    href={doc.url}
-                                    download={doc.name}
+                                    href={`/api/documents/download?url=${encodeURIComponent(doc.url)}&name=${encodeURIComponent(doc.name)}`}
                                     className="h-10 w-10 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    title="Download"
                                 >
                                     <Download size={18} />
                                 </a>

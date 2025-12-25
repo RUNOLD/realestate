@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import bcrypt from 'bcryptjs';
+import { createActivityLog, ActionType, EntityType } from "@/lib/logger";
 
 export async function updateProfile(prevState: any, formData: FormData) {
     const session = await auth();
@@ -18,11 +19,29 @@ export async function updateProfile(prevState: any, formData: FormData) {
     const phone = formData.get("phone") as string;
 
     try {
+        const updateData: any = { phone };
+
+        // According to policy, only Admins can self-edit their full name.
+        // Staff must request name changes via administration.
+        if (userRole === 'ADMIN') {
+            updateData.name = name;
+        }
+
         await prisma.user.update({
             where: { id: session.user.id },
-            data: { name, phone }
+            data: updateData
         });
+
+        await createActivityLog(
+            session.user.id,
+            ActionType.UPDATE,
+            EntityType.USER,
+            session.user.id,
+            { details: "Profile Updated (Self-Service)", fields: Object.keys(updateData) }
+        );
+
         revalidatePath("/admin/settings");
+        revalidatePath("/dashboard/settings");
         return { success: true };
     } catch (e) {
         console.error("Update Profile Error:", e);

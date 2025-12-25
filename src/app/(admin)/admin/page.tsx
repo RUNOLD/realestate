@@ -146,12 +146,13 @@ export default async function AdminDashboardPage() {
                                 </Link>
                             </div>
 
-                            <div className="divide-y divide-gray-100">
+                            <div className="divide-y divide-border">
                                 {recentTickets.length === 0 ? (
-                                    <div className="p-8 text-center text-gray-400 text-sm">No maintenance requests found.</div>
+                                    <div className="p-8 text-center text-muted-foreground/50 text-sm">No maintenance requests found.</div>
                                 ) : recentTickets.map((ticket) => (
                                     <Link key={ticket.id} href={`/admin/tickets/${ticket.id}`}>
-                                        <div className="p-4 hover:bg-gray-50 transition-colors flex items-start gap-4 group">
+                                        <div className="p-4 hover:bg-muted/50 transition-all flex items-start gap-4 group cursor-pointer relative overflow-hidden">
+                                            <div className="absolute left-0 top-0 w-1 h-full bg-primary scale-y-0 group-hover:scale-y-100 transition-transform origin-top" />
                                             <div className={`mt-1 h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${ticket.priority === 'HIGH' || ticket.priority === 'URGENT' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'
                                                 }`}>
                                                 <AlertCircle size={20} />
@@ -164,8 +165,8 @@ export default async function AdminDashboardPage() {
                                                         {ticket.priority}
                                                     </span>
                                                 </div>
-                                                <p className="text-sm text-muted-foreground mt-1 line-clamp-1 italic">{ticket.description || 'No description provided'}</p>
-                                                <div className="flex items-center gap-3 mt-2 text-[11px] font-semibold text-muted-foreground/80">
+                                                <p className="text-sm text-muted-foreground group-hover:text-foreground/90 transition-colors mt-1 line-clamp-1 italic">{ticket.description || 'No description provided'}</p>
+                                                <div className="flex items-center gap-3 mt-2 text-[11px] font-semibold text-muted-foreground/60 group-hover:text-muted-foreground transition-colors">
                                                     <span>Reported by {ticket.user.name}</span>
                                                     <span>•</span>
                                                     <span>{formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}</span>
@@ -187,11 +188,11 @@ export default async function AdminDashboardPage() {
                             <div className="p-6 border-b border-border flex justify-between items-center">
                                 <h3 className="font-extrabold text-foreground tracking-tight">Recent Payments</h3>
                                 <Link href="/admin/financials">
-                                    <Button variant="ghost" size="sm" className="text-xs font-bold uppercase tracking-widest">View All</Button>
+                                    <Button variant="ghost" size="sm" className="text-xs font-bold uppercase tracking-widest text-primary hover:text-primary hover:bg-primary/5">View All</Button>
                                 </Link>
                             </div>
 
-                            <div className="divide-y divide-gray-100">
+                            <div className="divide-y divide-border">
                                 {recentPayments.length === 0 ? (
                                     <div className="p-8 text-center text-gray-400 text-sm">No recent payments.</div>
                                 ) : recentPayments.map((payment) => (
@@ -266,21 +267,22 @@ function DashboardCard({ title, value, subtext, icon: Icon, trend, trendColor = 
 
 function PaymentRow({ initials, name, detail, amount, status, color }: { initials: string, name: string, detail: string, amount: string, status: string, color: string }) {
     const bgColors = {
-        blue: "bg-blue-100 text-blue-700",
-        purple: "bg-purple-100 text-purple-700",
-        orange: "bg-orange-100 text-orange-700",
-        red: "bg-red-100 text-red-700",
+        blue: "bg-blue-500/10 text-blue-500 border border-blue-500/20",
+        purple: "bg-purple-500/10 text-purple-500 border border-purple-500/20",
+        orange: "bg-orange-500/10 text-orange-500 border border-orange-500/20",
+        red: "bg-red-500/10 text-red-500 border border-red-500/20",
     };
 
     return (
-        <div className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer">
+        <div className="p-4 flex items-center justify-between hover:bg-muted/50 transition-all cursor-pointer group relative overflow-hidden">
+            <div className="absolute left-0 top-0 w-1 h-full bg-primary scale-y-0 group-hover:scale-y-100 transition-transform origin-top" />
             <div className="flex items-center gap-3">
                 <div className={`h-10 w-10 rounded-full flex items-center justify-center font-black text-xs ${bgColors[color as keyof typeof bgColors]}`}>
                     {initials}
                 </div>
                 <div>
-                    <h4 className="font-bold text-sm text-foreground tracking-tight">{name}</h4>
-                    <p className="text-xs font-medium text-muted-foreground">{detail}</p>
+                    <h4 className="font-bold text-sm text-foreground tracking-tight group-hover:text-primary transition-colors">{name}</h4>
+                    <p className="text-xs font-medium text-muted-foreground group-hover:text-muted-foreground/80 transition-colors">{detail}</p>
                 </div>
             </div>
             <div className="text-right">

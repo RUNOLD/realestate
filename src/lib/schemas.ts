@@ -3,7 +3,7 @@ import { z } from "zod";
 export const CreateTicketSchema = z.object({
     subject: z.string().min(3, "Subject must be at least 3 characters"),
     description: z.string().min(10, "Description must be at least 10 characters"),
-    category: z.enum(["MAINTENANCE", "COMPLAINT", "INQUIRY", "OTHER"]),
+    category: z.enum(["MAINTENANCE", "COMPLAINT", "INQUIRY", "OTHER", "PLUMBING", "ELECTRICAL", "STRUCTURAL"]),
 });
 
 export const ContactSchema = z.object({
@@ -17,7 +17,7 @@ export const CreateAdminTicketSchema = z.object({
     userId: z.string().min(1, "User ID is required"),
     subject: z.string().min(3, "Subject must be at least 3 characters"),
     description: z.string().min(10, "Description must be at least 10 characters"),
-    category: z.enum(["MAINTENANCE", "COMPLAINT", "INQUIRY", "OTHER"]),
+    category: z.enum(["MAINTENANCE", "COMPLAINT", "INQUIRY", "OTHER", "PLUMBING", "ELECTRICAL", "STRUCTURAL"]),
     priority: z.enum(["LOW", "MEDIUM", "HIGH", "EMERGENCY"]),
     images: z.string().optional().default("[]"), // JSON string
 });
@@ -71,4 +71,13 @@ export const CreateStaffSchema = z.object({
     phone: z.string().optional(),
     password: z.string().min(6, "Password must be at least 6 characters"),
     role: z.enum(["STAFF", "ADMIN"]).default("STAFF"),
+});
+
+export const UpdateUserSchema = z.object({
+    id: z.string().min(1),
+    name: z.string().min(2, "Name is required"),
+    email: z.string().email("Invalid email address"),
+    phone: z.string().optional(),
+    role: z.enum(["USER", "TENANT", "ADMIN", "STAFF"]),
+    status: z.enum(["ACTIVE", "PENDING"]),
 });

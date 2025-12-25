@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import * as React from 'react';
+import { Send, Lock, CheckCircle2, MessageSquareOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Send, User } from "lucide-react";
-import { addComment } from "@/actions/ticket"; // Server action
+import { Input } from "@/components/ui/input";
+import { addComment } from "@/actions/ticket";
 import { pusherClient } from "@/lib/pusher";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns"; // Recommended for professional date handling
 
 interface Comment {
     id: string;
@@ -13,7 +16,7 @@ interface Comment {
     user: {
         name: string | null;
         role: string;
-        id: string; // useful for styling self vs others
+        id: string;
     };
 }
 
@@ -21,21 +24,38 @@ interface ChatBoxProps {
     ticketId: string;
     initialComments: Comment[];
     currentUserIds: string;
+    claimedById?: string | null;
+    isTenant?: boolean;
 }
 
-export function ChatBox({ ticketId, initialComments, currentUserIds }: ChatBoxProps) {
-    const [comments, setComments] = useState<Comment[]>(initialComments);
-    const [newMessage, setNewMessage] = useState("");
-    const [loading, setLoading] = useState(false);
-    const bottomRef = useRef<HTMLDivElement>(null);
+export function ChatBox({ ticketId, initialComments, currentUserIds, claimedById, isTenant }: ChatBoxProps) {
+    const [comments, setComments] = React.useState<Comment[]>(initialComments);
+    const [newMessage, setNewMessage] = React.useState("");
+    const [isPending, setIsPending] = React.useTransition();
+    const scrollRef = React.useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        // Subscribe to Pusher channel
+    const isLocked = !isTenant && claimedById && claimedById !== currentUserIds;
+    const isClaimedByMe = !isTenant && claimedById === currentUserIds;
+
+    // Scroll to bottom helper
+    const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior
+            });
+        }
+    };
+
+    // Pusher Subscription
+    React.useEffect(() => {
         const channel = pusherClient.subscribe(`ticket-${ticketId}`);
 
         channel.bind('incoming-message', (data: Comment) => {
-            setComments((prev) => [...prev, data]);
-            bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+            setComments((prev) => {
+                if (prev.find(c => c.id === data.id)) return prev;
+                return [...prev, data];
+            });
         });
 
         return () => {
@@ -43,88 +63,122 @@ export function ChatBox({ ticketId, initialComments, currentUserIds }: ChatBoxPr
         };
     }, [ticketId]);
 
-    // Scroll to bottom on load
-    useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Scroll on new messages
+    React.useEffect(() => {
+        scrollToBottom();
     }, [comments]);
 
-    const handleSendMessage = async () => {
-        if (!newMessage.trim()) return;
-        setLoading(true);
+    const handleSendMessage = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+        if (!newMessage.trim() || isLocked) return;
 
-        // Optimistic update (optional, but pusher will handle it fast enough usually)
-        // Let's rely on Pusher for now to avoid duplicate keys logic or handle it carefully.
-        // Or we can rely on revalidatePath in server action which might refresh the page property, 
-        // effectively resetting this state if we are not careful.
-        // Actually, since this is a client component getting initialComments from props, 
-        // we should append locally or wait for pusher.
+        const content = newMessage.trim();
+        setNewMessage("");
 
-        const result = await addComment(ticketId, newMessage);
-        if (result?.error) {
-            alert("Failed to send: " + result.error);
-        } else {
-            setNewMessage("");
-        }
-        setLoading(false);
+        // Optimistic Update
+        const optimisticComment: Comment = {
+            id: crypto.randomUUID(),
+            content,
+            createdAt: new Date().toISOString(),
+            user: { id: currentUserIds, name: 'You', role: isTenant ? 'Tenant' : 'Staff' }
+        };
+
+        setComments(prev => [...prev, optimisticComment]);
+
+        setIsPending(async () => {
+            const result = await addComment(ticketId, content);
+            if (result?.error) {
+                // Rollback optimistic update on error
+                setComments(prev => prev.filter(c => c.id !== optimisticComment.id));
+                alert(result.error);
+            }
+        });
     };
 
     return (
-        <div className="flex flex-col h-[600px] border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-gray-100 bg-gray-50">
-                <h3 className="font-semibold text-gray-800">Support Conversation</h3>
-                <p className="text-xs text-gray-500">Real-time updates enabled</p>
+        <div className="flex flex-col h-[600px] border border-border rounded-xl bg-card shadow-lg overflow-hidden transition-all">
+            {/* Header */}
+            <div className="p-4 border-b bg-muted/30 flex justify-between items-center backdrop-blur-sm">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-sm tracking-tight uppercase">Support Logic</h3>
+                    {isClaimedByMe && <CheckCircle2 size={14} className="text-emerald-500" />}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
+                      {isLocked ? "Secure Thread • Locked" : "Live Connectivity • Active"}
+                  </p>
+                </div>
+                {isLocked && <Lock size={16} className="text-amber-500" />}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
+            {/* Messages Area */}
+            <div 
+                ref={scrollRef}
+                className="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-background to-muted/20"
+            >
                 {comments.length === 0 ? (
-                    <div className="text-center py-10 text-gray-400 text-sm">
-                        No comments yet. Start the conversation.
+                    <div className="h-full flex flex-col items-center justify-center text-muted-foreground gap-3 opacity-50">
+                        <MessageSquareOff size={32} strokeWidth={1} />
+                        <p className="text-xs font-medium uppercase tracking-tighter">Initiate conversation</p>
                     </div>
                 ) : (
                     comments.map((comment) => {
                         const isMe = comment.user.id === currentUserIds;
                         return (
-                            <div key={comment.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-[80%] rounded-lg p-3 ${isMe ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-800'}`}>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className={`text-xs font-bold ${isMe ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            {comment.user.name || 'User'}
+                            <div key={comment.id} className={cn("flex w-full animate-in fade-in slide-in-from-bottom-2", isMe ? "justify-end" : "justify-start")}>
+                                <div className={cn(
+                                    "max-w-[85%] rounded-2xl px-4 py-3 shadow-sm",
+                                    isMe 
+                                      ? "bg-primary text-primary-foreground rounded-tr-none" 
+                                      : "bg-muted border text-foreground rounded-tl-none"
+                                )}>
+                                    <div className="flex items-center gap-3 mb-1.5 opacity-80">
+                                        <span className="text-[10px] font-black uppercase tracking-tight">
+                                            {isMe ? 'Internal Response' : (comment.user.name || 'Resident')}
                                         </span>
-                                        <span className={`text-[10px] uppercase px-1 py-0.5 rounded ${isMe ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-500'}`}>
+                                        <span className={cn(
+                                          "text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase",
+                                          isMe ? "bg-white/10" : "bg-background border"
+                                        )}>
                                             {comment.user.role}
                                         </span>
                                     </div>
-                                    <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
-                                    <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-gray-400' : 'text-gray-400'}`}>
-                                        {new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{comment.content}</p>
+                                    <div className="text-[9px] mt-2 font-mono opacity-50 text-right uppercase">
+                                        {format(new Date(comment.createdAt), 'HH:mm')}
                                     </div>
                                 </div>
                             </div>
                         );
                     })
                 )}
-                <div ref={bottomRef} />
             </div>
 
-            <div className="p-4 bg-white border-t border-gray-100">
-                <div className="flex gap-2">
-                    <input
-                        type="text"
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                        placeholder="Type your message..."
-                        className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/5"
-                        disabled={loading}
-                    />
-                    <Button
-                        onClick={handleSendMessage}
-                        disabled={loading || !newMessage.trim()}
-                        className="bg-black hover:bg-gray-800"
-                    >
-                        <Send size={16} />
-                    </Button>
-                </div>
+            {/* Input Area */}
+            <div className="p-4 bg-background border-t">
+                {isLocked ? (
+                    <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl text-[10px] text-amber-600 font-bold uppercase tracking-widest flex items-center gap-3">
+                        <Lock size={14} />
+                        Access Restricted: Responded by another executive
+                    </div>
+                ) : (
+                    <form onSubmit={handleSendMessage} className="flex gap-3">
+                        <Input
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            placeholder={claimedById ? "Draft response..." : "Respond to claim ticket..."}
+                            className="flex-1 bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary h-11"
+                            disabled={isPending}
+                        />
+                        <Button
+                            type="submit"
+                            disabled={isPending || !newMessage.trim()}
+                            className="h-11 px-6 shadow-xl hover:scale-[1.02] transition-transform active:scale-95"
+                        >
+                            <Send size={18} />
+                        </Button>
+                    </form>
+                )}
             </div>
         </div>
     );

@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { Plus, Building2, UserPlus, FileText } from "lucide-react";
+import { Plus, Building2, UserPlus, FileText, LogOut } from "lucide-react";
+import { handleSignOut } from "@/actions/auth";
 
 export function QuickActions() {
     const [isOpen, setIsOpen] = useState(false);
@@ -24,7 +25,7 @@ export function QuickActions() {
     return (
         <div className="relative" ref={menuRef}>
             <Button
-                
+
                 className="shadow-lg"
                 onClick={() => setIsOpen(!isOpen)}
             >
@@ -61,6 +62,18 @@ export function QuickActions() {
                             <FileText className="mr-3 h-4 w-4 text-slate-500" />
                             View Reports
                         </Link>
+                        <div className="border-t border-gray-100 my-1"></div>
+                        <button
+                            onClick={() => {
+                                setIsOpen(false);
+                                handleSignOut();
+                            }}
+                            className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium"
+                            role="menuitem"
+                        >
+                            <LogOut className="mr-3 h-4 w-4" />
+                            Sign Out
+                        </button>
                     </div>
                 </div>
             )}
