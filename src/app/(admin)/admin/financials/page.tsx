@@ -10,6 +10,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { FinancialsToolbar } from "@/components/admin/FinancialsToolbar";
+import { prisma } from "@/lib/prisma";
 
 export default async function FinancialsPage({
     searchParams,
