@@ -21,7 +21,8 @@ import {
     UserCircle,
     KeyRound,
     UserCheck,
-    ArrowRight
+    ArrowRight,
+    LucideIcon
 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -30,7 +31,16 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface SettingsContentProps {
-    user: any;
+    user: {
+        id: string;
+        name?: string;
+        email?: string;
+        image?: string;
+        role: string;
+        status?: string;
+        phone?: string;
+        password?: string;
+    };
 }
 
 export function SettingsContent({ user }: SettingsContentProps) {
@@ -434,7 +444,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
     );
 }
 
-function NotificationToggle({ title, desc, checked, onChange, icon: Icon }: { title: string, desc: string, checked: boolean, onChange: () => void, icon: any }) {
+function NotificationToggle({ title, desc, checked, onChange, icon: Icon }: { title: string, desc: string, checked: boolean, onChange: () => void, icon: LucideIcon }) {
     return (
         <div className="flex items-center justify-between p-6 bg-muted/20 rounded-3xl border border-border group hover:bg-muted/30 transition-all cursor-pointer" onClick={onChange}>
             <div className="flex gap-4 items-center">
