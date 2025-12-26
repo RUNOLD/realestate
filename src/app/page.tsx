@@ -192,20 +192,20 @@ export default async function Home() {
       </section>
 
       {/* CTA / Contact Section (New) */}
-      <section className="bg-primary text-primary-foreground py-20 px-4">
+      <section className="bg-primary text-primary-foreground dark:bg-card dark:text-foreground py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Ready to find your new home?</h2>
-          <p className="text-lg text-primary-foreground/80 mb-10 max-w-2xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6 text-primary-foreground dark:text-foreground">Ready to find your new home?</h2>
+          <p className="text-lg text-primary-foreground/80 dark:text-muted-foreground mb-10 max-w-2xl mx-auto">
             Browse our latest listings or contact our agents to help you navigate the market with confidence.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/properties">
-              <button className="px-8 py-4 bg-primary-foreground text-primary rounded-lg hover:bg-primary-foreground/90 transition-colors font-bold w-full sm:w-auto">
+              <button className="px-8 py-4 bg-primary-foreground text-primary dark:bg-primary dark:text-primary-foreground rounded-lg hover:bg-primary-foreground/90 transition-colors font-bold w-full sm:w-auto">
                 Browse Properties
               </button>
             </Link>
             <Link href="/contact">
-              <button className="px-8 py-4 bg-transparent border-2 border-primary-foreground text-primary-foreground rounded-lg hover:bg-primary-foreground/10 transition-colors font-bold w-full sm:w-auto">
+              <button className="px-8 py-4 bg-transparent border-2 border-primary-foreground text-primary-foreground dark:border-primary dark:text-primary rounded-lg hover:bg-primary-foreground/10 transition-colors font-bold w-full sm:w-auto">
                 Contact Us
               </button>
             </Link>

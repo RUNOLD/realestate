@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export default function AboutPage() {
     return (
-        <main className="min-h-screen bg-white font-sans text-slate-900 selection:bg-accent selection:text-white">
+        <main className="min-h-screen bg-white dark:bg-background font-sans text-slate-900 dark:text-foreground selection:bg-accent selection:text-white">
 
             {/* 1. Modern Hero Section with Background Image */}
             <div className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
@@ -39,7 +39,7 @@ export default function AboutPage() {
 
             {/* 2. Stats Strip - High Level Trust Signals */}
             <div className="relative z-20 -mt-16 container mx-auto px-4">
-                <div className="bg-white rounded-xl shadow-xl border border-slate-100 p-8 md:p-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-slate-100">
+                <div className="bg-white dark:bg-card rounded-xl shadow-xl border border-slate-100 dark:border-border p-8 md:p-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-slate-100 dark:divide-border">
                     <div>
                         <p className="text-4xl font-bold text-primary mb-1">500+</p>
                         <p className="text-sm text-slate-500 uppercase tracking-wider font-semibold">Properties Managed</p>
@@ -54,7 +54,7 @@ export default function AboutPage() {
                     </div>
                     <div className="hidden md:block">
                         <p className="text-4xl font-bold text-primary mb-1">24/7</p>
-                        <p className="text-sm text-slate-500 uppercase tracking-wider font-semibold">Support Team</p>
+                        <p className="text-sm text-slate-500 dark:text-muted-foreground uppercase tracking-wider font-semibold">Support Team</p>
                     </div>
                 </div>
             </div>
@@ -72,14 +72,14 @@ export default function AboutPage() {
                             />
                         </div>
                         {/* Floating Badge */}
-                        <div className="absolute -bottom-6 -right-6 md:bottom-10 md:-right-10 bg-white p-6 rounded-xl shadow-xl border border-slate-100 max-w-xs hidden md:block">
+                        <div className="absolute -bottom-6 -right-6 md:bottom-10 md:-right-10 bg-white dark:bg-card p-6 rounded-xl shadow-xl border border-slate-100 dark:border-border max-w-xs hidden md:block">
                             <div className="flex items-center gap-4 mb-3">
-                                <div className="p-3 bg-green-100 rounded-full text-green-600">
+                                <div className="p-3 bg-green-100/10 rounded-full text-green-600">
                                     <CheckCircle2 size={24} />
                                 </div>
-                                <span className="font-bold text-slate-900">Certified Experts</span>
+                                <span className="font-bold text-slate-900 dark:text-foreground">Certified Experts</span>
                             </div>
-                            <p className="text-sm text-slate-600 leading-relaxed">
+                            <p className="text-sm text-slate-600 dark:text-muted-foreground leading-relaxed">
                                 Fully licensed and accredited property management professionals.
                             </p>
                         </div>
@@ -88,10 +88,10 @@ export default function AboutPage() {
                     {/* Text Content */}
                     <div>
                         <h2 className="text-accent font-semibold tracking-wide uppercase mb-3 text-sm">Our Story</h2>
-                        <h3 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-6 leading-tight">
+                        <h3 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 dark:text-foreground mb-6 leading-tight">
                             Redefining Property Management in Nigeria
                         </h3>
-                        <div className="space-y-6 text-slate-600 text-lg leading-relaxed">
+                        <div className="space-y-6 text-slate-600 dark:text-muted-foreground text-lg leading-relaxed">
                             <p>
                                 Founded with a vision to revolutionize the real estate landscape, Ayoola Property Management has grown from a boutique agency into a powerhouse of property sourcing and management.
                             </p>
@@ -100,7 +100,7 @@ export default function AboutPage() {
                             </p>
                         </div>
 
-                        <div className="mt-8 pt-8 border-t border-slate-100">
+                        <div className="mt-8 pt-8 border-t border-slate-100 dark:border-border">
                             <Link
                                 href="/services"
                                 className="inline-flex items-center text-primary font-bold hover:text-accent transition-colors group"
@@ -114,45 +114,45 @@ export default function AboutPage() {
             </section>
 
             {/* 4. Core Values (Cards) */}
-            <section className="bg-slate-50 py-24 px-4 sm:px-6 lg:px-8">
+            <section className="bg-slate-50 dark:bg-muted/5 py-24 px-4 sm:px-6 lg:px-8">
                 <div className="container mx-auto">
                     <div className="text-center max-w-3xl mx-auto mb-16">
-                        <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-4">Our Core Values</h2>
-                        <p className="text-slate-600 text-lg">
+                        <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 dark:text-foreground mb-4">Our Core Values</h2>
+                        <p className="text-slate-600 dark:text-muted-foreground text-lg">
                             The principles that guide every decision we make and every property we manage.
                         </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {/* Card 1 */}
-                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow duration-300">
+                        <div className="bg-white dark:bg-card p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-border hover:shadow-md transition-shadow duration-300">
                             <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6">
                                 <Target size={28} />
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-3">Mission Driven</h3>
-                            <p className="text-slate-600 leading-relaxed">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-foreground mb-3">Mission Driven</h3>
+                            <p className="text-slate-600 dark:text-muted-foreground leading-relaxed">
                                 To provide stress-free, end-to-end real estate solutions that empower our clients to build and manage wealth efficiently.
                             </p>
                         </div>
 
                         {/* Card 2 */}
-                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow duration-300">
+                        <div className="bg-white dark:bg-card p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-border hover:shadow-md transition-shadow duration-300">
                             <div className="w-14 h-14 bg-green-50 text-green-600 rounded-xl flex items-center justify-center mb-6">
                                 <ShieldCheck size={28} />
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-3">Integrity First</h3>
-                            <p className="text-slate-600 leading-relaxed">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-foreground mb-3">Integrity First</h3>
+                            <p className="text-slate-600 dark:text-muted-foreground leading-relaxed">
                                 We believe in total transparency. No hidden fees, no cut corners—just honest, high-quality service you can rely on.
                             </p>
                         </div>
 
                         {/* Card 3 */}
-                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow duration-300">
+                        <div className="bg-white dark:bg-card p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-border hover:shadow-md transition-shadow duration-300">
                             <div className="w-14 h-14 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center mb-6">
                                 <Users size={28} />
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-3">Client Centric</h3>
-                            <p className="text-slate-600 leading-relaxed">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-foreground mb-3">Client Centric</h3>
+                            <p className="text-slate-600 dark:text-muted-foreground leading-relaxed">
                                 Your goals are our goals. We tailor every strategy to meet your unique needs, whether you are a first-time tenant or a seasoned investor.
                             </p>
                         </div>
@@ -163,8 +163,8 @@ export default function AboutPage() {
             {/* 5. Team Section Placeholder */}
             <section className="py-24 px-4 sm:px-6 lg:px-8 container mx-auto">
                 <div className="text-center max-w-3xl mx-auto mb-16">
-                    <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-4">Meet Our Team</h2>
-                    <p className="text-slate-600 text-lg">
+                    <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 dark:text-foreground mb-4">Meet Our Team</h2>
+                    <p className="text-slate-600 dark:text-muted-foreground text-lg">
                         The dedicated professionals working behind the scenes.
                     </p>
                 </div>

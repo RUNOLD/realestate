@@ -60,7 +60,7 @@ export default async function PropertiesPage({
 
 
             {/* 1. Enhanced Hero Section with Lead Focus */}
-            <div className="relative bg-primary py-24 sm:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
+            <div className="relative bg-primary dark:bg-card py-24 sm:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
                 {/* Abstract Background Pattern */}
                 <div className="absolute inset-0 opacity-10">
                     <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -69,10 +69,10 @@ export default async function PropertiesPage({
                 </div>
 
                 <div className="relative max-w-7xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-6xl font-serif font-bold text-primary-foreground mb-6 tracking-tight">
+                    <h1 className="text-4xl md:text-6xl font-serif font-bold text-primary-foreground dark:text-foreground mb-6 tracking-tight">
                         Find Your Next <span className="text-accent">Dream Home</span>
                     </h1>
-                    <p className="text-primary-foreground/80 max-w-2xl mx-auto text-lg md:text-xl mb-10 leading-relaxed">
+                    <p className="text-primary-foreground/80 dark:text-muted-foreground max-w-2xl mx-auto text-lg md:text-xl mb-10 leading-relaxed">
                         Browse our exclusive collection of premium rental properties.
                         From modern city apartments to serene suburban villas.
                     </p>

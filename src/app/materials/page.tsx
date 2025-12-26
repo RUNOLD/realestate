@@ -24,7 +24,7 @@ export default async function MaterialsPage() {
     const categories = Array.from(new Set(materials.map(m => m.category))).slice(0, 6);
 
     return (
-        <main className="min-h-screen bg-muted/10 font-sans">
+        <main className="min-h-screen bg-muted/10 dark:bg-background font-sans">
 
 
             {/* 1. Industrial Hero Section */}
@@ -62,16 +62,16 @@ export default async function MaterialsPage() {
             </div>
 
             {/* 2. Category Navigation Bar (Sticky-ish feel) */}
-            <div className="bg-white border-b border-border sticky top-0 z-10 shadow-sm overflow-x-auto">
+            <div className="bg-white dark:bg-card border-b border-border sticky top-0 z-10 shadow-sm overflow-x-auto">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-2 overflow-x-auto no-scrollbar">
                     <span className="flex items-center text-sm font-bold text-muted-foreground mr-4 shrink-0">
                         <Filter size={16} className="mr-2" /> Filter by:
                     </span>
-                    <button className="px-4 py-1.5 bg-primary text-white rounded-full text-sm font-medium shrink-0 whitespace-nowrap transition-colors">
+                    <button className="px-4 py-1.5 bg-primary text-primary-foreground rounded-full text-sm font-medium shrink-0 whitespace-nowrap transition-colors">
                         All Materials
                     </button>
                     {categories.map((cat, i) => (
-                        <button key={i} className="px-4 py-1.5 bg-muted/50 text-foreground hover:bg-muted rounded-full text-sm font-medium shrink-0 whitespace-nowrap border border-transparent hover:border-border transition-all">
+                        <button key={i} className="px-4 py-1.5 bg-muted/50 dark:bg-muted/20 text-foreground dark:text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/40 rounded-full text-sm font-medium shrink-0 whitespace-nowrap border border-transparent hover:border-border transition-all">
                             {cat}
                         </button>
                     ))}
@@ -86,18 +86,18 @@ export default async function MaterialsPage() {
                 </div>
 
                 {materials.length === 0 ? (
-                    <div className="text-center py-24 bg-white rounded-xl border border-dashed border-slate-300">
-                        <PackageCheck className="mx-auto h-12 w-12 text-slate-300 mb-4" />
+                    <div className="text-center py-24 bg-white dark:bg-card rounded-xl border border-dashed border-slate-300 dark:border-border">
+                        <PackageCheck className="mx-auto h-12 w-12 text-slate-300 dark:text-muted-foreground mb-4" />
                         <h3 className="text-xl font-medium text-foreground">Inventory Updating</h3>
                         <p className="text-muted-foreground mt-2">New stock is arriving. Please check back in a few hours.</p>
-                        <Link href="/contact" className="inline-block mt-6 text-primary font-bold hover:underline">
+                        <Link href="/contact" className="inline-block mt-6 text-primary dark:text-primary font-bold hover:underline">
                             Contact Sales Team
                         </Link>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {materials.map((material) => (
-                            <div key={material.id} className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-200 flex flex-col h-full">
+                            <div key={material.id} className="group bg-white dark:bg-card rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-200 dark:border-border flex flex-col h-full">
                                 {/* Image Area */}
                                 <div className="relative h-64 bg-slate-100 overflow-hidden">
                                     <img
@@ -116,19 +116,19 @@ export default async function MaterialsPage() {
 
                                 {/* Content Area */}
                                 <div className="p-6 flex flex-col flex-grow">
-                                    <h3 className="text-xl font-bold text-slate-900 mb-2 leading-tight">{material.name}</h3>
-                                    <p className="text-slate-500 text-sm mb-6 line-clamp-2 flex-grow">{material.description}</p>
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-foreground mb-2 leading-tight">{material.name}</h3>
+                                    <p className="text-slate-500 dark:text-muted-foreground text-sm mb-6 line-clamp-2 flex-grow">{material.description}</p>
 
-                                    <div className="border-t border-slate-100 pt-4 mt-auto">
+                                    <div className="border-t border-slate-100 dark:border-border pt-4 mt-auto">
                                         <div className="flex justify-between items-end mb-4">
                                             <div>
-                                                <p className="text-xs text-slate-400 font-medium uppercase">Unit Price</p>
-                                                <p className="text-2xl font-bold text-slate-900">
+                                                <p className="text-xs text-slate-400 dark:text-muted-foreground font-medium uppercase">Unit Price</p>
+                                                <p className="text-2xl font-bold text-slate-900 dark:text-foreground">
                                                     {material.price ? `₦${material.price.toLocaleString()}` : 'Ask for Price'}
                                                 </p>
                                             </div>
                                             {/* Mock Unit display */}
-                                            <span className="text-xs font-medium bg-slate-100 px-2 py-1 rounded text-slate-600">
+                                            <span className="text-xs font-medium bg-slate-100 dark:bg-muted text-slate-600 dark:text-muted-foreground px-2 py-1 rounded">
                                                 Per Unit
                                             </span>
                                         </div>
@@ -144,7 +144,7 @@ export default async function MaterialsPage() {
                                             </a>
                                             <Link
                                                 href="/contact"
-                                                className="flex items-center justify-center gap-2 bg-slate-100 text-slate-900 py-2.5 rounded-lg text-sm font-bold hover:bg-slate-200 transition-colors"
+                                                className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-muted text-slate-900 dark:text-foreground py-2.5 rounded-lg text-sm font-bold hover:bg-slate-200 dark:hover:bg-muted/80 transition-colors"
                                             >
                                                 Enquire
                                             </Link>
@@ -158,31 +158,31 @@ export default async function MaterialsPage() {
             </div>
 
             {/* 4. Trust/Process Section */}
-            <section className="bg-white border-t border-slate-200 py-20">
+            <section className="bg-white dark:bg-card border-t border-slate-200 dark:border-border py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
-                        <h2 className="text-3xl font-serif font-bold text-slate-900">Why Contractors Choose Us</h2>
+                        <h2 className="text-3xl font-serif font-bold text-slate-900 dark:text-foreground">Why Contractors Choose Us</h2>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8 text-center">
                         <div className="p-6">
-                            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 text-yellow-700">
+                            <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-4 text-yellow-700 dark:text-yellow-500">
                                 <Truck size={32} />
                             </div>
-                            <h3 className="text-lg font-bold mb-2">Fast Site Delivery</h3>
+                            <h3 className="text-lg font-bold mb-2 dark:text-foreground">Fast Site Delivery</h3>
                             <p className="text-muted-foreground">We deliver directly to your construction site within 24-48 hours of order confirmation.</p>
                         </div>
                         <div className="p-6">
-                            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-700">
+                            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-700 dark:text-blue-500">
                                 <ShieldCheck size={32} />
                             </div>
-                            <h3 className="text-lg font-bold mb-2">Quality Guaranteed</h3>
+                            <h3 className="text-lg font-bold mb-2 dark:text-foreground">Quality Guaranteed</h3>
                             <p className="text-muted-foreground">All materials are sourced from verified manufacturers and checked for quality assurance.</p>
                         </div>
                         <div className="p-6">
-                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-700">
+                            <div className="w-16 h-16 bg-green-100 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4 text-green-700 dark:text-green-500">
                                 <PackageCheck size={32} />
                             </div>
-                            <h3 className="text-lg font-bold mb-2">Bulk Discounts</h3>
+                            <h3 className="text-lg font-bold mb-2 dark:text-foreground">Bulk Discounts</h3>
                             <p className="text-muted-foreground">Large project? Get special pricing tiers when you order heavy duty materials in bulk.</p>
                         </div>
                     </div>

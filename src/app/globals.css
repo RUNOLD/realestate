@@ -42,43 +42,42 @@
   }
 
   .dark {
-    /* --- Palette: Obsidian & Silk --- */
-    --background: 240 10% 4%;
+    /* --- Palette: Midnight Executive --- */
+    --background: 224 35% 5%;
     --foreground: 210 20% 98%;
 
     /* --- Surface Layering --- */
-    --card: 240 10% 8%;
+    --card: 224 35% 7%;
     --card-foreground: 210 20% 98%;
 
-    --popover: 240 10% 6%;
+    --popover: 224 35% 7%;
     --popover-foreground: 210 20% 98%;
 
     /* --- Accents --- */
     --primary: 210 20% 98%;
-    --primary-foreground: 240 10% 4%;
+    --primary-foreground: 224 35% 5%;
 
-    --secondary: 240 5% 15%;
+    --secondary: 224 25% 15%;
     --secondary-foreground: 210 20% 98%;
 
     --accent: 43 50% 60%;
-    --accent-foreground: 240 10% 4%;
+    --accent-foreground: 224 35% 5%;
 
-    --muted: 240 6% 15%;
-    --muted-foreground: 240 5% 85%;
-    /* Enhanced Visibility for 'lighter' texts */
+    --muted: 224 25% 15%;
+    --muted-foreground: 224 10% 65%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
     /* --- Borders & UI --- */
-    --border: 240 5% 15%;
-    --input: 240 5% 15%;
+    --border: 224 30% 12%;
+    --input: 224 30% 12%;
     --ring: 43 50% 60%;
 
     /* --- Luxury FX --- */
     --radius: 0.5rem;
-    --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
-    --glass-bg: rgba(10, 10, 12, 0.85);
+    --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
+    --glass-bg: rgba(7, 10, 20, 0.85);
     --glass-border: rgba(255, 255, 255, 0.08);
   }
 
