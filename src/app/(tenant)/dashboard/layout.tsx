@@ -28,9 +28,11 @@ export default async function DashboardLayout({
     children: React.ReactNode;
 }) {
     const session = await auth();
+    console.log('[Dashboard Layout] Session:', session?.user ? 'Found User' : 'No User', session?.user?.role);
 
     // REDUNDANT CHECK: Ensure session exists
     if (!session?.user) {
+        console.log('[Dashboard Layout] Redirecting to login...');
         redirect('/login');
     }
 
