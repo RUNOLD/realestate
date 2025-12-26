@@ -1,6 +1,7 @@
 
 import Link from "next/link";
 import { signOut, auth } from "@/auth";
+import { redirect } from "next/navigation";
 import {
     LayoutDashboard,
     Building2,
@@ -20,7 +21,19 @@ export default async function AdminLayout({
     children: React.ReactNode;
 }) {
     const session = await auth();
+
+    // REDUNDANT CHECK: Ensure session exists
+    if (!session?.user) {
+        redirect('/login');
+    }
+
     const userRole = (session?.user as any)?.role || 'USER';
+
+    // REDUNDANT CHECK: Ensure correct role
+    if (userRole !== 'ADMIN' && userRole !== 'STAFF') {
+        redirect('/login'); // Or unauthorized page
+    }
+
     const isSuperAdmin = userRole === 'ADMIN';
 
     return (

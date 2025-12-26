@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { handleSignOut } from "@/actions/auth";
 import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
 
 
@@ -27,6 +28,12 @@ export default async function DashboardLayout({
     children: React.ReactNode;
 }) {
     const session = await auth();
+
+    // REDUNDANT CHECK: Ensure session exists
+    if (!session?.user) {
+        redirect('/login');
+    }
+
     const userRole = (session?.user as any)?.role;
     const userName = session?.user?.name || session?.user?.email || 'User';
     const userInitial = userName.charAt(0).toUpperCase();
