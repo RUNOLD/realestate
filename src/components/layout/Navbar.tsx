@@ -170,7 +170,7 @@ export function Navbar({ user }: { user?: any }) {
                         </div>
 
                         <div className="flex items-center gap-4 pl-6 border-l border-border">
-                            {user?.id && <NotificationPanel userId={user.id} />}
+                            {isAdminPath && user?.id && <NotificationPanel userId={user.id} />}
                             <ModeToggle />
                             {!(isAdminPath || isDashboardPath) ? (
                                 <Button asChild size="sm" className="gap-2 px-5 font-bold rounded-lg shadow-sm">
@@ -222,8 +222,8 @@ export function Navbar({ user }: { user?: any }) {
 
                     {/* Mobile Toggle Button - Visible below XL */}
                     <div className="xl:hidden flex items-center gap-2">
-                        {user?.id && <NotificationPanel userId={user.id} />}
-                        {!(isAdminPath || isDashboardPath) && <ModeToggle />}
+                        {isAdminPath && user?.id && <NotificationPanel userId={user.id} />}
+
                         <Button
                             variant="ghost"
                             size="icon"
@@ -248,12 +248,10 @@ export function Navbar({ user }: { user?: any }) {
                 mounted && resolvedTheme === 'light' ? "bg-[#E3EEEF]" : "bg-background"
             )}>
                 <div className="px-6 py-8 space-y-8 backdrop-blur-xl">
-                    {(isAdminPath || isDashboardPath) && (
-                        <div className="flex items-center justify-between pb-6 border-b border-border/50">
-                            <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Appearance</span>
-                            <ModeToggle />
-                        </div>
-                    )}
+                    <div className="flex items-center justify-between pb-6 border-b border-border/50">
+                        <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Appearance</span>
+                        <ModeToggle />
+                    </div>
                     <div className="space-y-1">
                         {mobileLinks.map((link) => (
                             <Link
