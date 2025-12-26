@@ -26,9 +26,9 @@ export default function AboutPage() {
                         Since 2015
                     </span>
                     <h1 className="text-4xl md:text-6xl font-serif font-bold text-white mb-6 leading-tight">
-                        Building Trust, <br />
+                        Managing Value, <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-white">
-                            Delivering Excellence
+                            Building Trust
                         </span>
                     </h1>
                     <p className="text-slate-300 max-w-2xl mx-auto text-lg md:text-xl leading-relaxed font-light">

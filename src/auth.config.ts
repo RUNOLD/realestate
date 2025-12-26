@@ -10,33 +10,59 @@ export const authConfig = {
             const isLoggedIn = !!auth?.user;
             const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
             const isOnAdmin = nextUrl.pathname.startsWith('/admin');
+            const isOnTenant = nextUrl.pathname.startsWith('/tenant');
+            const isOnStaff = nextUrl.pathname.startsWith('/staff');
 
             // Get role safely from session or token (if available)
             const userRole = (auth?.user as any)?.role;
 
             console.log(`[Middleware Check] Path: ${nextUrl.pathname}, LoggedIn: ${isLoggedIn}, Role: ${userRole}`);
 
+            // 1. Protection for Admin Routes
             if (isOnAdmin) {
-                if (!isLoggedIn) return false;
+                if (!isLoggedIn) return false; // Redirect to login
 
-                // Admins and Staff can access Admin routes
+                // STRICT RBAC: Only ADMIN and STAFF can access /admin
                 const hasAdminAccess = userRole === 'ADMIN' || userRole === 'STAFF';
                 if (!hasAdminAccess) {
-                    console.log(`[Middleware Check] Admin Access Denied for role: ${userRole}`);
+                    console.warn(`[Middleware Block] User with role '${userRole}' attempted to access ADMIN route.`);
+                    // Redirect unauthorized users to their appropriate dashboard or home
+                    // Returning false redirects to login, but since they are logged in, we might want to redirect to dashboard.
+                    // However, NextAuth middleware 'authorized' returning pure false redirects to login? 
+                    // Let's create a Response.redirect if we want custom behavior, but returning false is the standard "Access Denied" behavior which triggers signin.
+                    // For better UX, if they are logged in but wrong role, maybe we let them fall through to a 403 page?
+                    // Standard NextAuth pattern: return false -> redirect to signIn.
+                    return false;
                 }
-                return hasAdminAccess;
+                return true;
             }
 
-            if (isOnDashboard) {
+            // 2. Protection for Staff Routes (Future Proofing)
+            if (isOnStaff) {
+                if (!isLoggedIn) return false;
+                const hasStaffAccess = userRole === 'ADMIN' || userRole === 'STAFF';
+                if (!hasStaffAccess) {
+                    console.warn(`[Middleware Block] User with role '${userRole}' attempted to access STAFF route.`);
+                    return false;
+                }
+                return true;
+            }
+
+            // 3. Protection for Tenant/Dashboard Routes
+            // Assuming /dashboard is the main tenant area, but also covering /tenant just in case.
+            if (isOnDashboard || isOnTenant) {
                 if (!isLoggedIn) return false;
 
-                // Allow TENANT, STAFF, and ADMIN for the dashboard
-                // This prevents Admins from being locked out of tenant-style pages
+                // Allow TENANT, STAFF, and ADMIN. 
+                // Basically, anyone logged in can probably access the dashboard unless you have specific users (like 'USER') who shouldn't.
+                // Assuming 'USER' role needs to become 'TENANT' to access.
                 const hasDashboardAccess = userRole === 'TENANT' || userRole === 'ADMIN' || userRole === 'STAFF';
+
                 if (!hasDashboardAccess) {
-                    console.log(`[Middleware Check] Dashboard Access Denied for role: ${userRole}`);
+                    console.warn(`[Middleware Block] User with role '${userRole}' attempted to access DASHBOARD/TENANT route.`);
+                    return false;
                 }
-                return hasDashboardAccess;
+                return true;
             }
 
             return true;
