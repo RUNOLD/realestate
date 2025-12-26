@@ -97,7 +97,7 @@ export function NotificationPanel({ userId }: { userId: string }) {
                 <Button variant="ghost" size="icon" className="relative hover:bg-primary/5 rounded-full transition-all">
                     <Bell size={20} className="text-muted-foreground" />
                     {unreadCount > 0 && (
-                        <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary text-[10px] font-bold text-white rounded-full flex items-center justify-center border-2 border-white animate-in zoom-in">
+                        <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary text-[10px] font-bold text-primary-foreground rounded-full flex items-center justify-center border-2 border-background animate-in zoom-in">
                             {unreadCount > 9 ? "9+" : unreadCount}
                         </span>
                     )}

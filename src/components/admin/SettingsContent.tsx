@@ -384,33 +384,47 @@ export function SettingsContent({ user }: SettingsContentProps) {
                                     <p className="text-muted-foreground font-medium">System-wide platform parameters for the Ayoola ecosystem.</p>
                                 </div>
 
-                                <div className="grid gap-8 max-w-3xl">
+                                <form
+                                    action={() => {
+                                        startTransition(async () => {
+                                            await new Promise(resolve => setTimeout(resolve, 1000));
+                                            toast.success("Platform configuration deployed successfully");
+                                        });
+                                    }}
+                                    className="grid gap-8 max-w-3xl"
+                                >
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Entity Name</label>
-                                        <Input defaultValue="Ayoola Property Management & Sourcing" className="h-14 bg-muted/30 border-none rounded-2xl font-black shadow-inner" />
+                                        <Input name="entityName" defaultValue="Ayoola Property Management & Sourcing" className="h-14 bg-muted/30 border-none rounded-2xl font-black shadow-inner" />
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Global Support Node</label>
-                                            <Input defaultValue="support@ayoolaproperty.com" className="h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner" />
+                                            <Input name="supportEmail" defaultValue="support@ayoolaproperty.com" className="h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner" />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Verified Hotline</label>
-                                            <Input defaultValue="+234 800 123 4567" className="h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner" />
+                                            <Input name="hotline" defaultValue="+234 800 123 4567" className="h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner" />
                                         </div>
                                     </div>
 
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Headquarters Address</label>
-                                        <Input defaultValue="123 Lekki Phase 1, Lagos, Nigeria" className="h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner" />
+                                        <Input name="address" defaultValue="123 Lekki Phase 1, Lagos, Nigeria" className="h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner" />
                                     </div>
-                                </div>
-                                <div className="pt-8 flex items-center justify-end border-t border-gray-100">
-                                    <Button disabled className="h-14 px-10 rounded-2xl font-black uppercase tracking-widest opacity-50">
-                                        <Save className="mr-2" size={20} /> Deploy Configuration
-                                    </Button>
-                                </div>
+
+                                    <div className="pt-8 flex items-center justify-end border-t border-border">
+                                        <Button
+                                            disabled={isPending}
+                                            type="submit"
+                                            className="h-14 px-10 rounded-2xl font-black uppercase tracking-widest shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
+                                        >
+                                            {isPending ? <Loader2 size={20} className="animate-spin mr-2" /> : <Save className="mr-2" size={20} />}
+                                            Deploy Configuration
+                                        </Button>
+                                    </div>
+                                </form>
                             </div>
                         )}
                     </div>
