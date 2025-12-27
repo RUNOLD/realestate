@@ -33,13 +33,13 @@ import { toast } from "sonner";
 interface SettingsContentProps {
     user: {
         id: string;
-        name?: string;
-        email?: string;
-        image?: string;
+        name: string | null;
+        email: string;
+        image: string | null;
         role: string;
-        status?: string;
-        phone?: string;
-        password?: string;
+        status: string;
+        phone: string | null;
+        password?: string | null;
     };
 }
 
@@ -204,7 +204,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
                                                     <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-hover:text-primary" size={18} />
                                                     <Input
                                                         name="name"
-                                                        defaultValue={user.name}
+                                                        defaultValue={user.name ?? ''}
                                                         required
                                                         disabled={!canEditName}
                                                         className={cn(
