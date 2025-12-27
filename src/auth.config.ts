@@ -54,12 +54,23 @@ export const authConfig = {
                 if (!isLoggedIn) return false;
 
                 // Allow TENANT, STAFF, and ADMIN. 
-                // Basically, anyone logged in can probably access the dashboard unless you have specific users (like 'USER') who shouldn't.
-                // Assuming 'USER' role needs to become 'TENANT' to access.
                 const hasDashboardAccess = userRole === 'TENANT' || userRole === 'ADMIN' || userRole === 'STAFF';
 
                 if (!hasDashboardAccess) {
                     console.warn(`[Middleware Block] User with role '${userRole}' attempted to access DASHBOARD/TENANT route.`);
+                    return false;
+                }
+                return true;
+            }
+
+            // 4. Protection for Landlord Routes
+            const isOnLandlord = nextUrl.pathname.startsWith('/landlord');
+            if (isOnLandlord) {
+                if (!isLoggedIn) return false;
+
+                const hasLandlordAccess = userRole === 'LANDLORD' || userRole === 'ADMIN'; // Admin can likely view
+                if (!hasLandlordAccess) {
+                    console.warn(`[Middleware Block] User with role '${userRole}' attempted to access LANDLORD route.`);
                     return false;
                 }
                 return true;

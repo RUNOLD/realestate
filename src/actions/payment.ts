@@ -99,7 +99,8 @@ export async function verifyPayment(reference: string, amount: number, userId: s
                     reference: reference,
                     status: 'SUCCESS',
                     userId: userId,
-                    method: 'Paystack (Mock)'
+                    method: 'Paystack (Mock)',
+                    approvalStatus: 'PENDING_ADMIN'
                 }
             });
             revalidatePath('/dashboard');
@@ -138,7 +139,8 @@ export async function verifyPayment(reference: string, amount: number, userId: s
                     reference: reference,
                     status: 'SUCCESS',
                     userId: userId,
-                    method: data.data.channel || 'Paystack'
+                    method: data.data.channel || 'Paystack',
+                    approvalStatus: 'PENDING_ADMIN'
                 }
             });
 

@@ -12,6 +12,9 @@ export async function createProperty(formData: FormData) {
     const type = formData.get("type") as string;
     const status = formData.get("status") as "AVAILABLE" | "RENTED" | "SOLD" | "MAINTENANCE";
     const images = formData.get("images") as string;
+    const ownerId = formData.get("ownerId") as string;
+    const isMultiUnit = formData.get("isMultiUnit") === "true" || formData.get("isMultiUnit") === "on";
+    const unitCount = formData.get("unitCount") ? parseInt(formData.get("unitCount") as string) : 0;
 
     // Specifications
     const bedrooms = formData.get("bedrooms") ? parseInt(formData.get("bedrooms") as string) : null;
@@ -21,6 +24,20 @@ export async function createProperty(formData: FormData) {
     // Basic validation
     if (!title || !description || isNaN(price) || !location || !type) {
         throw new Error("Missing required fields");
+    }
+
+    if (!ownerId) {
+        throw new Error("Landlord Owner is required");
+    }
+
+    // Verify Landlord
+    const landlord = await prisma.user.findUnique({
+        where: { id: ownerId }
+    });
+
+    if (!landlord || landlord.role !== 'LANDLORD') {
+        // Ideally redirect to user creation, but throwing error for now as UI should handle fallback
+        throw new Error("Invalid Landlord or User is not a Landlord");
     }
 
     // Safe image handling
@@ -36,21 +53,58 @@ export async function createProperty(formData: FormData) {
         }
     }
 
+    const commonData = {
+        title,
+        description,
+        price,
+        location,
+        type,
+        status: status || "AVAILABLE",
+        images: imageArray,
+        bedrooms,
+        bathrooms,
+        sqft,
+        ownerId
+    };
+
     try {
-        await prisma.property.create({
-            data: {
-                title,
-                description,
-                price,
-                location,
-                type,
-                status: status || "AVAILABLE",
-                images: imageArray,
-                bedrooms,
-                bathrooms,
-                sqft,
+        if (isMultiUnit && unitCount > 0) {
+            // Create Parent Property
+            const parent = await prisma.property.create({
+                data: {
+                    ...commonData,
+                    isMultiUnit: true,
+                    // Parent might be status 'AVAILABLE' or just a container? 
+                    // Making it available means it shows up in listings. 
+                    // User said: "remove it from public availability" if leased? 
+                    // "Inventory Management: Your current terminateLease logic already sets status to AVAILABLE. To make it "leave the listed properties," your frontend filter for public listings must explicitly query where: { status: 'AVAILABLE', parentId: { not: null } } (or only show individual units...)"
+                    // Actually, usually parent is just a container.
+                    // But for now, let's create it.
+                }
+            });
+
+            // Create Units
+            for (let i = 1; i <= unitCount; i++) {
+                await prisma.property.create({
+                    data: {
+                        ...commonData,
+                        title: `${title} - Unit ${i}`,
+                        unitNumber: `Unit ${i}`,
+                        parentId: parent.id,
+                        status: 'AVAILABLE'
+                    }
+                });
             }
-        });
+        } else {
+            // Single Property
+            await prisma.property.create({
+                data: {
+                    ...commonData,
+                    isMultiUnit: false
+                }
+            });
+        }
+
     } catch (error) {
         console.error("Failed to create property:", error);
         throw new Error("Failed to create property");

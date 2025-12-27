@@ -70,14 +70,37 @@ export const CreateStaffSchema = z.object({
     email: z.string().email("Invalid email address"),
     phone: z.string().optional(),
     password: z.string().min(6, "Password must be at least 6 characters"),
-    role: z.enum(["STAFF", "ADMIN"]).default("STAFF"),
+    role: z.enum(["STAFF", "ADMIN", "LANDLORD"]).default("STAFF"),
 });
 
 export const UpdateUserSchema = z.object({
     id: z.string().min(1),
     name: z.string().min(2, "Name is required"),
     email: z.string().email("Invalid email address"),
-    phone: z.string().optional(),
-    role: z.enum(["USER", "TENANT", "ADMIN", "STAFF"]),
+    role: z.enum(["USER", "TENANT", "ADMIN", "STAFF", "LANDLORD"]),
     status: z.enum(["ACTIVE", "PENDING"]),
+});
+
+export const CreatePropertySchema = z.object({
+    title: z.string().min(5, "Title must be at least 5 characters"),
+    description: z.string().min(10, "Description must be at least 10 characters"),
+    price: z.number().positive("Price must be positive"),
+    location: z.string().min(3, "Location is required"),
+    type: z.string().min(1, "Type is required"),
+    status: z.enum(["AVAILABLE", "RENTED", "SOLD", "MAINTENANCE"]).default("AVAILABLE"),
+
+    // Landlord
+    ownerId: z.string().min(1, "Landlord owner is required"),
+
+    // Multi-unit
+    isMultiUnit: z.boolean().default(false),
+    unitCount: z.number().min(1).optional(), // For creation logic
+
+    // Specs
+    bedrooms: z.number().optional(),
+    bathrooms: z.number().optional(),
+    sqft: z.number().optional(),
+
+    // Images handled separately usually or as string array
+    images: z.array(z.string()).optional(),
 });

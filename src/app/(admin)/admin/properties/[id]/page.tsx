@@ -32,34 +32,34 @@ export default async function PropertyDetailsPage(props: { params: Promise<{ id:
     const tenant = activeLease?.user;
 
     return (
-        <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6">
-            <div className="max-w-5xl mx-auto space-y-8">
+        <div className="min-h-screen bg-muted/10 py-8 px-4 sm:px-6">
+            <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-500">
 
                 {/* Header & Actions */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <Link href="/admin/properties">
-                            <Button variant="outline" size="icon" className="h-10 w-10 bg-white shadow-sm border-gray-200">
-                                <ArrowLeft size={18} className="text-gray-600" />
+                            <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-foreground">
+                                <ArrowLeft size={18} />
                             </Button>
                         </Link>
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{property.title}</h1>
-                            <div className="flex items-center text-gray-500 mt-1">
-                                <MapPin size={16} className="mr-1 text-blue-600" />
+                            <h1 className="text-3xl font-serif font-bold text-foreground tracking-tight">{property.title}</h1>
+                            <div className="flex items-center text-muted-foreground mt-1">
+                                <MapPin size={16} className="mr-1 text-primary" />
                                 <span className="text-sm">{property.location}</span>
                             </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
                         <Link href={`/admin/properties/${property.id}/edit`}>
-                            <Button variant="outline" className="gap-2 bg-white">
+                            <Button variant="outline" className="gap-2 bg-card border-border hover:bg-muted font-medium text-foreground">
                                 <Edit size={16} /> Edit Details
                             </Button>
                         </Link>
-                        <Badge className={`text-sm px-3 py-1 ${property.status === 'AVAILABLE' ? 'bg-green-100 text-green-700 hover:bg-green-100' :
-                                property.status === 'RENTED' ? 'bg-blue-100 text-blue-700 hover:bg-blue-100' :
-                                    'bg-gray-100 text-gray-700 hover:bg-gray-100'
+                        <Badge className={`text-sm px-3 py-1 ${property.status === 'AVAILABLE' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                            property.status === 'RENTED' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
+                                'bg-muted text-muted-foreground'
                             }`}>
                             {property.status}
                         </Badge>
@@ -72,54 +72,54 @@ export default async function PropertyDetailsPage(props: { params: Promise<{ id:
                     <div className="lg:col-span-2 space-y-8">
 
                         {/* Image Gallery (Placeholder for now) */}
-                        <Card className="overflow-hidden border-none shadow-md">
+                        <Card className="overflow-hidden border-border shadow-lg bg-card">
                             <CardContent className="p-0">
-                                <div className="aspect-video bg-gray-200 relative group overflow-hidden">
+                                <div className="aspect-video bg-muted relative group overflow-hidden">
                                     <img
                                         src={property.images.length > 0 ? property.images[0] : "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop"}
                                         alt={property.title}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                     />
-                                    <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-all" />
+                                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all" />
                                 </div>
                             </CardContent>
                         </Card>
 
                         {/* Property Specs */}
                         <div className="grid grid-cols-3 gap-4">
-                            <Card className="text-center p-4 border-none shadow-sm bg-white">
+                            <Card className="text-center p-4 border-border shadow-sm bg-card">
                                 <div className="flex flex-col items-center">
-                                    <BedDouble className="text-blue-600 mb-2" size={24} />
-                                    <span className="text-xl font-bold text-gray-900">{property.bedrooms ?? 0}</span>
-                                    <span className="text-xs text-gray-500 uppercase tracking-wider">Bedrooms</span>
+                                    <BedDouble className="text-primary mb-2" size={24} />
+                                    <span className="text-xl font-bold text-foreground">{property.bedrooms ?? 0}</span>
+                                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Bedrooms</span>
                                 </div>
                             </Card>
-                            <Card className="text-center p-4 border-none shadow-sm bg-white">
+                            <Card className="text-center p-4 border-border shadow-sm bg-card">
                                 <div className="flex flex-col items-center">
-                                    <Bath className="text-blue-600 mb-2" size={24} />
-                                    <span className="text-xl font-bold text-gray-900">{property.bathrooms ?? 0}</span>
-                                    <span className="text-xs text-gray-500 uppercase tracking-wider">Bathrooms</span>
+                                    <Bath className="text-primary mb-2" size={24} />
+                                    <span className="text-xl font-bold text-foreground">{property.bathrooms ?? 0}</span>
+                                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Bathrooms</span>
                                 </div>
                             </Card>
-                            <Card className="text-center p-4 border-none shadow-sm bg-white">
+                            <Card className="text-center p-4 border-border shadow-sm bg-card">
                                 <div className="flex flex-col items-center">
-                                    <Maximize className="text-blue-600 mb-2" size={24} />
-                                    <span className="text-xl font-bold text-gray-900">{(property.sqft ?? 0).toLocaleString()}</span>
-                                    <span className="text-xs text-gray-500 uppercase tracking-wider">Sqft Area</span>
+                                    <Maximize className="text-primary mb-2" size={24} />
+                                    <span className="text-xl font-bold text-foreground">{(property.sqft ?? 0).toLocaleString()}</span>
+                                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Sqft</span>
                                 </div>
                             </Card>
                         </div>
 
                         {/* Description */}
-                        <Card className="border-none shadow-sm bg-white">
+                        <Card className="border-border shadow-sm bg-card">
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-lg">
-                                    <FileText size={20} className="text-gray-400" />
+                                <CardTitle className="flex items-center gap-2 text-lg text-foreground">
+                                    <FileText size={20} className="text-muted-foreground" />
                                     Description
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
+                                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                                     {property.description}
                                 </p>
                             </CardContent>
@@ -130,82 +130,82 @@ export default async function PropertyDetailsPage(props: { params: Promise<{ id:
                     <div className="space-y-8">
 
                         {/* Financial Info */}
-                        <Card className="border-none shadow-md bg-white overflow-hidden">
-                            <div className="bg-blue-600 p-4 text-white">
-                                <span className="text-sm opacity-90 block">Annual Rent</span>
-                                <div className="text-3xl font-bold mt-1">
+                        <Card className="border-border shadow-lg bg-card overflow-hidden">
+                            <div className="bg-primary p-6 text-primary-foreground">
+                                <span className="text-sm font-medium opacity-90 block uppercase tracking-wide">Annual Rent</span>
+                                <div className="text-4xl font-serif font-bold mt-2">
                                     ₦{property.price.toLocaleString()}
                                 </div>
                             </div>
                             <CardContent className="p-6 space-y-4">
-                                <div className="flex justify-between text-sm py-2 border-b">
-                                    <span className="text-gray-500">Property Type</span>
-                                    <span className="font-semibold">{property.type}</span>
+                                <div className="flex justify-between text-sm py-3 border-b border-border/50">
+                                    <span className="text-muted-foreground font-medium">Property Type</span>
+                                    <span className="font-bold text-foreground">{property.type}</span>
                                 </div>
-                                <div className="flex justify-between text-sm py-2 border-b">
-                                    <span className="text-gray-500">Listed On</span>
-                                    <span className="font-semibold">{property.createdAt.toLocaleDateString()}</span>
+                                <div className="flex justify-between text-sm py-3 border-b border-border/50">
+                                    <span className="text-muted-foreground font-medium">Listed On</span>
+                                    <span className="font-bold text-foreground">{property.createdAt.toLocaleDateString()}</span>
                                 </div>
-                                <div className="flex justify-between text-sm py-2">
-                                    <span className="text-gray-500">Property ID</span>
-                                    <span className="font-mono text-xs">{property.id.toUpperCase()}</span>
+                                <div className="flex justify-between text-sm py-3">
+                                    <span className="text-muted-foreground font-medium">Property ID</span>
+                                    <span className="font-mono text-xs bg-muted px-2 py-1 rounded text-foreground">{property.id.split('-')[0].toUpperCase()}...</span>
                                 </div>
                             </CardContent>
                         </Card>
 
                         {/* Tenant Info Section */}
-                        <Card className="border-none shadow-md bg-white">
+                        <Card className="border-border shadow-md bg-card">
                             <CardHeader className="pb-4">
-                                <CardTitle className="text-lg flex items-center gap-2">
-                                    <User size={20} className="text-blue-600" />
+                                <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+                                    <User size={20} className="text-primary" />
                                     {property.status === 'RENTED' ? 'Active Tenant' : 'Lease Status'}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 {tenant ? (
                                     <div className="space-y-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold border border-blue-100">
+                                        <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-xl border border-border/50">
+                                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20">
                                                 {tenant.name?.[0]?.toUpperCase() ?? 'U'}
                                             </div>
                                             <div>
-                                                <div className="font-bold text-gray-900">{tenant.name}</div>
-                                                <div className="text-sm text-gray-500">{tenant.email}</div>
+                                                <div className="font-bold text-foreground">{tenant.name}</div>
+                                                <div className="text-sm text-muted-foreground">{tenant.email}</div>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-3 pt-4 border-t border-gray-100">
+                                        <div className="space-y-3 pt-4 border-t border-border/50">
                                             <div className="flex items-center gap-3 text-sm">
-                                                <Calendar size={16} className="text-gray-400" />
-                                                <span className="text-gray-600">Started: </span>
-                                                <span className="font-medium">{activeLease.startDate.toLocaleDateString()}</span>
+                                                <Calendar size={16} className="text-muted-foreground" />
+                                                <span className="text-muted-foreground">Started: </span>
+                                                <span className="font-medium text-foreground ml-auto">{activeLease.startDate.toLocaleDateString()}</span>
                                             </div>
                                             {activeLease.endDate && (
                                                 <div className="flex items-center gap-3 text-sm">
-                                                    <Calendar size={16} className="text-gray-400" />
-                                                    <span className="text-gray-600">Expires: </span>
-                                                    <span className="font-medium">{activeLease.endDate.toLocaleDateString()}</span>
+                                                    <Calendar size={16} className="text-muted-foreground" />
+                                                    <span className="text-muted-foreground">Expires: </span>
+                                                    <span className="font-medium text-foreground ml-auto">{activeLease.endDate.toLocaleDateString()}</span>
                                                 </div>
                                             )}
                                         </div>
 
                                         <Link href={`/admin/users/${tenant.id}`} className="block">
-                                            <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                                            <Button variant="outline" className="w-full text-primary hover:text-primary hover:bg-primary/5 border-primary/20">
                                                 View Tenant Profile
                                             </Button>
                                         </Link>
                                     </div>
                                 ) : (
                                     <div className="text-center py-6 space-y-4">
-                                        <div className="inline-flex h-12 w-12 rounded-full bg-gray-50 items-center justify-center text-gray-400">
+                                        <div className="inline-flex h-14 w-14 rounded-full bg-muted items-center justify-center text-muted-foreground animate-pulse">
                                             <Info size={24} />
                                         </div>
                                         <div>
-                                            <div className="font-semibold text-gray-900">No Active Tenant</div>
-                                            <p className="text-sm text-gray-500 mt-1 uppercase tracking-tight">Property is currently listed as {property.status.toLowerCase()}</p>
+                                            <div className="font-bold text-foreground">No Active Tenant</div>
+                                            <p className="text-xs text-muted-foreground mt-1 uppercase tracking-wider font-medium">Status: {property.status.toLowerCase()}</p>
                                         </div>
                                         <Link href="/admin/users?role=TENANT" className="block">
-                                            <Button className="w-full bg-gray-900 hover:bg-black text-white">
+                                            <Button className="w-full bg-foreground text-background hover:bg-foreground/90 font-bold">
                                                 Assign a Tenant
                                             </Button>
                                         </Link>

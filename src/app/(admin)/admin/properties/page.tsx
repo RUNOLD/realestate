@@ -36,8 +36,8 @@ export default async function AdminPropertiesPage({ searchParams }: PageProps) {
         <div className="space-y-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-900">Properties</h1>
-                    <p className="text-gray-500 mt-1">Manage your portfolio and track listing status.</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Properties</h1>
+                    <p className="text-muted-foreground mt-1">Manage your portfolio and track listing status.</p>
                 </div>
                 <Link href="/admin/properties/new">
                     <Button className="gap-2">
@@ -46,7 +46,7 @@ export default async function AdminPropertiesPage({ searchParams }: PageProps) {
                 </Link>
             </div>
 
-            <div className="bg-white rounded-md border">
+            <div className="bg-card rounded-md border border-border">
                 {/* CASTING properties to any because generic type safety with Prism return type is often tricky in quick refactors.
                      Ideally we map to Property type. 
                  */}

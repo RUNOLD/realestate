@@ -30,6 +30,8 @@ export async function authenticate(
 
         if (user?.role === 'ADMIN' || user?.role === 'STAFF') {
             redirectUrl = '/admin';
+        } else if ((user?.role as any) === 'LANDLORD') {
+            redirectUrl = '/landlord/dashboard';
         }
 
         await signIn('credentials', {

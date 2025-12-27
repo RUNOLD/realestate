@@ -15,6 +15,7 @@ enum Role {
   ADMIN
   STAFF
   TENANT
+  LANDLORD // Added
   USER // Fallback/Default
 }
 
@@ -98,6 +99,7 @@ model User {
   documents       Document[]
   comments        TicketComment[]
   managedProperties Property[] @relation("PropertyManager") // Staff managing properties
+  ownedProperties   Property[] @relation("PropertyOwner") // Landlord's properties
   rentModifications RentModificationLog[] @relation("AdminModifier")
   claimedTickets   Ticket[]              @relation("TicketClaimant")
   notifications    Notification[]
@@ -122,8 +124,19 @@ model Property {
   
   // Relations
   leases      Lease[]
+  payments    Payment[]      // Linked payments for landlord visibility
   managerId   String?        // Staff responsible
   manager     User?          @relation("PropertyManager", fields: [managerId], references: [id])
+
+  ownerId     String?        // Making optional initially to facilitate migration of existing data, but will enforce in app logic
+  owner       User?          @relation("PropertyOwner", fields: [ownerId], references: [id])
+
+  // Multi-unit Support
+  isMultiUnit Boolean        @default(false)
+  parentId    String?        // If this is a unit, link to the building
+  parent      Property?      @relation("Units", fields: [parentId], references: [id])
+  units       Property[]     @relation("Units")
+  unitNumber  String?        // e.g., "Flat 101"
   
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
@@ -221,6 +234,9 @@ model Payment {
 
   userId         String
   user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  propertyId     String?       // Make optional for existing payments
+  property       Property?     @relation(fields: [propertyId], references: [id])
   
   createdAt      DateTime      @default(now())
 }

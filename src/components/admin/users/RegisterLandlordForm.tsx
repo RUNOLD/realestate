@@ -1,47 +1,39 @@
+
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState } from 'react'; // Updated hook for Next.js 14/15 actions
 import { Button } from "@/components/ui/button";
-import { createStaff } from "@/actions/user";
-import { UserPlus, Loader2, ShieldCheck } from "lucide-react";
+import { createStaff } from "@/actions/user"; // optimizing reuse of createStaff as it handles user creation, but we might want to rename it or create createLandlord later if logic diverges. For now createStaff is fine as it takes a role.
+import { UserPlus, Loader2, Building } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export function RegisterStaffForm() {
-    const [state, action, isPending] = useActionState(createStaff, null);
+export function RegisterLandlordForm() {
+    // We can reuse createStaff action since it accepts role.
+    // However, if createStaff validates role against "STAFF" or "ADMIN" strictly in Zod, we updated schema to include LANDLORD, so it should work.
+    const [state, action, isPending] = useActionState(createStaff, null); // using generic createStaff
 
     return (
         <form action={action} className="space-y-6">
+            <input type="hidden" name="role" value="LANDLORD" />
+
             <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
                 <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-                    <ShieldCheck className="text-primary" size={20} />
-                    Account Details
+                    <Building className="text-primary" size={20} />
+                    Landlord Details
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-muted-foreground">Full Name *</label>
-                        <Input name="name" placeholder="Staff Name" required />
+                        <Input name="name" placeholder="Landlord Name" required />
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-muted-foreground">Email Address *</label>
-                        <Input name="email" type="email" placeholder="staff@ayoola.com" required />
+                        <Input name="email" type="email" placeholder="landlord@example.com" required />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">Phone Number</label>
-                        <Input name="phone" placeholder="+234..." />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">Role *</label>
-                        <Select name="role" defaultValue="STAFF">
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select Role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="STAFF">Staff</SelectItem>
-                                <SelectItem value="ADMIN">Admin</SelectItem>
-                                <SelectItem value="LANDLORD">Landlord</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <label className="text-sm font-medium text-muted-foreground">Phone Number *</label>
+                        <Input name="phone" placeholder="+234..." required />
+                        {/* Landlords usually need a phone number */}
                     </div>
                     <div className="space-y-2 md:col-span-2">
                         <label className="text-sm font-medium text-muted-foreground">Initial Password *</label>
@@ -67,7 +59,7 @@ export function RegisterStaffForm() {
             {state?.success && (
                 <div className="bg-green-100 text-green-700 text-sm p-3 rounded-md border border-green-200">
                     <p className="font-bold">Success!</p>
-                    <p>{state.message || "Staff member created successfully."}</p>
+                    <p>{state.message || "Landlord account created successfully."}</p>
                 </div>
             )}
 
@@ -78,7 +70,7 @@ export function RegisterStaffForm() {
                     </>
                 ) : (
                     <>
-                        <UserPlus className="mr-2 h-4 w-4" /> Add Team Member
+                        <UserPlus className="mr-2 h-4 w-4" /> Create Landlord Account
                     </>
                 )}
             </Button>

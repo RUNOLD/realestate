@@ -244,3 +244,42 @@ export async function updateUser(prevState: any, formData: FormData) {
         return { error: "Failed to update user. Please try again." };
     }
 }
+
+export async function updateSelfPassword(prevState: any, formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Unauthorized" };
+
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
+
+    if (!password || password.length < 6) {
+        return { error: "Password must be at least 6 characters" };
+    }
+
+    if (password !== confirmPassword) {
+        return { error: "Passwords do not match" };
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await prisma.user.update({
+            where: { id: session.user.id },
+            data: { password: hashedPassword }
+        });
+
+        await createActivityLog(
+            session.user.id,
+            ActionType.UPDATE,
+            EntityType.USER,
+            session.user.id,
+            { details: "Password changed by user" }
+        );
+
+        revalidatePath("/landlord/settings");
+        return { success: true, message: "Password updated successfully." };
+    } catch (e) {
+        console.error("Update Password Error:", e);
+        return { error: "Failed to update password." };
+    }
+}
