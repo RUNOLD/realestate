@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { CreatePaymentSchema } from "@/lib/schemas";
 import { createActivityLog, ActionType, EntityType } from "@/lib/logger";
+import { ApprovalStatus } from "@prisma/client";
 
 export async function createPayment(prevState: any, formData: FormData) {
     const session = await auth();
@@ -35,7 +36,7 @@ export async function createPayment(prevState: any, formData: FormData) {
         }
 
         const userRole = (session.user as any).role;
-        const approvalStatus = userRole === 'STAFF' ? 'PENDING_ADMIN' : 'APPROVED';
+        const approvalStatus = userRole === 'STAFF' ? ApprovalStatus.PENDING_ADMIN : ApprovalStatus.APPROVED;
 
         const payment = await prisma.payment.create({
             data: {
@@ -100,7 +101,7 @@ export async function verifyPayment(reference: string, amount: number, userId: s
                     status: 'SUCCESS',
                     userId: userId,
                     method: 'Paystack (Mock)',
-                    approvalStatus: 'PENDING_ADMIN'
+                    approvalStatus: ApprovalStatus.PENDING_ADMIN
                 }
             });
             revalidatePath('/dashboard');
@@ -140,7 +141,7 @@ export async function verifyPayment(reference: string, amount: number, userId: s
                     status: 'SUCCESS',
                     userId: userId,
                     method: data.data.channel || 'Paystack',
-                    approvalStatus: 'PENDING_ADMIN'
+                    approvalStatus: ApprovalStatus.PENDING_ADMIN
                 }
             });
 

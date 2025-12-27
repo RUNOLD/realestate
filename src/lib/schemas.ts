@@ -77,6 +77,7 @@ export const UpdateUserSchema = z.object({
     id: z.string().min(1),
     name: z.string().min(2, "Name is required"),
     email: z.string().email("Invalid email address"),
+    phone: z.string().optional(),
     role: z.enum(["USER", "TENANT", "ADMIN", "STAFF", "LANDLORD"]),
     status: z.enum(["ACTIVE", "PENDING"]),
 });

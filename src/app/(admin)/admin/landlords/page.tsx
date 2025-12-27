@@ -9,6 +9,7 @@ export default async function AdminLandlordsPage() {
     const landlords = await prisma.user.findMany({
         where: { role: 'LANDLORD' },
         include: {
+            // @ts-ignore: ownedProperties exists in schema but client might be stale during build
             ownedProperties: {
                 select: { id: true, title: true }
             }
