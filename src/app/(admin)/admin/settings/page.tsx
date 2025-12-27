@@ -18,5 +18,15 @@ export default async function SettingsPage() {
         redirect("/login");
     }
 
-    return <SettingsContent user={user} />;
+    return (
+        <SettingsContent
+            user={{
+                ...user,
+                name: user.name ?? null,
+                phone: user.phone ?? null,
+                image: user.image ?? null,
+                password: user.password ?? null,
+            }}
+        />
+    );
 }
