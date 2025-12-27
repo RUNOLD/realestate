@@ -10,9 +10,13 @@ import { Lock } from "lucide-react";
 import { toast } from "sonner"; // Assuming sonner is used, or generic alert
 import { useEffect } from "react";
 
-const initialState = {
-    message: null,
-    error: null,
+const initialState: {
+    message?: string;
+    error?: string;
+    success?: boolean;
+} = {
+    message: undefined,
+    error: undefined,
     success: false
 };
 

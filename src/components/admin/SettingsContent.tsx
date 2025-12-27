@@ -165,7 +165,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
                                         <div className="relative group">
                                             <div className="absolute -inset-1 bg-gradient-to-tr from-primary to-blue-500 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-500" />
                                             <Avatar className="h-32 w-32 border-4 border-background relative shadow-2xl">
-                                                <AvatarImage src={user.image} />
+                                                <AvatarImage src={user.image ?? undefined} />
                                                 <AvatarFallback className="bg-muted text-primary text-4xl font-black">
                                                     {user.name?.charAt(0) || user.email?.charAt(0)}
                                                 </AvatarFallback>
