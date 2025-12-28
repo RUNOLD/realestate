@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { ModeToggle } from "@/components/mode-toggle";
-import { updateProfile, changePassword } from "@/actions/profile";
+
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -40,24 +40,47 @@ interface SettingsContentProps {
         status: string;
         phone: string | null;
         password?: string | null;
-    };
+        notificationPreferences?: {
+            email: boolean;
+            sms: boolean;
+            marketing: boolean;
+        } | null;
+        loginHistory?: any[];
+    }
 }
+
+import { updateProfile, changePassword, updateProfileImage, updateNotificationPreferences } from "@/actions/profile";
 
 export function SettingsContent({ user }: SettingsContentProps) {
     const isSuperAdmin = user.role === 'ADMIN';
     const [activeTab, setActiveTab] = useState(isSuperAdmin ? 'general' : 'profile');
     const [isPending, startTransition] = useTransition();
 
-    // Mock toggle states for notifications
+    // Load from props or default
     const [toggles, setToggles] = useState({
-        email: true,
-        sms: false,
-        marketing: true
+        email: user.notificationPreferences?.email ?? true,
+        sms: user.notificationPreferences?.sms ?? false,
+        marketing: user.notificationPreferences?.marketing ?? true
     });
 
     const isTenant = user.role === 'TENANT';
     const isStaff = user.role === 'STAFF';
     const canEditName = isSuperAdmin; // Only admins can edit their own name self-service
+
+    // Toggle Handler
+    async function handleToggle(key: keyof typeof toggles) {
+        const newToggles = { ...toggles, [key]: !toggles[key] };
+        setToggles(newToggles); // Optimistic update
+
+        // Persist
+        startTransition(async () => {
+            const res = await updateNotificationPreferences(newToggles);
+            if (res?.error) {
+                toast.error(res.error);
+                setToggles(toggles); // Revert on error
+            }
+        });
+    }
 
     // Profile Handler
     async function handleProfileUpdate(formData: FormData) {
@@ -171,14 +194,34 @@ export function SettingsContent({ user }: SettingsContentProps) {
                                                 </AvatarFallback>
                                             </Avatar>
                                             {!isTenant && (
-                                                <Button size="icon" variant="secondary" className="absolute bottom-0 right-0 rounded-full shadow-lg border border-border">
-                                                    <Camera size={16} />
-                                                </Button>
+                                                <form action={async (formData) => {
+                                                    const res = await updateProfileImage(formData);
+                                                    if (res?.error) toast.error(res.error);
+                                                    else toast.success("Profile photo updated");
+                                                }}>
+                                                    <label htmlFor="photo-upload" className="absolute bottom-0 right-0 cursor-pointer">
+                                                        <div className="h-10 w-10 flex items-center justify-center rounded-full bg-secondary shadow-lg border border-border hover:bg-secondary/80 transition-colors">
+                                                            <Camera size={16} />
+                                                        </div>
+                                                        <input
+                                                            id="photo-upload"
+                                                            type="file"
+                                                            name="image"
+                                                            accept="image/*"
+                                                            className="hidden"
+                                                            onChange={(e) => {
+                                                                if (e.target.files?.length) {
+                                                                    e.target.form?.requestSubmit();
+                                                                }
+                                                            }}
+                                                        />
+                                                    </label>
+                                                </form>
                                             )}
                                         </div>
                                         <div className="flex-1 space-y-4">
                                             <div>
-                                                <h2 className="text-3xl font-serif font-black text-primary">{user.name || 'Personal Information'}</h2>
+                                                <h2 className="text-3xl font-serif font-black text-primary">{user.name || 'Valued Member'}</h2>
                                                 <p className="text-muted-foreground text-sm font-medium mt-1">Identity & Resident Classification</p>
                                             </div>
                                             <div className="flex flex-wrap gap-2 justify-center md:justify-start">
@@ -253,14 +296,16 @@ export function SettingsContent({ user }: SettingsContentProps) {
                                                     <p className="text-xs text-muted-foreground">Confirm your identity by saving the latest modifications to your digital profile.</p>
                                                 )}
                                             </div>
-                                            <Button
-                                                type="submit"
-                                                disabled={isPending || isTenant}
-                                                className="h-14 px-10 rounded-2xl font-black uppercase tracking-widest shadow-2xl hover:scale-[1.02] active:scale-95 transition-all w-full sm:w-auto"
-                                            >
-                                                {isPending ? <Loader2 size={20} className="animate-spin mr-2" /> : <Save size={20} className="mr-2" />}
-                                                Authorize Update
-                                            </Button>
+                                            {!isTenant && (
+                                                <Button
+                                                    type="submit"
+                                                    disabled={isPending}
+                                                    className="h-14 px-10 rounded-2xl font-black uppercase tracking-widest shadow-2xl hover:scale-[1.02] active:scale-95 transition-all w-full sm:w-auto"
+                                                >
+                                                    {isPending ? <Loader2 size={20} className="animate-spin mr-2" /> : <Save size={20} className="mr-2" />}
+                                                    Authorize Update
+                                                </Button>
+                                            )}
                                         </div>
                                     </form>
                                 </div>
@@ -340,13 +385,29 @@ export function SettingsContent({ user }: SettingsContentProps) {
                                     </div>
                                 </form>
 
-                                <div className="p-6 bg-red-500/5 border border-red-500/10 rounded-2xl flex gap-4 items-start max-w-xl">
-                                    <ShieldAlert className="text-red-500 shrink-0 mt-1" size={20} />
-                                    <div>
-                                        <h4 className="text-xs font-black text-red-600 uppercase tracking-widest mb-1">Security Protocol</h4>
-                                        <p className="text-[10px] text-red-600/70 font-bold leading-relaxed">
-                                            Always ensure your password contains at least 8 specialized characters and is not reused on other platforms.
-                                        </p>
+                                <div className="space-y-4">
+                                    <h3 className="text-xl font-bold font-serif text-primary">Login History</h3>
+                                    <div className="border rounded-2xl overflow-hidden bg-muted/20">
+                                        {(user.loginHistory && user.loginHistory.length > 0) ? (
+                                            <div className="divide-y divide-border">
+                                                {user.loginHistory.map((log: any, i: number) => (
+                                                    <div key={i} className="p-4 flex items-center justify-between text-sm">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                                                <Globe size={14} />
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-bold text-foreground">Web Login</p>
+                                                                <p className="text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString()}</p>
+                                                            </div>
+                                                        </div>
+                                                        <Badge variant="outline" className="text-[10px]">Success</Badge>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="p-6 text-center text-muted-foreground text-sm">No recent login history found.</div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -365,21 +426,21 @@ export function SettingsContent({ user }: SettingsContentProps) {
                                         title="Electronic Mail Alerts"
                                         desc="Executive summaries of maintenance progress and payment confirmations."
                                         checked={toggles.email}
-                                        onChange={() => setToggles(p => ({ ...p, email: !p.email }))}
+                                        onChange={() => handleToggle('email')}
                                         icon={Mail}
                                     />
                                     <NotificationToggle
                                         title="Direct SMS Logic"
                                         desc="Instant cellular alerts for urgent site access or emergency updates."
                                         checked={toggles.sms}
-                                        onChange={() => setToggles(p => ({ ...p, sms: !p.sms }))}
+                                        onChange={() => handleToggle('sms')}
                                         icon={Phone}
                                     />
                                     <NotificationToggle
                                         title="Marketing Insights"
                                         desc="Priority access to new portfolio additions and luxury sourcing opportunities."
                                         checked={toggles.marketing}
-                                        onChange={() => setToggles(p => ({ ...p, marketing: !p.marketing }))}
+                                        onChange={() => handleToggle('marketing')}
                                         icon={Globe}
                                     />
                                 </div>

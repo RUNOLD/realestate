@@ -6,7 +6,8 @@ import {
     LayoutDashboard,
     Settings,
     LogOut,
-    Building2
+    Building2,
+    DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/auth"; // We might need a client component for signout or server action
@@ -60,6 +61,11 @@ export default async function LandlordLayout({
                         <Link href="/landlord/settings">
                             <Button variant="ghost" className="w-full justify-start font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                                 <Settings className="h-5 w-5 mr-3" /> Settings
+                            </Button>
+                        </Link>
+                        <Link href="/landlord/financials">
+                            <Button variant="ghost" className="w-full justify-start font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                                <DollarSign className="h-5 w-5 mr-3" /> Financials
                             </Button>
                         </Link>
                     </nav>

@@ -90,7 +90,7 @@ export default async function LandlordDashboard() {
         const userProperty = properties.find(p => p.leases.some(l => l.userId === t.userId && l.isActive));
         return {
             ...t,
-            propertyTitle: userProperty?.title || 'Unknown Property',
+            propertyTitle: userProperty?.title || 'General Request',
             tenantName: t.user?.name || 'Unknown'
         };
     });
@@ -306,7 +306,7 @@ export default async function LandlordDashboard() {
                                 )}
                             </div>
                             <div className="p-4 bg-muted/20 border-t border-border/50">
-                                <Link href="#" className="flex items-center justify-center text-xs font-medium text-primary hover:underline">
+                                <Link href="/landlord/financials" className="flex items-center justify-center text-xs font-medium text-primary hover:underline">
                                     View Full Financial Report <ArrowUpRight className="ml-1 h-3 w-3" />
                                 </Link>
                             </div>

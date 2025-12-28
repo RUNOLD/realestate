@@ -75,3 +75,49 @@ export async function changePassword(prevState: any, formData: FormData) {
 
     return { success: true };
 }
+
+export async function updateProfileImage(formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Not authenticated" };
+
+    const imageFile = formData.get("image") as File;
+    if (!imageFile || imageFile.size === 0) return { error: "No image file provided" };
+
+    try {
+        const { uploadToCloudinary } = await import("@/lib/cloudinary");
+        const imageUrl = await uploadToCloudinary(imageFile, 'user_profiles');
+
+        await prisma.user.update({
+            where: { id: session.user.id },
+            data: { image: imageUrl } // Assuming 'image' column exists on User
+        });
+
+        revalidatePath("/admin/settings");
+        revalidatePath("/dashboard/settings");
+        revalidatePath("/landlord/settings");
+        return { success: true, imageUrl };
+    } catch (e: any) {
+        console.error("Update Profile Image Error:", e);
+        return { error: e.message || "Failed to upload image" };
+    }
+}
+
+export async function updateNotificationPreferences(preferences: { email: boolean, sms: boolean, marketing: boolean }) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Not authenticated" };
+
+    try {
+        await prisma.user.update({
+            where: { id: session.user.id },
+            data: { notificationPreferences: preferences }
+        });
+
+        revalidatePath("/admin/settings");
+        revalidatePath("/dashboard/settings");
+        revalidatePath("/landlord/settings");
+        return { success: true };
+    } catch (e: any) {
+        console.error("Update Preferences Error:", e);
+        return { error: "Failed to update preferences" };
+    }
+}

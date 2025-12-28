@@ -10,22 +10,31 @@ export default async function SettingsPage() {
         redirect("/login");
     }
 
+    // Fetch fresh user data
     const user = await prisma.user.findUnique({
-        where: { id: session.user.id }
+        where: { id: session.user.id },
+        include: {
+            activityLogs: {
+                where: { action: 'LOGIN' },
+                take: 5,
+                orderBy: { createdAt: 'desc' }
+            }
+        }
     });
 
-    if (!user) {
-        redirect("/login");
-    }
+    if (!user) return null;
 
     return (
         <SettingsContent
             user={{
                 ...user,
-                name: user.name ?? null,
-                phone: user.phone ?? null,
-                image: user.image ?? null,
-                password: user.password ?? null,
+                // Ensure nulls are handled for optional fields
+                name: user.name,
+                image: user.image,
+                phone: user.phone,
+                password: user.password,
+                notificationPreferences: user.notificationPreferences as any,
+                loginHistory: user.activityLogs
             }}
         />
     );

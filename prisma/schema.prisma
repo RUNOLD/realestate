@@ -103,6 +103,7 @@ model User {
   rentModifications RentModificationLog[] @relation("AdminModifier")
   claimedTickets   Ticket[]              @relation("TicketClaimant")
   notifications    Notification[]
+  notificationPreferences Json? // { email: boolean, sms: boolean, marketing: boolean }
 }
 
 model Property {
