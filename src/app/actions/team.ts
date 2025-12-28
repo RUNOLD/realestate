@@ -14,8 +14,12 @@ export async function createStaffMember(formData: FormData) {
     }
 
     try {
+        const { generateUniqueId } = await import("@/lib/utils");
+        const uniqueId = await generateUniqueId('APM', 'user');
+
         await prisma.user.create({
             data: {
+                uniqueId,
                 name,
                 email,
                 password, // Note: In a real app, hash this password!

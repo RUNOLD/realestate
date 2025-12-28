@@ -32,9 +32,9 @@ export function Search({ placeholder }: { placeholder: string }) {
 
     return (
         <div className="relative w-full sm:w-80">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
-                className="w-full pl-9 pr-4 py-2 h-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/5 bg-white shadow-sm transition-all"
+                className="w-full pl-9 pr-4 py-2 h-10 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-card text-foreground placeholder:text-muted-foreground shadow-sm transition-all"
                 placeholder={placeholder}
                 onChange={(e) => debouncedSearch(e.target.value)}
                 defaultValue={searchParams.get('query')?.toString()}

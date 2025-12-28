@@ -206,10 +206,10 @@ export function EditUserForm({ user }: EditUserFormProps) {
                                                     ACTIVE
                                                 </div>
                                             </SelectItem>
-                                            <SelectItem value="PENDING">
+                                            <SelectItem value="SUSPENDED">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="h-2 w-2 rounded-full bg-amber-500" />
-                                                    PENDING
+                                                    <div className="h-2 w-2 rounded-full bg-red-500" />
+                                                    SUSPENDED
                                                 </div>
                                             </SelectItem>
                                         </SelectContent>

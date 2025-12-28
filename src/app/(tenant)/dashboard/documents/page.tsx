@@ -59,15 +59,25 @@ export default async function DocumentsPage() {
                                         </div>
                                     </div>
                                 </div>
-                                <a
-                                    href={`/api/documents/download?url=${encodeURIComponent(doc.url)}&name=${encodeURIComponent(doc.name)}`}
-                                    className="h-10 w-10 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    title="Download"
-                                >
-                                    <Download size={18} />
-                                </a>
+                                <div className="flex items-center gap-2">
+                                    <a
+                                        href={doc.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="h-9 px-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                                    >
+                                        View
+                                    </a>
+                                    <a
+                                        href={`/api/documents/download?url=${encodeURIComponent(doc.url)}&name=${encodeURIComponent(doc.name)}`}
+                                        className="h-9 w-9 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        title="Download"
+                                    >
+                                        <Download size={18} />
+                                    </a>
+                                </div>
                             </div>
                         ))}
                     </div>

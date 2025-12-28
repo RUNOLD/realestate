@@ -53,6 +53,17 @@ export async function createProperty(formData: FormData) {
         }
     }
 
+    const { generateUniqueId } = await import("@/lib/utils");
+    // City Mapping: Ibadan -> IB, Lagos -> LG, Abuja -> ABJ
+    let cityCode = 'XX'; // Default
+    const locLower = location.toLowerCase();
+
+    if (locLower.includes('ibadan')) cityCode = 'IB';
+    else if (locLower.includes('lagos')) cityCode = 'LG';
+    else if (locLower.includes('abuja')) cityCode = 'ABJ';
+
+    // Fallback logic if needed, or stricter checks. 
+    // APMS + City + 4 digits
     const commonData = {
         title,
         description,
@@ -69,25 +80,27 @@ export async function createProperty(formData: FormData) {
 
     try {
         if (isMultiUnit && unitCount > 0) {
+            // Generate ID for parent
+            const parentUniqueId = await generateUniqueId(`APMS${cityCode}`, 'property');
+
             // Create Parent Property
             const parent = await prisma.property.create({
                 data: {
                     ...commonData,
+                    uniqueId: parentUniqueId,
                     isMultiUnit: true,
-                    // Parent might be status 'AVAILABLE' or just a container? 
-                    // Making it available means it shows up in listings. 
-                    // User said: "remove it from public availability" if leased? 
-                    // "Inventory Management: Your current terminateLease logic already sets status to AVAILABLE. To make it "leave the listed properties," your frontend filter for public listings must explicitly query where: { status: 'AVAILABLE', parentId: { not: null } } (or only show individual units...)"
-                    // Actually, usually parent is just a container.
-                    // But for now, let's create it.
                 }
             });
 
             // Create Units
             for (let i = 1; i <= unitCount; i++) {
+                // Generate FRESH unique ID for EACH unit
+                const unitUniqueId = await generateUniqueId(`APMS${cityCode}`, 'property');
+
                 await prisma.property.create({
                     data: {
                         ...commonData,
+                        uniqueId: unitUniqueId,
                         title: `${title} - Unit ${i}`,
                         unitNumber: `Unit ${i}`,
                         parentId: parent.id,
@@ -97,17 +110,24 @@ export async function createProperty(formData: FormData) {
             }
         } else {
             // Single Property
+            const uniqueId = await generateUniqueId(`APMS${cityCode}`, 'property');
+
             await prisma.property.create({
                 data: {
                     ...commonData,
+                    uniqueId: uniqueId,
                     isMultiUnit: false
                 }
             });
         }
 
     } catch (error) {
-        console.error("Failed to create property:", error);
-        throw new Error("Failed to create property");
+        console.error("Failed to create property - Detailed Error:", error);
+        // Throwing the original error to see it in Next.js error overlay if in dev mode
+        if (error instanceof Error) {
+            throw new Error(`Failed to create property: ${error.message}`);
+        }
+        throw new Error("Failed to create property: Unknown error");
     }
 
     revalidatePath("/admin/properties");

@@ -28,6 +28,8 @@ export function MaintenanceContent({ initialTickets, userId }: MaintenanceConten
         setIsDrawerOpen(true);
     };
 
+    const isReadOnly = selectedTicket?.status === "RESOLVED" || selectedTicket?.status === "CLOSED";
+
     return (
         <div className="space-y-8 pb-10">
             {/* Header Section */}
@@ -68,12 +70,14 @@ export function MaintenanceContent({ initialTickets, userId }: MaintenanceConten
 
             {/* Content Tabs */}
             <div className="space-y-6">
-                <div className="flex gap-1 bg-muted/30 p-1 rounded-xl w-fit border">
+                <div className="flex gap-1 bg-muted p-1 rounded-xl w-fit border border-border/50">
                     <button
                         onClick={() => setActiveTab("ACTIVE")}
                         className={cn(
-                            "px-6 py-2 rounded-lg text-sm font-bold transition-all",
-                            activeTab === "ACTIVE" ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                            "px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200",
+                            activeTab === "ACTIVE"
+                                ? "bg-primary text-primary-foreground shadow-md"
+                                : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                         )}
                     >
                         Active Requests ({activeTickets.length})
@@ -81,8 +85,10 @@ export function MaintenanceContent({ initialTickets, userId }: MaintenanceConten
                     <button
                         onClick={() => setActiveTab("RESOLVED")}
                         className={cn(
-                            "px-6 py-2 rounded-lg text-sm font-bold transition-all",
-                            activeTab === "RESOLVED" ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                            "px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200",
+                            activeTab === "RESOLVED"
+                                ? "bg-primary text-primary-foreground shadow-md"
+                                : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                         )}
                     >
                         Resolution History ({resolvedTickets.length})
@@ -107,7 +113,7 @@ export function MaintenanceContent({ initialTickets, userId }: MaintenanceConten
                             <div
                                 key={ticket.id}
                                 onClick={() => handleOpenTicket(ticket)}
-                                className="group bg-card border border-border rounded-2xl p-6 hover:border-primary/30 hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden"
+                                className="group bg-card border border-border rounded-2xl p-6 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden"
                             >
                                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                                     <MessageSquare size={80} />
@@ -120,11 +126,11 @@ export function MaintenanceContent({ initialTickets, userId }: MaintenanceConten
                                                 <StatusBadge status={ticket.status} />
                                                 <span className="text-[10px] font-mono text-muted-foreground uppercase">#{ticket.id.substring(0, 6)}</span>
                                             </div>
-                                            <h4 className="font-bold text-xl text-primary line-clamp-1 group-hover:text-primary/80 transition-colors uppercase">
+                                            <h4 className="font-bold text-xl text-foreground line-clamp-1 group-hover:text-primary transition-colors uppercase">
                                                 {ticket.subject}
                                             </h4>
                                         </div>
-                                        <div className="bg-primary/5 p-2 rounded-full text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                                        <div className="bg-primary/10 p-2 rounded-full text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                                             <ChevronRight size={18} />
                                         </div>
                                     </div>
@@ -159,6 +165,7 @@ export function MaintenanceContent({ initialTickets, userId }: MaintenanceConten
                 isOpen={isDrawerOpen}
                 onClose={() => setIsDrawerOpen(false)}
                 currentUserId={userId}
+                isReadOnly={isReadOnly}
             />
         </div>
     );
@@ -166,10 +173,10 @@ export function MaintenanceContent({ initialTickets, userId }: MaintenanceConten
 
 function StatusBadge({ status }: { status: string }) {
     const styles = {
-        OPEN: "bg-yellow-100 text-yellow-800 border-yellow-200",
-        IN_PROGRESS: "bg-blue-100 text-blue-800 border-blue-200",
-        RESOLVED: "bg-green-100 text-green-800 border-green-200",
-        CLOSED: "bg-gray-100 text-gray-800 border-gray-200",
+        OPEN: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20 dark:text-yellow-400",
+        IN_PROGRESS: "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400",
+        RESOLVED: "bg-green-500/10 text-green-600 border-green-500/20 dark:text-green-400",
+        CLOSED: "bg-gray-500/10 text-gray-600 border-gray-500/20 dark:text-gray-400",
     };
 
     return (

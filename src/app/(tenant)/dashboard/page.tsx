@@ -74,12 +74,22 @@ export default async function DashboardPage() {
                         </div>
 
                         {rentAmount > 0 && (
-                            <div className="mb-3">
-                                <PayRentButtonClient
-                                    email={session.user.email || 'tenant@example.com'}
-                                    amount={rentAmount}
-                                    userId={session.user.id!}
-                                />
+                            <div className="mb-3 space-y-2">
+                                <div className="text-sm text-foreground font-medium">
+                                    {activeLease?.property.title}
+                                    {activeLease?.property.unitNumber && <span className="block text-xs text-muted-foreground">{activeLease.property.unitNumber}</span>}
+                                    <span className="block text-xs text-muted-foreground">{activeLease?.property.location}</span>
+                                </div>
+                                <div className="flex gap-2">
+                                    <PayRentButtonClient
+                                        email={session.user.email || 'tenant@example.com'}
+                                        amount={rentAmount}
+                                        userId={session.user.id!}
+                                    />
+                                    <Button variant="outline" size="sm" className="w-full text-xs" disabled>
+                                        Buy Utilities
+                                    </Button>
+                                </div>
                             </div>
                         )}
 
@@ -115,6 +125,7 @@ export default async function DashboardPage() {
                                     <th className="px-6 py-3">Transaction Ref</th>
                                     <th className="px-6 py-3">Amount</th>
                                     <th className="px-6 py-3">Status</th>
+                                    <th className="px-6 py-3">Receipt</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
@@ -131,6 +142,13 @@ export default async function DashboardPage() {
                                                     }`}>
                                                     {pay.status}
                                                 </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {pay.status === 'SUCCESS' && (
+                                                    <Button variant="ghost" size="sm" className="h-8 text-xs">
+                                                        View Receipt
+                                                    </Button>
+                                                )}
                                             </td>
                                         </tr>
                                     ))

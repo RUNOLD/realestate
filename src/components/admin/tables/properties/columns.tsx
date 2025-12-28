@@ -18,6 +18,7 @@ import Link from "next/link"
 
 export type Property = {
     id: string
+    uniqueId: string | null
     title: string
     price: number
     location: string
@@ -27,6 +28,11 @@ export type Property = {
 }
 
 export const columns: ColumnDef<Property>[] = [
+    {
+        accessorKey: "uniqueId",
+        header: "Property ID",
+        cell: ({ row }) => <div className="font-mono text-xs uppercase">{row.getValue("uniqueId") || "N/A"}</div>,
+    },
     {
         accessorKey: "title",
         header: ({ column }) => {
@@ -104,7 +110,7 @@ export const columns: ColumnDef<Property>[] = [
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(property.id)}
+                            onClick={() => navigator.clipboard.writeText(property.uniqueId || property.id)}
                         >
                             Copy ID
                         </DropdownMenuItem>

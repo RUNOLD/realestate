@@ -1,16 +1,26 @@
 
 'use client';
 
-import { useActionState } from 'react'; // Updated hook for Next.js 14/15 actions
+import { useActionState, useEffect } from 'react'; // Updated hook for Next.js 14/15 actions
 import { Button } from "@/components/ui/button";
 import { createStaff } from "@/actions/user"; // optimizing reuse of createStaff as it handles user creation, but we might want to rename it or create createLandlord later if logic diverges. For now createStaff is fine as it takes a role.
 import { UserPlus, Loader2, Building } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function RegisterLandlordForm() {
     // We can reuse createStaff action since it accepts role.
     // However, if createStaff validates role against "STAFF" or "ADMIN" strictly in Zod, we updated schema to include LANDLORD, so it should work.
+    const router = useRouter(); // Requires import from next/navigation
     const [state, action, isPending] = useActionState(createStaff, null); // using generic createStaff
+
+    useEffect(() => {
+        if (state?.success) {
+            toast.success("Landlord created successfully"); // Requires import from sonner
+            router.push("/admin/users?role=LANDLORD");
+        }
+    }, [state, router]);
 
     return (
         <form action={action} className="space-y-6">
@@ -56,12 +66,7 @@ export function RegisterLandlordForm() {
                 </div>
             )}
 
-            {state?.success && (
-                <div className="bg-green-100 text-green-700 text-sm p-3 rounded-md border border-green-200">
-                    <p className="font-bold">Success!</p>
-                    <p>{state.message || "Landlord account created successfully."}</p>
-                </div>
-            )}
+
 
             <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 h-12" disabled={isPending}>
                 {isPending ? (

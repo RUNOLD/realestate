@@ -17,13 +17,19 @@ import Link from "next/link"
 
 export type User = {
     id: string
+    uniqueId: string | null
     name: string | null
     email: string | null
     role: "USER" | "TENANT" | "ADMIN" | "STAFF"
-    status: "ACTIVE" | "PENDING"
+    status: "ACTIVE" | "PENDING" | "SUSPENDED" | "REJECTED"
 }
 
 export const columns: ColumnDef<User>[] = [
+    {
+        accessorKey: "uniqueId",
+        header: "User ID",
+        cell: ({ row }) => <div className="font-mono text-xs">{row.getValue("uniqueId") || "N/A"}</div>,
+    },
     {
         accessorKey: "name",
         header: ({ column }) => {
@@ -71,6 +77,8 @@ export const columns: ColumnDef<User>[] = [
         id: "actions",
         cell: ({ row }) => {
             const user = row.original
+            const isStaff = user.role === 'ADMIN' || user.role === 'STAFF';
+            const detailsLink = isStaff ? `/admin/users/${user.id}/staff` : `/admin/users/${user.id}`;
 
             return (
                 <DropdownMenu>
@@ -83,19 +91,19 @@ export const columns: ColumnDef<User>[] = [
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(user.id)}
+                            onClick={() => navigator.clipboard.writeText(user.uniqueId || user.id)}
                         >
                             Copy ID
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                            <Link href={`/admin/users/${user.id}`}>View Details</Link>
+                            <Link href={detailsLink}>View Details</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <Link href={`/admin/users/${user.id}/edit`}>Edit User</Link>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu >
             )
         },
     },

@@ -73,8 +73,8 @@ export function ExportTicketsButton({ tickets }: { tickets: any[] }) {
 
     return (
         <Button
-            variant="outline"
-            className="bg-white border-gray-200 gap-2"
+            variant="secondary"
+            className="gap-2 bg-white dark:bg-muted/30 text-foreground border border-border/50 shadow-sm hover:bg-muted"
             onClick={handleExport}
             disabled={isExporting}
         >

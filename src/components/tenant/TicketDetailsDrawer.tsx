@@ -17,9 +17,10 @@ interface TicketDetailsDrawerProps {
     isOpen: boolean;
     onClose: () => void;
     currentUserId: string;
+    isReadOnly?: boolean;
 }
 
-export function TicketDetailsDrawer({ ticket, isOpen, onClose, currentUserId }: TicketDetailsDrawerProps) {
+export function TicketDetailsDrawer({ ticket, isOpen, onClose, currentUserId, isReadOnly = false }: TicketDetailsDrawerProps) {
     if (!ticket) return null;
 
     const statusStyles = {
@@ -72,6 +73,7 @@ export function TicketDetailsDrawer({ ticket, isOpen, onClose, currentUserId }: 
                                     currentUserIds={currentUserId}
                                     claimedById={ticket.claimedById}
                                     isTenant={true}
+                                    isReadOnly={isReadOnly}
                                 />
                             </div>
                         </div>

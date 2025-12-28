@@ -19,6 +19,19 @@ import {
 import { handleSignOut } from "@/actions/auth";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+
+async function BadgeWrapper({ userId }: { userId: string }) {
+    const unreadCount = await prisma.notification.count({
+        where: { userId, isRead: false, type: 'CHAT' } // Specifically checking new replies/chats for the maintenance dot
+    });
+
+    if (unreadCount === 0) return null;
+
+    return (
+        <span className="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 bg-red-600 rounded-full animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
+    );
+}
 
 
 
@@ -67,9 +80,11 @@ export default async function DashboardLayout({
                                         <CreditCard size={20} />
                                         Payments
                                     </Link>
-                                    <Link href="/dashboard/maintenance" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                                    <Link href="/dashboard/maintenance" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors relative">
                                         <Wrench size={20} />
                                         Maintenance
+                                        {/* Red Dot for Unread Admin Replies */}
+                                        <BadgeWrapper userId={session.user.id!} />
                                     </Link>
                                     <Link href="/dashboard/documents" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
                                         <FileText size={20} />
@@ -146,7 +161,7 @@ export default async function DashboardLayout({
                 <main className="flex-1 p-8 overflow-y-auto">
                     {children}
                 </main>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

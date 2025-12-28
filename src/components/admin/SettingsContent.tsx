@@ -193,31 +193,29 @@ export function SettingsContent({ user }: SettingsContentProps) {
                                                     {user.name?.charAt(0) || user.email?.charAt(0)}
                                                 </AvatarFallback>
                                             </Avatar>
-                                            {!isTenant && (
-                                                <form action={async (formData) => {
-                                                    const res = await updateProfileImage(formData);
-                                                    if (res?.error) toast.error(res.error);
-                                                    else toast.success("Profile photo updated");
-                                                }}>
-                                                    <label htmlFor="photo-upload" className="absolute bottom-0 right-0 cursor-pointer">
-                                                        <div className="h-10 w-10 flex items-center justify-center rounded-full bg-secondary shadow-lg border border-border hover:bg-secondary/80 transition-colors">
-                                                            <Camera size={16} />
-                                                        </div>
-                                                        <input
-                                                            id="photo-upload"
-                                                            type="file"
-                                                            name="image"
-                                                            accept="image/*"
-                                                            className="hidden"
-                                                            onChange={(e) => {
-                                                                if (e.target.files?.length) {
-                                                                    e.target.form?.requestSubmit();
-                                                                }
-                                                            }}
-                                                        />
-                                                    </label>
-                                                </form>
-                                            )}
+                                            <form action={async (formData) => {
+                                                const res = await updateProfileImage(formData);
+                                                if (res?.error) toast.error(res.error);
+                                                else toast.success("Profile photo updated");
+                                            }}>
+                                                <label htmlFor="photo-upload" className="absolute bottom-0 right-0 cursor-pointer">
+                                                    <div className="h-10 w-10 flex items-center justify-center rounded-full bg-secondary shadow-lg border border-border hover:bg-secondary/80 transition-colors">
+                                                        <Camera size={16} />
+                                                    </div>
+                                                    <input
+                                                        id="photo-upload"
+                                                        type="file"
+                                                        name="image"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={(e) => {
+                                                            if (e.target.files?.length) {
+                                                                e.target.form?.requestSubmit();
+                                                            }
+                                                        }}
+                                                    />
+                                                </label>
+                                            </form>
                                         </div>
                                         <div className="flex-1 space-y-4">
                                             <div>

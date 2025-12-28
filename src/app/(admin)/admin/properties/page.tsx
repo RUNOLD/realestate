@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Search } from "@/components/admin/Search";
 import { Plus } from "lucide-react";
 import { DataTable } from "@/components/admin/tables/data-table";
 import { columns } from "@/components/admin/tables/properties/columns";
@@ -17,7 +18,8 @@ export default async function AdminPropertiesPage({ searchParams }: PageProps) {
     const where = query ? {
         OR: [
             { title: { contains: query, mode: 'insensitive' as const } },
-            { location: { contains: query, mode: 'insensitive' as const } }
+            { location: { contains: query, mode: 'insensitive' as const } },
+            { uniqueId: { contains: query, mode: 'insensitive' as const } }
         ]
     } : {};
 
@@ -46,11 +48,12 @@ export default async function AdminPropertiesPage({ searchParams }: PageProps) {
                 </Link>
             </div>
 
-            <div className="bg-card rounded-md border border-border">
+            <div className="bg-card rounded-md border border-border space-y-4 p-4">
+                <Search placeholder="Search properties by title, location, or ID..." />
                 {/* CASTING properties to any because generic type safety with Prism return type is often tricky in quick refactors.
                      Ideally we map to Property type. 
                  */}
-                <DataTable columns={columns} data={properties as any} searchKey="title" />
+                <DataTable columns={columns} data={properties as any} />
             </div>
         </div>
     );

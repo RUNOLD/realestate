@@ -69,9 +69,13 @@ export default async function AdminLayout({
                                 <Users size={20} />
                                 Team
                             </Link>
-                            <Link href="/admin/landlords" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                            <Link href="/admin/users?role=TENANT" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                                <Users size={20} />
+                                Tenant Directory
+                            </Link>
+                            <Link href="/admin/users?role=LANDLORD" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
                                 <Building2 size={20} />
-                                Landlords
+                                Landlord Directory
                             </Link>
                             <Link href="/admin/tickets" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
                                 <Ticket size={20} />

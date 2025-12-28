@@ -69,6 +69,7 @@ enum NotificationType {
 
 model User {
   id            String    @id @default(cuid())
+  uniqueId      String?   @unique // APMSxxxx, APMxxxx
   name          String?
   email         String    @unique
   phone         String?   // New: For Login
@@ -104,10 +105,20 @@ model User {
   claimedTickets   Ticket[]              @relation("TicketClaimant")
   notifications    Notification[]
   notificationPreferences Json? // { email: boolean, sms: boolean, marketing: boolean }
+
+  // Staff / HR Details
+  department      String?
+  salary          Float?
+  hireDate        DateTime?
+  homeAddress     String?
+  bankName        String?
+  accountNumber   String?
+  accountName     String?
 }
 
 model Property {
   id          String         @id @default(cuid())
+  uniqueId    String?        @unique // APMSIBxxxx
   title       String
   description String
   location    String

@@ -36,6 +36,9 @@ export async function createTenant(prevState: any, formData: FormData) {
     }
 
     try {
+        const { generateUniqueId } = await import("@/lib/utils");
+        const uniqueId = await generateUniqueId('APMS', 'user');
+
         const existingUser = await prisma.user.findFirst({
             where: {
                 OR: [
@@ -59,6 +62,7 @@ export async function createTenant(prevState: any, formData: FormData) {
 
         const user = await prisma.user.create({
             data: {
+                uniqueId,
                 name,
                 email,
                 phone: phone || null,
@@ -113,6 +117,12 @@ export async function createStaff(prevState: any, formData: FormData) {
     const { name, email, phone, password, role } = validatedFields.data;
 
     try {
+        const { generateUniqueId } = await import("@/lib/utils");
+        // Landlords: APMS + 4 digits
+        // Staff/Admin: APM + 4 digits
+        const prefix = role === 'LANDLORD' ? 'APMS' : 'APM';
+        const uniqueId = await generateUniqueId(prefix, 'user');
+
         const existingUser = await prisma.user.findUnique({
             where: { email }
         });
@@ -125,6 +135,7 @@ export async function createStaff(prevState: any, formData: FormData) {
 
         const user = await prisma.user.create({
             data: {
+                uniqueId,
                 name,
                 email,
                 phone: phone || null,

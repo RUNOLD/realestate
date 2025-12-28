@@ -42,6 +42,11 @@ export default async function AdminDashboardPage() {
         prisma.ticket.count({ where: { status: 'OPEN' } }),
         prisma.ticket.count({ where: { status: 'OPEN', priority: 'HIGH' } }),
         prisma.ticket.findMany({
+            where: {
+                status: {
+                    notIn: ['RESOLVED', 'CLOSED']
+                }
+            },
             orderBy: { createdAt: 'desc' },
             take: 3,
             include: { user: true }

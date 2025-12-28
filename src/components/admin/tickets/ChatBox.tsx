@@ -27,9 +27,10 @@ interface ChatBoxProps {
     currentUserIds: string;
     claimedById?: string | null;
     isTenant?: boolean;
+    isReadOnly?: boolean;
 }
 
-export function ChatBox({ ticketId, initialComments, currentUserIds, claimedById, isTenant }: ChatBoxProps) {
+export function ChatBox({ ticketId, initialComments, currentUserIds, claimedById, isTenant, isReadOnly = false }: ChatBoxProps) {
     const [comments, setComments] = React.useState<Comment[]>(initialComments);
     const [newMessage, setNewMessage] = React.useState("");
     const [isPending, setIsPending] = React.useTransition();
@@ -71,7 +72,7 @@ export function ChatBox({ ticketId, initialComments, currentUserIds, claimedById
 
     const handleSendMessage = async (e?: React.FormEvent) => {
         e?.preventDefault();
-        if (!newMessage.trim() || isLocked) return;
+        if (!newMessage.trim() || isLocked || isReadOnly) return;
 
         const content = newMessage.trim();
         setNewMessage("");
@@ -106,10 +107,10 @@ export function ChatBox({ ticketId, initialComments, currentUserIds, claimedById
                         {isClaimedByMe && <CheckCircle2 size={14} className="text-emerald-500" />}
                     </div>
                     <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
-                        {isLocked ? "Secure Thread • Locked" : "Live Connectivity • Active"}
+                        {isReadOnly ? "Ticket Resolved • Read Only" : (isLocked ? "Secure Thread • Locked" : "Live Connectivity • Active")}
                     </p>
                 </div>
-                {isLocked && <Lock size={16} className="text-amber-500" />}
+                {(isLocked || isReadOnly) && <Lock size={16} className={isReadOnly ? "text-muted-foreground" : "text-amber-500"} />}
             </div>
 
             {/* Messages Area */}
@@ -157,7 +158,12 @@ export function ChatBox({ ticketId, initialComments, currentUserIds, claimedById
 
             {/* Input Area */}
             <div className="p-4 bg-background border-t">
-                {isLocked ? (
+                {isReadOnly ? (
+                    <div className="bg-muted/50 border border-border p-4 rounded-xl text-[10px] text-muted-foreground font-bold uppercase tracking-widest flex items-center justify-center gap-3">
+                        <CheckCircle2 size={14} className="text-green-500" />
+                        Ticket Resolved - Thread Closed
+                    </div>
+                ) : isLocked ? (
                     <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl text-[10px] text-amber-600 font-bold uppercase tracking-widest flex items-center gap-3">
                         <Lock size={14} />
                         Access Restricted: Responded by another executive

@@ -11,13 +11,13 @@ import { approveTicket } from "@/actions/ticket";
 // Small Badge Component if not exists
 function StatusBadge({ status }: { status: string }) {
     const styles: Record<string, string> = {
-        PENDING: "bg-yellow-100 text-yellow-800",
-        IN_PROGRESS: "bg-blue-100 text-blue-800",
-        RESOLVED: "bg-green-100 text-green-800",
-        CLOSED: "bg-gray-100 text-gray-800",
+        PENDING: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200/20",
+        IN_PROGRESS: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200/20",
+        RESOLVED: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/20",
+        CLOSED: "bg-muted text-muted-foreground border-border",
     };
     return (
-        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${styles[status] || 'bg-gray-100'}`}>
+        <span className={`px-2.5 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider border ${styles[status] || 'bg-muted text-muted-foreground border-border'}`}>
             {status}
         </span>
     );
@@ -55,66 +55,72 @@ export default async function TicketDetailsPage({ params }: { params: Promise<{ 
 
     return (
         <div className="space-y-6">
-            <Link href="/admin/tickets" className="text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1">
+            <Link href="/admin/tickets" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
                 <ArrowLeft size={14} /> Back to Tickets
             </Link>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Details */}
                 <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-6">
+                    <div className="bg-card p-6 rounded-xl border border-border shadow-sm space-y-6">
                         <div>
-                            <h1 className="text-xl font-bold text-gray-900 mb-2">{ticket.subject}</h1>
+                            <h1 className="text-xl font-bold text-foreground mb-2">{ticket.subject}</h1>
                             <div className="flex flex-wrap gap-2">
                                 <StatusBadge status={ticket.status} />
-                                <span className="text-xs px-2.5 py-0.5 bg-gray-100 rounded-full text-gray-600 font-medium">
+                                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-muted rounded-full text-muted-foreground">
                                     {ticket.category}
                                 </span>
-                                <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${ticket.priority === 'URGENT' ? 'bg-red-100 text-red-800' :
-                                    ticket.priority === 'HIGH' ? 'bg-orange-100 text-orange-800' :
-                                        'bg-blue-50 text-blue-800'
+                                <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ${ticket.priority === 'URGENT' ? 'bg-red-500/10 text-red-600 dark:text-red-400' :
+                                    ticket.priority === 'HIGH' ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400' :
+                                        'bg-blue-500/10 text-blue-600 dark:text-blue-400'
                                     }`}>
                                     {ticket.priority} Priority
                                 </span>
                             </div>
                         </div>
 
-                        <div className="space-y-4 pt-4 border-t border-gray-100">
+                        <div className="space-y-4 pt-4 border-t border-border">
                             <div className="flex items-start gap-3">
-                                <User className="w-4 h-4 text-gray-400 mt-1" />
+                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary mt-0.5">
+                                    <User size={14} />
+                                </div>
                                 <div>
-                                    <p className="text-sm font-medium text-gray-900">{ticket.user.name}</p>
-                                    <p className="text-xs text-gray-500">{ticket.user.email}</p>
-                                    <p className="text-xs text-gray-400 uppercase">{ticket.user.role}</p>
+                                    <Link href={`/admin/users?query=${encodeURIComponent(ticket.user.email)}`} className="text-sm font-bold text-foreground hover:text-primary hover:underline transition-colors block">
+                                        {ticket.user.name}
+                                    </Link>
+                                    <p className="text-xs text-muted-foreground">{ticket.user.email}</p>
+                                    <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mt-1">{ticket.user.role}</p>
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-3">
-                                <Clock className="w-4 h-4 text-gray-400 mt-1" />
+                                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground mt-0.5">
+                                    <Clock size={14} />
+                                </div>
                                 <div>
-                                    <p className="text-sm text-gray-500">Created on</p>
-                                    <p className="text-sm font-medium text-gray-900">
-                                        {new Date(ticket.createdAt).toLocaleDateString()} at {new Date(ticket.createdAt).toLocaleTimeString()}
+                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Created on</p>
+                                    <p className="text-sm font-medium text-foreground">
+                                        {new Date(ticket.createdAt).toLocaleDateString()} at {new Date(ticket.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="pt-4 border-t border-gray-100">
-                            <h3 className="text-sm font-medium text-gray-900 mb-2">Description</h3>
-                            <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg">
+                        <div className="pt-4 border-t border-border">
+                            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Description</h3>
+                            <p className="text-sm text-foreground leading-relaxed bg-muted/30 p-4 rounded-xl border border-border/50">
                                 {ticket.description}
                             </p>
                         </div>
 
                         {/* Actions for Admin */}
                         {userRole === 'ADMIN' && ticket.status !== 'RESOLVED' && (
-                            <div className="pt-4 border-t border-gray-100">
+                            <div className="pt-4 border-t border-border">
                                 <form action={async () => {
                                     'use server';
                                     await approveTicket(ticket.id, 'ADMIN'); // Reusing approval for "Resolve/Work" flow
                                 }}>
-                                    <Button className="w-full" variant="outline">
+                                    <Button className="w-full bg-primary/10 text-primary hover:bg-primary/20 border-primary/20" variant="outline">
                                         Mark as In Progress / Approved
                                     </Button>
                                 </form>
