@@ -4,6 +4,7 @@ import { approveTicket, resolveTicket } from "@/actions/ticket";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ArrowRightCircle, Wrench } from "lucide-react";
 import { useTransition } from "react";
+import { toast } from "sonner";
 
 export function TicketApprovalActions({ ticketId, approvalStatus }: { ticketId: string, approvalStatus: string }) {
     const [isPending, startTransition] = useTransition();
@@ -18,7 +19,7 @@ export function TicketApprovalActions({ ticketId, approvalStatus }: { ticketId: 
         startTransition(async () => {
             const res = await resolveTicket(ticketId);
             if (res.error) {
-                alert(res.error);
+                toast.error(res.error);
             }
         });
     };

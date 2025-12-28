@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { approveUser } from "@/actions/user";
 import { approvePayment } from "@/actions/payment";
+import { toast } from "sonner";
 
 interface ApproveButtonProps {
     id: string;
@@ -28,7 +29,7 @@ export function ApproveButton({ id, type, className, compact = false }: ApproveB
                 await approvePayment(id);
             }
         } catch (e) {
-            alert("Failed to approve item.");
+            toast.error("Failed to approve item.");
         } finally {
             setIsPending(false);
         }

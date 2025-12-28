@@ -8,6 +8,7 @@ import { addComment } from "@/actions/ticket";
 import { pusherClient } from "@/lib/pusher";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns"; // Recommended for professional date handling
+import { toast } from "sonner";
 
 interface Comment {
     id: string;
@@ -90,7 +91,7 @@ export function ChatBox({ ticketId, initialComments, currentUserIds, claimedById
             if (result?.error) {
                 // Rollback optimistic update on error
                 setComments(prev => prev.filter(c => c.id !== optimisticComment.id));
-                alert(result.error);
+                toast.error(result.error);
             }
         });
     };
@@ -100,19 +101,19 @@ export function ChatBox({ ticketId, initialComments, currentUserIds, claimedById
             {/* Header */}
             <div className="p-4 border-b bg-muted/30 flex justify-between items-center backdrop-blur-sm">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-sm tracking-tight uppercase">Support Logic</h3>
-                    {isClaimedByMe && <CheckCircle2 size={14} className="text-emerald-500" />}
-                  </div>
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
-                      {isLocked ? "Secure Thread • Locked" : "Live Connectivity • Active"}
-                  </p>
+                    <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-sm tracking-tight uppercase">Support Logic</h3>
+                        {isClaimedByMe && <CheckCircle2 size={14} className="text-emerald-500" />}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
+                        {isLocked ? "Secure Thread • Locked" : "Live Connectivity • Active"}
+                    </p>
                 </div>
                 {isLocked && <Lock size={16} className="text-amber-500" />}
             </div>
 
             {/* Messages Area */}
-            <div 
+            <div
                 ref={scrollRef}
                 className="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-background to-muted/20"
             >
@@ -128,17 +129,17 @@ export function ChatBox({ ticketId, initialComments, currentUserIds, claimedById
                             <div key={comment.id} className={cn("flex w-full animate-in fade-in slide-in-from-bottom-2", isMe ? "justify-end" : "justify-start")}>
                                 <div className={cn(
                                     "max-w-[85%] rounded-2xl px-4 py-3 shadow-sm",
-                                    isMe 
-                                      ? "bg-primary text-primary-foreground rounded-tr-none" 
-                                      : "bg-muted border text-foreground rounded-tl-none"
+                                    isMe
+                                        ? "bg-primary text-primary-foreground rounded-tr-none"
+                                        : "bg-muted border text-foreground rounded-tl-none"
                                 )}>
                                     <div className="flex items-center gap-3 mb-1.5 opacity-80">
                                         <span className="text-[10px] font-black uppercase tracking-tight">
                                             {isMe ? 'Internal Response' : (comment.user.name || 'Resident')}
                                         </span>
                                         <span className={cn(
-                                          "text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase",
-                                          isMe ? "bg-white/10" : "bg-background border"
+                                            "text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase",
+                                            isMe ? "bg-white/10" : "bg-background border"
                                         )}>
                                             {comment.user.role}
                                         </span>

@@ -16,7 +16,7 @@ export default function LoginPage() {
 
     useEffect(() => {
         if (state?.success && state?.redirectUrl) {
-            console.log("LOGIN SUCCESS: Redirecting to", state.redirectUrl);
+
             router.push(state.redirectUrl);
             router.refresh(); // Ensure the layout updates with new session
         }

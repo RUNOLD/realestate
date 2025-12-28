@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface Ticket {
     id: string;
@@ -64,8 +65,7 @@ export function ExportTicketsButton({ tickets }: { tickets: any[] }) {
             link.click();
             document.body.removeChild(link);
         } catch (error) {
-            console.error("Export failed:", error);
-            alert("Failed to export tickets");
+            toast.error("Failed to export tickets");
         } finally {
             setIsExporting(false);
         }

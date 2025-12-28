@@ -167,7 +167,7 @@ export default function ContactPage() {
                                             123 Luxury Lane, Victoria Island,<br />
                                             Lagos, Nigeria
                                         </p>
-                                        <a href="#" className="text-sm text-accent font-semibold mt-2 inline-flex items-center hover:underline">
+                                        <a href="https://www.google.com/maps/search/?api=1&query=123+Luxury+Lane,+Victoria+Island,+Lagos,+Nigeria" target="_blank" rel="noopener noreferrer" className="text-sm text-accent font-semibold mt-2 inline-flex items-center hover:underline">
                                             Get Directions <ArrowRight size={14} className="ml-1" />
                                         </a>
                                     </div>

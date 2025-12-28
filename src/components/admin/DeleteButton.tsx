@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Loader2 } from "lucide-react";
 import { deleteProperty } from "@/actions/property";
 import { deleteMaterial } from "@/actions/misc";
+import { toast } from "sonner";
 
 interface DeleteButtonProps {
     id: string;
@@ -25,7 +26,7 @@ export function DeleteButton({ id, type }: DeleteButtonProps) {
                 await deleteMaterial(id);
             }
         } catch (e) {
-            alert("Failed to delete item.");
+            toast.error("Failed to delete item.");
         } finally {
             setIsPending(false);
         }

@@ -16,7 +16,7 @@ export const authConfig = {
             // Get role safely from session or token (if available)
             const userRole = (auth?.user as any)?.role;
 
-            console.log(`[Middleware Check] Path: ${nextUrl.pathname}, LoggedIn: ${isLoggedIn}, Role: ${userRole}`);
+
 
             // 1. Protection for Admin Routes
             if (isOnAdmin) {

@@ -6,6 +6,7 @@ import { Wallet, Loader2 } from "lucide-react";
 import { useState } from 'react';
 import { verifyPayment } from '@/actions/payment';
 import { useRouter } from 'next/navigation';
+import { toast } from "sonner";
 
 interface PayRentButtonProps {
     email: string;
@@ -36,16 +37,16 @@ export function PayRentButton({ email, amount, userId }: PayRentButtonProps) {
         const result = await verifyPayment(reference.reference, amount, userId);
 
         if (result.success) {
-            alert("Payment successful! Your balance has been updated.");
+            toast.success("Payment successful! Your balance has been updated.");
             router.refresh();
         } else {
-            alert("Payment recorded by provider but server verification failed: " + result.error);
+            toast.error("Payment recorded by provider but server verification failed: " + result.error);
         }
         setLoading(false);
     };
 
     const onClose = () => {
-        console.log('Payment closed');
+        // Payment closed
     };
 
     const handlePay = () => {
