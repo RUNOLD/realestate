@@ -34,10 +34,12 @@ enum PropertyStatus {
 }
 
 enum TicketStatus {
-  OPEN
+  PENDING
   IN_PROGRESS
+  AWAITING_CONFIRMATION
   RESOLVED
   CLOSED
+  OPEN // Deprecated, kept for safety until migration complete
 }
 
 enum TicketPriority {
@@ -116,6 +118,7 @@ model User {
   accountName     String?
 
   tenantProfile   TenantProfile?
+  landlordProfile LandlordProfile?
 }
 
 model Property {
@@ -179,7 +182,7 @@ model Ticket {
   id             String         @id @default(cuid())
   subject        String
   description    String?
-  status         TicketStatus   @default(OPEN)
+  status         TicketStatus   @default(PENDING)
   priority       TicketPriority @default(MEDIUM)
   category       String // Plumbing, Electrical, etc.
   
@@ -202,6 +205,13 @@ model Ticket {
   comments       TicketComment[]
   
   notifications  Notification[]
+
+  // Resolution Details (Maintenance 2.0)
+  resolutionNote String?
+  resolvedBy     String?    // Name of staff/artisan
+  costEstimated  Decimal?   @db.Decimal(10, 2)
+  costActual     Decimal?   @db.Decimal(10, 2)
+  resolutionDate DateTime?
 
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
@@ -399,5 +409,33 @@ model TenantProfile {
   agreedToTerms           Boolean @default(false)
   signatureUrl            String?
   
+  updatedAt      DateTime @updatedAt
+}
+
+model LandlordProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // A. Identity & Legal
+  landlordType   String? // Individual or Company
+  idType         String? // NIN, Passport, Driver's License
+  idNumber       String? // Stored string
+  residentialAddress String? // Where they live
+
+  // B. Ownership & Authority
+  relationshipToProperty String? // Owner, Agent, Family Rep, Attorney
+  proofOfAuthorityUrl    String? // Optional URL to document
+
+  // C. Payment & Financial
+  bankName      String?
+  accountName   String?
+  accountNumber String?
+
+  // D. Preferences & Consent
+  preferredContactMethod String? // WhatsApp, Phone, Email
+  isConsentGiven         Boolean @default(false)
+  consentDate            DateTime?
+
   updatedAt      DateTime @updatedAt
 }

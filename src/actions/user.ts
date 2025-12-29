@@ -224,6 +224,108 @@ export async function createTenant(prevState: any, formData: FormData) {
     }
 }
 
+
+export async function createLandlord(prevState: any, formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') {
+        return { error: "Unauthorized. Only admins can create landlords." };
+    }
+
+    const rawData = {
+        name: formData.get("name"),
+        email: formData.get("email"),
+        phone: formData.get("phone"),
+        password: formData.get("password"),
+
+        landlordType: formData.get("landlordType"),
+        idType: formData.get("idType"),
+        idNumber: formData.get("idNumber"),
+        residentialAddress: formData.get("residentialAddress"),
+
+        relationshipToProperty: formData.get("relationshipToProperty"),
+
+        bankName: formData.get("bankName"),
+        accountName: formData.get("accountName"),
+        accountNumber: formData.get("accountNumber"),
+        preferredContactMethod: formData.get("preferredContactMethod"),
+        isConsentGiven: formData.get("isConsentGiven"),
+    };
+
+    const { CreateLandlordSchema } = await import("@/lib/schemas");
+    const validatedFields = CreateLandlordSchema.safeParse(rawData);
+
+    if (!validatedFields.success) {
+        return { error: "Validation failed.", details: validatedFields.error.flatten().fieldErrors };
+    }
+
+    const data = validatedFields.data;
+
+    try {
+        const { generateUniqueId } = await import("@/lib/utils");
+        const uniqueId = await generateUniqueId('APMS', 'user');
+
+        const existingUser = await prisma.user.findFirst({
+            where: { email: data.email }
+        });
+
+        if (existingUser) {
+            return { error: "A user with this email already exists." };
+        }
+
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+
+        // Transaction
+        const user = await prisma.$transaction(async (tx) => {
+            const newUser = await tx.user.create({
+                data: {
+                    uniqueId,
+                    name: data.name,
+                    email: data.email,
+                    phone: data.phone || null,
+                    password: hashedPassword,
+                    role: 'LANDLORD',
+                    status: 'ACTIVE',
+                }
+            });
+
+            await tx.landlordProfile.create({
+                data: {
+                    userId: newUser.id,
+                    landlordType: data.landlordType,
+                    idType: data.idType,
+                    idNumber: data.idNumber,
+                    residentialAddress: data.residentialAddress,
+                    relationshipToProperty: data.relationshipToProperty,
+                    bankName: data.bankName,
+                    accountName: data.accountName,
+                    accountNumber: data.accountNumber,
+                    preferredContactMethod: data.preferredContactMethod,
+                    isConsentGiven: data.isConsentGiven === 'true',
+                    consentDate: new Date(),
+                }
+            });
+
+            return newUser;
+        });
+
+        await createActivityLog(
+            session.user.id,
+            ActionType.CREATE,
+            EntityType.USER,
+            user.id,
+            { name: data.name, role: 'LANDLORD', status: 'ACTIVE' }
+        );
+
+        revalidatePath("/admin/team");
+        revalidatePath("/admin/users");
+        return { success: true, message: `Landlord ${data.name} created successfully.` };
+
+    } catch (e: any) {
+        console.error("Create Landlord Error:", e);
+        return { error: "Failed to create landlord." };
+    }
+}
+
 export async function createStaff(prevState: any, formData: FormData) {
     const session = await auth();
     if (!session?.user?.id || (session.user as any).role !== 'ADMIN') {
@@ -248,9 +350,8 @@ export async function createStaff(prevState: any, formData: FormData) {
 
     try {
         const { generateUniqueId } = await import("@/lib/utils");
-        // Landlords: APMS + 4 digits
         // Staff/Admin: APM + 4 digits
-        const prefix = role === 'LANDLORD' ? 'APMS' : 'APM';
+        const prefix = 'APM';
         const uniqueId = await generateUniqueId(prefix, 'user');
 
         const existingUser = await prisma.user.findUnique({

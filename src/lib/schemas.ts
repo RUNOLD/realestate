@@ -127,12 +127,38 @@ export const AddCommentSchema = z.object({
     content: z.string().min(1, "Comment cannot be empty"),
 });
 
+// Basic Staff/Admin creation
 export const CreateStaffSchema = z.object({
     name: z.string().min(2, "Name is required"),
     email: z.string().email("Invalid email address"),
     phone: z.string().optional(),
     password: z.string().min(6, "Password must be at least 6 characters"),
-    role: z.enum(["STAFF", "ADMIN", "LANDLORD"]).default("STAFF"),
+    role: z.enum(["STAFF", "ADMIN"]).default("STAFF"),
+});
+
+// Comprehensive Landlord Creation
+export const CreateLandlordSchema = z.object({
+    // Step 1: Account
+    name: z.string().min(2, "Name is required"),
+    email: z.string().email("Invalid email address"),
+    phone: z.string().optional(),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+
+    // Step 2: Identity & Legal
+    landlordType: z.string().optional(),
+    idType: z.string().optional(),
+    idNumber: z.string().optional(),
+    residentialAddress: z.string().optional(),
+
+    // Step 3: Authority
+    relationshipToProperty: z.string().optional(),
+
+    // Step 4: Financials & Consent
+    bankName: z.string().optional(),
+    accountName: z.string().optional(),
+    accountNumber: z.string().optional(),
+    preferredContactMethod: z.string().optional(),
+    isConsentGiven: z.string().optional(), // "true"
 });
 
 export const UpdateUserSchema = z.object({

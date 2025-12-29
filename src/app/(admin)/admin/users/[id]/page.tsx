@@ -18,6 +18,7 @@ import { DocumentUpload } from "@/components/tenant/DocumentUpload";
 import { LogPaymentModal } from "@/components/tenant/LogPaymentModal";
 import { CreateLeaseModal } from "@/components/admin/properties/CreateLeaseModal";
 import { ResetPasswordButton } from "@/components/admin/users/ResetPasswordButton";
+import { LandlordDetail } from "@/components/admin/users/LandlordDetail";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -38,11 +39,13 @@ export default async function UserDetailPage(props: PageProps) {
             },
             documents: {
                 orderBy: { createdAt: 'desc' }
-            }
+            },
+            landlordProfile: true,
+            ownedProperties: true
         }
     });
 
-    // Fetch available properties for lease creation
+    // Fetch available properties for lease creation (only needed for tenants)
     const availableProperties = await prisma.property.findMany({
         where: { status: 'AVAILABLE' }
     });
@@ -71,7 +74,7 @@ export default async function UserDetailPage(props: PageProps) {
     return (
         <div className="space-y-8">
             <div className="flex items-center gap-4">
-                <Link href="/admin/users">
+                <Link href={user.role === 'LANDLORD' ? '/admin/team' : '/admin/users'}>
                     <Button variant="ghost" size="icon">
                         <ArrowLeft size={20} />
                     </Button>
@@ -80,7 +83,8 @@ export default async function UserDetailPage(props: PageProps) {
                     <h1 className="text-3xl font-serif font-bold text-primary">{user.name || "Unknown User"}</h1>
                     <p className="text-muted-foreground flex items-center gap-2">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${user.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
-                            user.role === 'TENANT' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100'
+                            user.role === 'TENANT' ? 'bg-blue-100 text-blue-700' :
+                                user.role === 'LANDLORD' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100'
                             }`}>
                             {user.role}
                         </span>
@@ -90,202 +94,206 @@ export default async function UserDetailPage(props: PageProps) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* LEFT COLUMN: Contact Info */}
-                <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
-                        <h3 className="font-bold text-lg mb-4 text-primary border-b border-border pb-2">Contact Details</h3>
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-                                    <Mail size={18} />
+            {user.role === 'LANDLORD' ? (
+                <LandlordDetail user={user} properties={user.ownedProperties} />
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* LEFT COLUMN: Contact Info */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
+                            <h3 className="font-bold text-lg mb-4 text-primary border-b border-border pb-2">Contact Details</h3>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+                                        <Mail size={18} />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">Email Address</p>
+                                        <p className="text-sm font-medium">{user.email}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Email Address</p>
-                                    <p className="text-sm font-medium">{user.email}</p>
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+                                        <Phone size={18} />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">Phone Number</p>
+                                        <p className="text-sm font-medium">{user.phone || "Not provided"}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+                                        <Shield size={18} />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">Tenant ID</p>
+                                        <p className="text-sm font-medium font-mono text-xs">{user.uniqueId || user.id}</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-                                    <Phone size={18} />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Phone Number</p>
-                                    <p className="text-sm font-medium">{user.phone || "Not provided"}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-                                    <Shield size={18} />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Tenant ID</p>
-                                    <p className="text-sm font-medium font-mono text-xs">{user.uniqueId || user.id}</p>
-                                </div>
+
+                            <div className="mt-8 pt-6 border-t border-border">
+                                <ResetPasswordButton email={user.email} />
                             </div>
                         </div>
 
-                        <div className="mt-8 pt-6 border-t border-border">
-                            <ResetPasswordButton email={user.email} />
-                        </div>
-                    </div>
-
-                    <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                        <h3 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
-                            <Shield size={18} /> Customer Service Note
-                        </h3>
-                        <p className="text-sm text-blue-800">
-                            When speaking with this tenant, remember to check for any outstanding high-priority tickets first.
-                        </p>
-                    </div>
-
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            Lease Management
-                        </h3>
-                        <div className="text-sm text-gray-600 mb-4">
-                            Assign this user to a property to start a tenancy.
-                        </div>
-                        <CreateLeaseModal userId={user.id} properties={availableProperties} />
-                    </div>
-                </div>
-
-                {/* RIGHT COLUMN: Tickets & Payments */}
-                <div className="lg:col-span-2 space-y-8">
-
-                    {/* Documents Section */}
-                    <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-                        <div className="p-6 border-b border-border flex justify-between items-center bg-gray-50/50">
-                            <h3 className="font-bold text-lg text-primary flex items-center gap-2">
-                                <FileText size={20} /> Documents
+                        <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                            <h3 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
+                                <Shield size={18} /> Customer Service Note
                             </h3>
-                            <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">
-                                {user.documents.length} Files
-                            </span>
+                            <p className="text-sm text-blue-800">
+                                When speaking with this tenant, remember to check for any outstanding high-priority tickets first.
+                            </p>
                         </div>
-                        <div className="p-6 space-y-6">
-                            {/* Upload Area */}
-                            <DocumentUpload userId={user.id} />
 
-                            {/* Document List */}
-                            <div className="space-y-3">
-                                <h4 className="text-sm font-medium text-gray-700">Uploaded Files</h4>
-                                {user.documents.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground italic">No documents uploaded yet.</p>
-                                ) : (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {user.documents.map(doc => (
-                                            <div key={doc.id} className="flex items-start justify-between gap-3 p-3 border border-border rounded-lg bg-card hover:bg-muted/30 transition-colors group">
-                                                <div className="flex items-start gap-3 overflow-hidden">
-                                                    <div className="h-10 w-10 bg-blue-500/10 text-blue-600 rounded flex items-center justify-center shrink-0">
-                                                        <FileText size={20} />
-                                                    </div>
-                                                    <div className="overflow-hidden">
-                                                        <p className="font-medium text-sm text-foreground truncate" title={doc.name}>{doc.name}</p>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            <span className="text-[10px] font-bold bg-muted text-muted-foreground px-1.5 py-0.5 rounded uppercase">{doc.category || 'DOC'}</span>
-                                                            <span className="text-xs text-muted-foreground">{new Date(doc.createdAt).toLocaleDateString()}</span>
+                        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                Lease Management
+                            </h3>
+                            <div className="text-sm text-gray-600 mb-4">
+                                Assign this user to a property to start a tenancy.
+                            </div>
+                            <CreateLeaseModal userId={user.id} properties={availableProperties} />
+                        </div>
+                    </div>
+
+                    {/* RIGHT COLUMN: Tickets & Payments */}
+                    <div className="lg:col-span-2 space-y-8">
+
+                        {/* Documents Section */}
+                        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+                            <div className="p-6 border-b border-border flex justify-between items-center bg-gray-50/50">
+                                <h3 className="font-bold text-lg text-primary flex items-center gap-2">
+                                    <FileText size={20} /> Documents
+                                </h3>
+                                <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">
+                                    {user.documents.length} Files
+                                </span>
+                            </div>
+                            <div className="p-6 space-y-6">
+                                {/* Upload Area */}
+                                <DocumentUpload userId={user.id} />
+
+                                {/* Document List */}
+                                <div className="space-y-3">
+                                    <h4 className="text-sm font-medium text-gray-700">Uploaded Files</h4>
+                                    {user.documents.length === 0 ? (
+                                        <p className="text-sm text-muted-foreground italic">No documents uploaded yet.</p>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {user.documents.map(doc => (
+                                                <div key={doc.id} className="flex items-start justify-between gap-3 p-3 border border-border rounded-lg bg-card hover:bg-muted/30 transition-colors group">
+                                                    <div className="flex items-start gap-3 overflow-hidden">
+                                                        <div className="h-10 w-10 bg-blue-500/10 text-blue-600 rounded flex items-center justify-center shrink-0">
+                                                            <FileText size={20} />
+                                                        </div>
+                                                        <div className="overflow-hidden">
+                                                            <p className="font-medium text-sm text-foreground truncate" title={doc.name}>{doc.name}</p>
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                <span className="text-[10px] font-bold bg-muted text-muted-foreground px-1.5 py-0.5 rounded uppercase">{doc.category || 'DOC'}</span>
+                                                                <span className="text-xs text-muted-foreground">{new Date(doc.createdAt).toLocaleDateString()}</span>
+                                                            </div>
                                                         </div>
                                                     </div>
+                                                    {doc.url && (
+                                                        <a
+                                                            href={`/api/documents/download?url=${encodeURIComponent(doc.url)}&name=${encodeURIComponent(doc.name)}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="h-8 w-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors opacity-0 group-hover:opacity-100"
+                                                            title="Download Document"
+                                                        >
+                                                            <CheckCircle size={16} className="hidden" />
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+                                                        </a>
+                                                    )}
                                                 </div>
-                                                {doc.url && (
-                                                    <a
-                                                        href={`/api/documents/download?url=${encodeURIComponent(doc.url)}&name=${encodeURIComponent(doc.name)}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="h-8 w-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors opacity-0 group-hover:opacity-100"
-                                                        title="Download Document"
-                                                    >
-                                                        <CheckCircle size={16} className="hidden" />
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
-                                                    </a>
-                                                )}
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Complaints / Tickets Section */}
+                        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+                            <div className="p-6 border-b border-border flex justify-between items-center bg-gray-50/50">
+                                <h3 className="font-bold text-lg text-primary flex items-center gap-2">
+                                    <Ticket size={20} /> Outstanding Complaints / Tickets
+                                </h3>
+                                <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">
+                                    {user.tickets.length} Total
+                                </span>
+                            </div>
+                            <div className="divide-y divide-border">
+                                {user.tickets.length === 0 ? (
+                                    <div className="p-8 text-center text-muted-foreground">
+                                        No tickets found for this user.
                                     </div>
+                                ) : (
+                                    user.tickets.map(ticket => (
+                                        <div key={ticket.id} className="p-4 hover:bg-muted/50 transition-colors">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <h4 className="font-semibold text-foreground">{ticket.subject}</h4>
+                                                {getTicketStatusBadge(ticket.status)}
+                                            </div>
+                                            <p className="text-sm text-muted-foreground mb-3">{ticket.description}</p>
+                                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                                <span className="flex items-center gap-1">
+                                                    <Clock size={12} /> {new Date(ticket.createdAt).toLocaleDateString()}
+                                                </span>
+                                                <span className="bg-muted px-2 py-0.5 rounded uppercase font-bold text-[10px]">
+                                                    {ticket.category}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))
                                 )}
                             </div>
                         </div>
-                    </div>
 
-                    {/* Complaints / Tickets Section */}
-                    <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-                        <div className="p-6 border-b border-border flex justify-between items-center bg-gray-50/50">
-                            <h3 className="font-bold text-lg text-primary flex items-center gap-2">
-                                <Ticket size={20} /> Outstanding Complaints / Tickets
-                            </h3>
-                            <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">
-                                {user.tickets.length} Total
-                            </span>
-                        </div>
-                        <div className="divide-y divide-border">
-                            {user.tickets.length === 0 ? (
-                                <div className="p-8 text-center text-muted-foreground">
-                                    No tickets found for this user.
-                                </div>
-                            ) : (
-                                user.tickets.map(ticket => (
-                                    <div key={ticket.id} className="p-4 hover:bg-muted/50 transition-colors">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h4 className="font-semibold text-foreground">{ticket.subject}</h4>
-                                            {getTicketStatusBadge(ticket.status)}
-                                        </div>
-                                        <p className="text-sm text-muted-foreground mb-3">{ticket.description}</p>
-                                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                            <span className="flex items-center gap-1">
-                                                <Clock size={12} /> {new Date(ticket.createdAt).toLocaleDateString()}
-                                            </span>
-                                            <span className="bg-muted px-2 py-0.5 rounded uppercase font-bold text-[10px]">
-                                                {ticket.category}
-                                            </span>
-                                        </div>
+                        {/* Payments History Section */}
+                        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+                            <div className="p-6 border-b border-border flex justify-between items-center bg-gray-50/50">
+                                <h3 className="font-bold text-lg text-primary flex items-center gap-2">
+                                    <CreditCard size={20} /> Payment History
+                                </h3>
+                                <LogPaymentModal tenantId={user.id} />
+                            </div>
+                            <div className="divide-y divide-border">
+                                {user.payments.length === 0 ? (
+                                    <div className="p-8 text-center text-muted-foreground">
+                                        No payment records found.
                                     </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Payments History Section */}
-                    <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-                        <div className="p-6 border-b border-border flex justify-between items-center bg-gray-50/50">
-                            <h3 className="font-bold text-lg text-primary flex items-center gap-2">
-                                <CreditCard size={20} /> Payment History
-                            </h3>
-                            <LogPaymentModal tenantId={user.id} />
-                        </div>
-                        <div className="divide-y divide-border">
-                            {user.payments.length === 0 ? (
-                                <div className="p-8 text-center text-muted-foreground">
-                                    No payment records found.
-                                </div>
-                            ) : (
-                                user.payments.map(payment => (
-                                    <div key={payment.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`h-8 w-8 rounded-full flex items-center justify-center ${payment.approvalStatus === 'PENDING_ADMIN' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
-                                                }`}>
-                                                {payment.approvalStatus === 'PENDING_ADMIN' ? <AlertCircle size={16} /> : <CheckCircle size={16} />}
+                                ) : (
+                                    user.payments.map(payment => (
+                                        <div key={payment.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`h-8 w-8 rounded-full flex items-center justify-center ${payment.approvalStatus === 'PENDING_ADMIN' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                                                    }`}>
+                                                    {payment.approvalStatus === 'PENDING_ADMIN' ? <AlertCircle size={16} /> : <CheckCircle size={16} />}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-sm text-foreground">{payment.method} Payment</p>
+                                                    <p className="text-xs text-muted-foreground">Ref: {payment.reference}</p>
+                                                    {payment.approvalStatus === 'PENDING_ADMIN' && (
+                                                        <span className="text-[10px] text-amber-600 font-bold">Pending Approval</span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="font-medium text-sm text-foreground">{payment.method} Payment</p>
-                                                <p className="text-xs text-muted-foreground">Ref: {payment.reference}</p>
-                                                {payment.approvalStatus === 'PENDING_ADMIN' && (
-                                                    <span className="text-[10px] text-amber-600 font-bold">Pending Approval</span>
-                                                )}
+                                            <div className="text-right">
+                                                <p className="font-bold text-foreground">₦{payment.amount.toLocaleString()}</p>
+                                                <p className="text-xs text-muted-foreground">{new Date(payment.createdAt).toLocaleDateString()}</p>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="font-bold text-foreground">₦{payment.amount.toLocaleString()}</p>
-                                            <p className="text-xs text-muted-foreground">{new Date(payment.createdAt).toLocaleDateString()}</p>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
+                                    ))
+                                )}
+                            </div>
                         </div>
-                    </div>
 
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }
