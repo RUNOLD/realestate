@@ -17,6 +17,7 @@ import { notFound } from "next/navigation";
 import { DocumentUpload } from "@/components/tenant/DocumentUpload";
 import { LogPaymentModal } from "@/components/tenant/LogPaymentModal";
 import { CreateLeaseModal } from "@/components/admin/properties/CreateLeaseModal";
+import { ResetPasswordButton } from "@/components/admin/users/ResetPasswordButton";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -119,13 +120,13 @@ export default async function UserDetailPage(props: PageProps) {
                                 </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground">Tenant ID</p>
-                                    <p className="text-sm font-medium font-mono text-xs">{user.id}</p>
+                                    <p className="text-sm font-medium font-mono text-xs">{user.uniqueId || user.id}</p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="mt-8 pt-6 border-t border-border">
-                            <Button className="w-full" variant="outline">Reset Password</Button>
+                            <ResetPasswordButton email={user.email} />
                         </div>
                     </div>
 

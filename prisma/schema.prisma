@@ -114,6 +114,8 @@ model User {
   bankName        String?
   accountNumber   String?
   accountName     String?
+
+  tenantProfile   TenantProfile?
 }
 
 model Property {
@@ -324,4 +326,78 @@ model RentModificationLog {
   admin          User     @relation("AdminModifier", fields: [adminId], references: [id])
   
   createdAt      DateTime @default(now())
+}
+
+model TenantProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Personal Information
+  nationality    String?
+  maritalStatus  String?
+  gender         String?
+  dateOfBirth    DateTime?
+  spouseName     String?
+  spouseWork     String?
+  residentialAddress String? // Current address
+  nearestBusStop String?
+  homeTownAddress String?
+  stateOfOrigin  String?
+  lga            String?
+  occupation     String?
+  placeOfWork    String?
+  positionHeld   String?
+  placeOfWorship String?
+  bankDetails    String? // Bank Information
+
+  // Identity
+  meansOfIdentification String? // ID Type
+  idNumber              String?
+  idIssueDate           DateTime?
+  idExpiryDate          DateTime?
+
+  // Corporate Tenant (Optional)
+  companyName         String?
+  incorporationDate   DateTime?
+  certificateNumber   String? 
+  businessType        String?
+  banker              String?
+  corporateEmail      String?
+  corporateWebsite    String?
+  contactPersonName   String?
+  contactPersonPhone  String?
+  corporateAddress    String?
+  branchOffice        String?
+
+  // Property Requirements
+  propertyTypeRequired String?
+  locationRequired     String?
+  acceptOtherLocation  Boolean?
+  businessDescription  String?
+  tenancyNature        String? 
+  commencementDate     DateTime?
+  budgetPerAnnum       String?
+  leasePreference      String?
+  leaseYears           Int?
+  serviceChargeAffordability Boolean?
+  cautionDepositAgreement    Boolean?
+
+  // Previous Tenancy
+  lastAddress             String?
+  lastSize                String?
+  lastRentPaid            String?
+  periodOfPayment         String? // Yearly/Monthly
+  expirationDate          DateTime?
+  lastLandlordNameAddress String?
+  reasonForLeaving        String?
+
+  // Guarantors (JSON Array of {name, phone, address, occupation, placeOfWork})
+  guarantors              Json?
+
+  // Agreement
+  agreedToTerms           Boolean @default(false)
+  signatureUrl            String?
+  
+  updatedAt      DateTime @updatedAt
 }

@@ -11,28 +11,95 @@ export async function createTenant(prevState: any, formData: FormData) {
     const session = await auth();
     if (!session?.user?.id) return { error: "Not authenticated" };
 
+    // Parse Guarantors JSON manually before sending to Zod
+    let guarantorsJson = formData.get("guarantors") as string;
+    // ensure it's valid JSON string
+    try {
+        JSON.parse(guarantorsJson);
+    } catch {
+        guarantorsJson = "[]";
+    }
+
     const rawData = {
         name: formData.get("name"),
         email: formData.get("email"),
         phone: formData.get("phone"),
         password: formData.get("password"),
-        nextOfKinName: formData.get("nextOfKinName"),
-        nextOfKinPhone: formData.get("nextOfKinPhone"),
-        employerName: formData.get("employerName"),
-        jobTitle: formData.get("jobTitle"),
+        image: formData.get("image"), // File object
+
+        // Personal
+        nationality: formData.get("nationality"),
+        maritalStatus: formData.get("maritalStatus"),
+        gender: formData.get("gender"),
+        dateOfBirth: formData.get("dateOfBirth"),
+        spouseName: formData.get("spouseName"),
+        spouseWork: formData.get("spouseWork"),
+        residentialAddress: formData.get("residentialAddress"),
+        nearestBusStop: formData.get("nearestBusStop"),
+        homeTownAddress: formData.get("homeTownAddress"),
+        stateOfOrigin: formData.get("stateOfOrigin"),
+        lga: formData.get("lga"),
+        occupation: formData.get("occupation"),
+        placeOfWork: formData.get("placeOfWork"),
+        positionHeld: formData.get("positionHeld"),
+        placeOfWorship: formData.get("placeOfWorship"),
+        bankDetails: formData.get("bankDetails"),
+
+        // Identity
+        meansOfIdentification: formData.get("meansOfIdentification"),
+        idNumber: formData.get("idNumber"),
+        idIssueDate: formData.get("idIssueDate"),
+        idExpiryDate: formData.get("idExpiryDate"),
+
+        // Corporate
+        companyName: formData.get("companyName"),
+        incorporationDate: formData.get("incorporationDate"),
+        certificateNumber: formData.get("certificateNumber"),
+        businessType: formData.get("businessType"),
+        banker: formData.get("banker"),
+        corporateEmail: formData.get("corporateEmail"),
+        corporateWebsite: formData.get("corporateWebsite"),
+        contactPersonName: formData.get("contactPersonName"),
+        contactPersonPhone: formData.get("contactPersonPhone"),
+        corporateAddress: formData.get("corporateAddress"),
+
+        // Property
+        propertyTypeRequired: formData.get("propertyTypeRequired"),
+        locationRequired: formData.get("locationRequired"),
+        acceptOtherLocation: formData.get("acceptOtherLocation"),
+        businessDescription: formData.get("businessDescription"),
+        tenancyNature: formData.get("tenancyNature"),
+        commencementDate: formData.get("commencementDate"),
+        budgetPerAnnum: formData.get("budgetPerAnnum"),
+        leasePreference: formData.get("leasePreference"),
+        leaseYears: formData.get("leaseYears"),
+        serviceChargeAffordability: formData.get("serviceChargeAffordability"),
+        cautionDepositAgreement: formData.get("cautionDepositAgreement"),
+
+        // History
+        lastAddress: formData.get("lastAddress"),
+        lastSize: formData.get("lastSize"),
+        lastRentPaid: formData.get("lastRentPaid"),
+        periodOfPayment: formData.get("periodOfPayment"),
+        expirationDate: formData.get("expirationDate"),
+        lastLandlordNameAddress: formData.get("lastLandlordNameAddress"),
+        reasonForLeaving: formData.get("reasonForLeaving"),
+
+        guarantors: guarantorsJson,
     };
 
     const validatedFields = CreateTenantSchema.safeParse(rawData);
 
     if (!validatedFields.success) {
-        return { error: validatedFields.error.flatten().fieldErrors, message: "Validation failed" };
+        console.error("Validation Error:", validatedFields.error.flatten().fieldErrors);
+        return { error: "Validation failed. Please check all fields.", details: validatedFields.error.flatten().fieldErrors };
     }
 
-    const { name, email, phone, password, nextOfKinName, nextOfKinPhone, employerName, jobTitle } = validatedFields.data;
+    const data = validatedFields.data;
     const imageFile = formData.get("image") as File;
 
     if (!imageFile || imageFile.size === 0) {
-        return { error: "Profile picture is mandatory for account creation." };
+        return { error: "Profile picture is mandatory." };
     }
 
     try {
@@ -42,40 +109,103 @@ export async function createTenant(prevState: any, formData: FormData) {
         const existingUser = await prisma.user.findFirst({
             where: {
                 OR: [
-                    { email: email },
-                    { phone: phone || undefined }
+                    { email: data.email },
+                    { phone: data.phone || undefined }
                 ]
             }
         });
 
         if (existingUser) {
-            if (existingUser.email === email) return { error: "A user with this email already exists." };
-            if (phone && existingUser.phone === phone) return { error: "A user with this phone number already exists." };
+            return { error: "A user with this email or phone already exists." };
         }
 
         const { uploadToCloudinary } = await import("@/lib/cloudinary");
         const imageUrl = await uploadToCloudinary(imageFile, 'tenant_profiles');
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(data.password, 10);
         const userRole = (session.user as any).role;
         const status = userRole === 'STAFF' ? 'PENDING' : 'ACTIVE';
 
-        const user = await prisma.user.create({
-            data: {
-                uniqueId,
-                name,
-                email,
-                phone: phone || null,
-                password: hashedPassword,
-                role: 'TENANT',
-                status,
-                image: imageUrl,
-                nextOfKinName: nextOfKinName || null,
-                nextOfKinPhone: nextOfKinPhone || null,
-                employerName: employerName || null,
-                jobTitle: jobTitle || null,
-                isEmployed: !!employerName,
-            }
+        // Transaction to create user and profile together
+        const user = await prisma.$transaction(async (tx) => {
+            const newUser = await tx.user.create({
+                data: {
+                    uniqueId,
+                    name: data.name,
+                    email: data.email,
+                    phone: data.phone || null,
+                    password: hashedPassword,
+                    role: 'TENANT',
+                    status,
+                    image: imageUrl,
+                    isEmployed: !!data.occupation,
+                }
+            });
+
+            // Create extended profile
+            await tx.tenantProfile.create({
+                data: {
+                    userId: newUser.id,
+                    nationality: data.nationality,
+                    maritalStatus: data.maritalStatus,
+                    gender: data.gender,
+                    dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
+                    spouseName: data.spouseName,
+                    spouseWork: data.spouseWork,
+                    residentialAddress: data.residentialAddress,
+                    nearestBusStop: data.nearestBusStop,
+                    homeTownAddress: data.homeTownAddress,
+                    stateOfOrigin: data.stateOfOrigin,
+                    lga: data.lga,
+                    occupation: data.occupation,
+                    placeOfWork: data.placeOfWork,
+                    positionHeld: data.positionHeld,
+                    placeOfWorship: data.placeOfWorship,
+                    bankDetails: data.bankDetails,
+
+                    meansOfIdentification: data.meansOfIdentification,
+                    idNumber: data.idNumber,
+                    idIssueDate: data.idIssueDate ? new Date(data.idIssueDate) : null,
+                    idExpiryDate: data.idExpiryDate ? new Date(data.idExpiryDate) : null,
+
+                    companyName: data.companyName,
+                    incorporationDate: data.incorporationDate ? new Date(data.incorporationDate) : null,
+                    certificateNumber: data.certificateNumber,
+                    businessType: data.businessType,
+                    banker: data.banker,
+                    corporateEmail: data.corporateEmail,
+                    corporateWebsite: data.corporateWebsite,
+                    contactPersonName: data.contactPersonName,
+                    contactPersonPhone: data.contactPersonPhone,
+                    corporateAddress: data.corporateAddress,
+
+                    propertyTypeRequired: data.propertyTypeRequired,
+                    locationRequired: data.locationRequired,
+                    // safe check for 'true' string
+                    acceptOtherLocation: data.acceptOtherLocation === 'true',
+                    businessDescription: data.businessDescription,
+                    tenancyNature: data.tenancyNature,
+                    commencementDate: data.commencementDate ? new Date(data.commencementDate) : null,
+                    budgetPerAnnum: data.budgetPerAnnum,
+                    leasePreference: data.leasePreference,
+                    leaseYears: data.leaseYears ? parseInt(data.leaseYears) : null,
+                    serviceChargeAffordability: data.serviceChargeAffordability === 'true',
+                    cautionDepositAgreement: data.cautionDepositAgreement === 'true',
+
+                    lastAddress: data.lastAddress,
+                    lastSize: data.lastSize,
+                    lastRentPaid: data.lastRentPaid,
+                    periodOfPayment: data.periodOfPayment,
+                    expirationDate: data.expirationDate ? new Date(data.expirationDate) : null,
+                    lastLandlordNameAddress: data.lastLandlordNameAddress,
+                    reasonForLeaving: data.reasonForLeaving,
+
+                    guarantors: JSON.parse(data.guarantors || "[]"),
+                    agreedToTerms: true,
+                }
+            });
+
+            return newUser;
         });
 
         await createActivityLog(
@@ -83,7 +213,7 @@ export async function createTenant(prevState: any, formData: FormData) {
             ActionType.CREATE,
             EntityType.USER,
             user.id,
-            { name, role: 'TENANT', status }
+            { name: data.name, role: 'TENANT', status }
         );
 
         revalidatePath("/admin/users");

@@ -37,15 +37,77 @@ export const UpdateRentSchema = z.object({
 });
 
 export const CreateTenantSchema = z.object({
+    // Basic User Info
     name: z.string().min(2, "Name is required"),
     email: z.string().email("Invalid email address"),
     phone: z.string().optional(),
     password: z.string().min(6, "Password must be at least 6 characters"),
+    image: z.any().optional(),
+
+    // Personal Details
+    nationality: z.string().optional(),
+    maritalStatus: z.string().optional(),
+    gender: z.string().optional(),
+    dateOfBirth: z.string().optional(), // ISO Date string
+    spouseName: z.string().optional(),
+    spouseWork: z.string().optional(),
+    residentialAddress: z.string().optional(),
+    nearestBusStop: z.string().optional(),
+    homeTownAddress: z.string().optional(),
+    stateOfOrigin: z.string().optional(),
+    lga: z.string().optional(),
+    occupation: z.string().optional(),
+    placeOfWork: z.string().optional(),
+    positionHeld: z.string().optional(),
+    placeOfWorship: z.string().optional(),
+    bankDetails: z.string().optional(),
+
     nextOfKinName: z.string().optional(),
     nextOfKinPhone: z.string().optional(),
-    employerName: z.string().optional(),
-    jobTitle: z.string().optional(),
-    image: z.any().optional(), // Image will be checked in action
+
+    // Identity
+    meansOfIdentification: z.string().optional(),
+    idNumber: z.string().optional(),
+    idIssueDate: z.string().optional(),
+    idExpiryDate: z.string().optional(),
+
+    // Corporate
+    companyName: z.string().optional(),
+    incorporationDate: z.string().optional(),
+    certificateNumber: z.string().optional(),
+    businessType: z.string().optional(),
+    banker: z.string().optional(),
+    corporateEmail: z.string().optional(),
+    corporateWebsite: z.string().optional(),
+    contactPersonName: z.string().optional(),
+    contactPersonPhone: z.string().optional(),
+    corporateAddress: z.string().optional(),
+    branchOffice: z.string().optional(),
+
+    // Property Requirements
+    propertyTypeRequired: z.string().optional(),
+    locationRequired: z.string().optional(),
+    acceptOtherLocation: z.string().optional(), // "true" / "false" as string from form
+    businessDescription: z.string().optional(),
+    tenancyNature: z.string().optional(),
+    commencementDate: z.string().optional(),
+    budgetPerAnnum: z.string().optional(),
+    leasePreference: z.string().optional(),
+    leaseYears: z.string().optional(),
+    serviceChargeAffordability: z.string().optional(),
+    cautionDepositAgreement: z.string().optional(),
+
+    // Previous Tenancy
+    lastAddress: z.string().optional(),
+    lastSize: z.string().optional(),
+    lastRentPaid: z.string().optional(),
+    periodOfPayment: z.string().optional(),
+    expirationDate: z.string().optional(),
+    lastLandlordNameAddress: z.string().optional(),
+    reasonForLeaving: z.string().optional(),
+
+    // Guarantors (JSON String)
+    guarantors: z.string().optional(),
 });
 
 export const CreatePaymentSchema = z.object({
