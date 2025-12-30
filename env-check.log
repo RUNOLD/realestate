@@ -7,7 +7,8 @@ DATABASE_URL exists: true
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME exists: true
 CLOUDINARY_API_KEY exists: true
 CLOUDINARY_API_SECRET exists: true
+RESEND_API_KEY exists: true
 
 --- Database Connection Check ---
-Successfully connected to Database. User count: 4
+Successfully connected to Database. User count: 1
 First user found: admin@ayoolaproperty.com (Role: ADMIN)

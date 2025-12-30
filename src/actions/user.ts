@@ -7,6 +7,8 @@ import bcrypt from 'bcryptjs';
 import { CreateTenantSchema, CreateStaffSchema, CreateLandlordSchema, UpdateUserSchema } from "@/lib/schemas";
 import { createActivityLog, ActionType, EntityType } from "@/lib/logger";
 import { ActionState } from "@/lib/types";
+import { sendEmail } from "@/lib/mail";
+import { getWelcomeTemplate } from "@/lib/mail_templates";
 
 export async function createTenant(prevState: any, formData: FormData): Promise<ActionState> {
     const session = await auth();
@@ -384,6 +386,13 @@ export async function createStaff(prevState: any, formData: FormData): Promise<A
                 role: role as any,
                 status: 'ACTIVE',
             }
+        });
+
+        // Send Welcome Email
+        await sendEmail({
+            to: email,
+            subject: "Welcome to Team Ayoola",
+            html: getWelcomeTemplate(name, password)
         });
 
         await createActivityLog(

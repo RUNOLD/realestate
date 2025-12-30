@@ -19,6 +19,7 @@ async function main() {
     log(`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME exists: ${!!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}`);
     log(`CLOUDINARY_API_KEY exists: ${!!process.env.CLOUDINARY_API_KEY}`);
     log(`CLOUDINARY_API_SECRET exists: ${!!process.env.CLOUDINARY_API_SECRET}`);
+    log(`RESEND_API_KEY exists: ${!!process.env.RESEND_API_KEY}`);
 
     log("\n--- Database Connection Check ---");
     try {
