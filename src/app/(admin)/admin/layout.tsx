@@ -12,8 +12,9 @@ import {
     Settings,
     Package,
     FileText,
-    CheckCircle
+    CheckCircle,
 } from "lucide-react";
+import { SessionTimeout } from "@/components/auth/SessionTimeout";
 
 export default async function AdminLayout({
     children,
@@ -38,6 +39,7 @@ export default async function AdminLayout({
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
+            <SessionTimeout />
 
             <div className="flex flex-1">
                 {/* Admin Sidebar */}

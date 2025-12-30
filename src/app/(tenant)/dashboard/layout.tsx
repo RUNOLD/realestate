@@ -16,6 +16,7 @@ import {
     DollarSign,
     Mail
 } from "lucide-react";
+import { SessionTimeout } from "@/components/auth/SessionTimeout";
 import { handleSignOut } from "@/actions/auth";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
@@ -53,6 +54,7 @@ export default async function DashboardLayout({
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
+            <SessionTimeout />
 
             <div className="flex flex-1">
                 {/* Sidebar */}
