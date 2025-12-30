@@ -17,7 +17,9 @@ import { notFound } from "next/navigation";
 import { DocumentUpload } from "@/components/tenant/DocumentUpload";
 import { LogPaymentModal } from "@/components/tenant/LogPaymentModal";
 import { CreateLeaseModal } from "@/components/admin/properties/CreateLeaseModal";
+import { ResetPasswordButton } from "@/components/admin/users/ResetPasswordButton";
 import { TenantProfileDetail } from "@/components/admin/users/TenantProfileDetail";
+import { LandlordDetail } from "@/components/admin/users/LandlordDetail";
 
 interface PageProps {
     params: Promise<{ id: string }>;
