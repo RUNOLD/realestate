@@ -25,6 +25,7 @@ import {
     LucideIcon
 } from "lucide-react";
 import { useState, useTransition } from "react";
+import { useSession } from "next-auth/react";
 import { ModeToggle } from "@/components/mode-toggle";
 
 import { cn } from "@/lib/utils";
@@ -55,6 +56,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
     const isSuperAdmin = user.role === 'ADMIN';
     const [activeTab, setActiveTab] = useState(isSuperAdmin ? 'general' : 'profile');
     const [isPending, startTransition] = useTransition();
+    const { update } = useSession();
 
     // Load from props or default
     const [toggles, setToggles] = useState({
@@ -196,7 +198,10 @@ export function SettingsContent({ user }: SettingsContentProps) {
                                             <form action={async (formData) => {
                                                 const res = await updateProfileImage(formData);
                                                 if (res?.error) toast.error(res.error);
-                                                else toast.success("Profile photo updated");
+                                                else {
+                                                    toast.success("Profile photo updated");
+                                                    await update(); // Refresh session to show new image
+                                                }
                                             }}>
                                                 <label htmlFor="photo-upload" className="absolute bottom-0 right-0 cursor-pointer">
                                                     <div className="h-10 w-10 flex items-center justify-center rounded-full bg-secondary shadow-lg border border-border hover:bg-secondary/80 transition-colors">

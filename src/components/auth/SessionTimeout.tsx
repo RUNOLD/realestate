@@ -4,7 +4,7 @@ import { useEffect, useCallback } from 'react';
 import { handleSignOut } from '@/actions/auth';
 import { useRouter } from 'next/navigation';
 
-const TIMEOUT_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
+const TIMEOUT_DURATION = 10 * 60 * 1000; // 10 minutes in milliseconds
 
 export function SessionTimeout() {
     const router = useRouter();

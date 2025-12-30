@@ -19,13 +19,17 @@ export async function createMaterial(formData: FormData) {
     const price = priceString ? parseFloat(priceString) : null;
 
     try {
+        const { generateUniqueId } = await import("@/lib/utils");
+        const uniqueId = await generateUniqueId('APMSM', 'material');
+
         await prisma.material.create({
             data: {
+                uniqueId,
                 name,
                 category,
                 description,
                 price: price,
-                images: images ? JSON.parse(images) : ["https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?q=80&w=2000&auto=format&fit=crop"], // Default placeholder
+                images: images ? [images] : ["https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?q=80&w=2000&auto=format&fit=crop"], // Default placeholder
                 inStock: true
             }
         });
@@ -61,7 +65,7 @@ export async function updateMaterial(materialId: string, formData: FormData) {
                 category,
                 description,
                 price: price,
-                images: images ? JSON.parse(images) : undefined,
+                images: images ? [images] : undefined,
                 inStock: inStock
             }
         });

@@ -117,7 +117,7 @@ export function FinancialsToolbar({ data, currentPeriod }: FinancialsToolbarProp
             <Button
                 onClick={handleExport}
                 className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
-                disabled={isExporting || data.length === 0}
+                disabled={isExporting}
             >
                 <Download className="mr-2 h-4 w-4" />
                 {isExporting ? "Exporting..." : "Export CSV"}

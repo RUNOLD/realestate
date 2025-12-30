@@ -23,6 +23,14 @@ export async function createTenant(prevState: any, formData: FormData): Promise<
         guarantorsJson = "[]";
     }
 
+    // Helper to safely extract string or return undefined if null/empty
+    const getString = (key: string) => {
+        const value = formData.get(key);
+        // Treat null, empty string, or whitespace-only string as undefined
+        if (!value || (typeof value === 'string' && value.trim() === '')) return undefined;
+        return value as string;
+    };
+
     const rawData = {
         name: formData.get("name"),
         email: formData.get("email"),
@@ -31,62 +39,62 @@ export async function createTenant(prevState: any, formData: FormData): Promise<
         image: formData.get("image"), // File object
 
         // Personal
-        nationality: formData.get("nationality"),
-        maritalStatus: formData.get("maritalStatus"),
-        gender: formData.get("gender"),
-        dateOfBirth: formData.get("dateOfBirth"),
-        spouseName: formData.get("spouseName"),
-        spouseWork: formData.get("spouseWork"),
-        residentialAddress: formData.get("residentialAddress"),
-        nearestBusStop: formData.get("nearestBusStop"),
-        homeTownAddress: formData.get("homeTownAddress"),
-        stateOfOrigin: formData.get("stateOfOrigin"),
-        lga: formData.get("lga"),
-        occupation: formData.get("occupation"),
-        placeOfWork: formData.get("placeOfWork"),
-        positionHeld: formData.get("positionHeld"),
-        placeOfWorship: formData.get("placeOfWorship"),
-        bankDetails: formData.get("bankDetails"),
+        nationality: getString("nationality"),
+        maritalStatus: getString("maritalStatus"),
+        gender: getString("gender"),
+        dateOfBirth: getString("dateOfBirth"),
+        spouseName: getString("spouseName"),
+        spouseWork: getString("spouseWork"),
+        residentialAddress: getString("residentialAddress"),
+        nearestBusStop: getString("nearestBusStop"),
+        homeTownAddress: getString("homeTownAddress"),
+        stateOfOrigin: getString("stateOfOrigin"),
+        lga: getString("lga"),
+        occupation: getString("occupation"),
+        placeOfWork: getString("placeOfWork"),
+        positionHeld: getString("positionHeld"),
+        placeOfWorship: getString("placeOfWorship"),
+        bankDetails: getString("bankDetails"),
 
         // Identity
-        meansOfIdentification: formData.get("meansOfIdentification"),
-        idNumber: formData.get("idNumber"),
-        idIssueDate: formData.get("idIssueDate"),
-        idExpiryDate: formData.get("idExpiryDate"),
+        meansOfIdentification: getString("meansOfIdentification"),
+        idNumber: getString("idNumber"),
+        idIssueDate: getString("idIssueDate"),
+        idExpiryDate: getString("idExpiryDate"),
 
         // Corporate
-        companyName: formData.get("companyName"),
-        incorporationDate: formData.get("incorporationDate"),
-        certificateNumber: formData.get("certificateNumber"),
-        businessType: formData.get("businessType"),
-        banker: formData.get("banker"),
-        corporateEmail: formData.get("corporateEmail"),
-        corporateWebsite: formData.get("corporateWebsite"),
-        contactPersonName: formData.get("contactPersonName"),
-        contactPersonPhone: formData.get("contactPersonPhone"),
-        corporateAddress: formData.get("corporateAddress"),
+        companyName: getString("companyName"),
+        incorporationDate: getString("incorporationDate"),
+        certificateNumber: getString("certificateNumber"),
+        businessType: getString("businessType"),
+        banker: getString("banker"),
+        corporateEmail: getString("corporateEmail"),
+        corporateWebsite: getString("corporateWebsite"),
+        contactPersonName: getString("contactPersonName"),
+        contactPersonPhone: getString("contactPersonPhone"),
+        corporateAddress: getString("corporateAddress"),
 
         // Property
-        propertyTypeRequired: formData.get("propertyTypeRequired"),
-        locationRequired: formData.get("locationRequired"),
-        acceptOtherLocation: formData.get("acceptOtherLocation"),
-        businessDescription: formData.get("businessDescription"),
-        tenancyNature: formData.get("tenancyNature"),
-        commencementDate: formData.get("commencementDate"),
-        budgetPerAnnum: formData.get("budgetPerAnnum"),
-        leasePreference: formData.get("leasePreference"),
-        leaseYears: formData.get("leaseYears"),
-        serviceChargeAffordability: formData.get("serviceChargeAffordability"),
-        cautionDepositAgreement: formData.get("cautionDepositAgreement"),
+        propertyTypeRequired: getString("propertyTypeRequired"),
+        locationRequired: getString("locationRequired"),
+        acceptOtherLocation: getString("acceptOtherLocation"), // Will be "true", "false" or undefined
+        businessDescription: getString("businessDescription"),
+        tenancyNature: getString("tenancyNature"),
+        commencementDate: getString("commencementDate"),
+        budgetPerAnnum: getString("budgetPerAnnum"),
+        leasePreference: getString("leasePreference"),
+        leaseYears: getString("leaseYears"),
+        serviceChargeAffordability: getString("serviceChargeAffordability"),
+        cautionDepositAgreement: getString("cautionDepositAgreement"),
 
         // History
-        lastAddress: formData.get("lastAddress"),
-        lastSize: formData.get("lastSize"),
-        lastRentPaid: formData.get("lastRentPaid"),
-        periodOfPayment: formData.get("periodOfPayment"),
-        expirationDate: formData.get("expirationDate"),
-        lastLandlordNameAddress: formData.get("lastLandlordNameAddress"),
-        reasonForLeaving: formData.get("reasonForLeaving"),
+        lastAddress: getString("lastAddress"),
+        lastSize: getString("lastSize"),
+        lastRentPaid: getString("lastRentPaid"),
+        periodOfPayment: getString("periodOfPayment"),
+        expirationDate: getString("expirationDate"),
+        lastLandlordNameAddress: getString("lastLandlordNameAddress"),
+        reasonForLeaving: getString("reasonForLeaving"),
 
         guarantors: guarantorsJson,
     };

@@ -15,7 +15,7 @@ export function generateRandomDigits(length: number): string {
   return result;
 }
 
-export async function generateUniqueId(prefix: string, model: 'user' | 'property'): Promise<string> {
+export async function generateUniqueId(prefix: string, model: 'user' | 'property' | 'material'): Promise<string> {
   // Import dynamically to avoid circular dependency issues if any, though utils should satisfy it.
   // However, importing prisma here is fine.
   const { prisma } = await import("@/lib/prisma");
@@ -38,6 +38,11 @@ export async function generateUniqueId(prefix: string, model: 'user' | 'property
         where: { uniqueId }
       });
       exists = !!property;
+    } else if (model === 'material') {
+      const material = await prisma.material.findUnique({
+        where: { uniqueId } // Note: Schema update needed
+      });
+      exists = !!material;
     }
 
     if (!exists) {

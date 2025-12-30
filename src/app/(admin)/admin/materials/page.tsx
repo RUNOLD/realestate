@@ -23,7 +23,8 @@ export default async function AdminMaterialsPage({ searchParams }: PageProps) {
     const where = query ? {
         OR: [
             { name: { contains: query, mode: 'insensitive' as const } },
-            { category: { contains: query, mode: 'insensitive' as const } }
+            { category: { contains: query, mode: 'insensitive' as const } },
+            { uniqueId: { contains: query, mode: 'insensitive' as const } }
         ]
     } : {};
 
@@ -125,7 +126,7 @@ export default async function AdminMaterialsPage({ searchParams }: PageProps) {
                                                     </div>
                                                     <div>
                                                         <div className="font-medium text-gray-900">{material.name}</div>
-                                                        <div className="text-xs text-gray-500 font-mono mt-0.5">ID: {material.id.substring(0, 6)}...</div>
+                                                        <div className="text-xs text-gray-500 font-mono mt-0.5">ID: {(material as any).uniqueId || material.id.substring(0, 8)}</div>
                                                     </div>
                                                 </div>
                                             </td>

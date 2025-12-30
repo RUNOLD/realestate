@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 import { auth } from "@/auth";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import SessionProviderWrapper from "@/components/providers/SessionProviderWrapper";
 
 import { prisma } from "@/lib/prisma";
 
@@ -31,16 +32,24 @@ export default async function RootLayout({
     const userId = (session.user as any).id; // standard session.user.id should work but casting safe
 
     if (role === 'ADMIN' || role === 'STAFF') {
-      ticketCount = await prisma.ticket.count({
-        where: { status: { in: ['PENDING', 'IN_PROGRESS', 'AWAITING_CONFIRMATION'] } }
-      });
+      try {
+        ticketCount = await prisma.ticket.count({
+          where: { status: { in: ['PENDING', 'IN_PROGRESS', 'AWAITING_CONFIRMATION'] } }
+        });
+      } catch (error) {
+        console.error("Failed to fetch admin ticket count:", error);
+      }
     } else if (role === 'TENANT') {
-      ticketCount = await prisma.ticket.count({
-        where: {
-          userId: session.user.id,
-          status: { in: ['PENDING', 'IN_PROGRESS', 'AWAITING_CONFIRMATION'] }
-        }
-      });
+      try {
+        ticketCount = await prisma.ticket.count({
+          where: {
+            userId: session.user.id,
+            status: { in: ['PENDING', 'IN_PROGRESS', 'AWAITING_CONFIRMATION'] }
+          }
+        });
+      } catch (error) {
+        console.error("Failed to fetch tenant ticket count:", error);
+      }
     }
   }
 
@@ -53,10 +62,12 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Navbar user={session?.user} ticketCount={ticketCount} />
-          <div className="pt-24">
-            {children}
-          </div>
+          <SessionProviderWrapper>
+            <Navbar user={session?.user} ticketCount={ticketCount} />
+            <div className="pt-24">
+              {children}
+            </div>
+          </SessionProviderWrapper>
           <Toaster />
         </ThemeProvider>
       </body>

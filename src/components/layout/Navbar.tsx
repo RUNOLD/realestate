@@ -160,45 +160,26 @@ export function Navbar({ user, ticketCount = 0 }: { user?: any, ticketCount?: nu
 
                     {/* Desktop Navigation - Visible on XL (1280px+) */}
                     <div className="hidden xl:flex items-center gap-8">
-                        <div className="flex items-center gap-6">
-                            {/* We need to use the correct links based on context like getMobileLinks but for desktop */}
-                            {/* Wait, the original code used NAV_LINKS for desktop unconditionally? */}
-                            {/* Lines 154-169 in original only mapped NAV_LINKS. Admin dashboard has sidebar. */}
-                            {/* But if Tenant uses this Navbar, they need Tenant links here? */}
-                            {/* The original code only showed NAV_LINKS in desktop header. */}
-                            {/* If Tenant Dashboard uses Navbar, it probably should show Tenant Links on Desktop too? */}
-                            {/* Let's fixing the badge logic for Mobile links first, and assume Desktop Tenant might be using Sidebar or just NAV_LINKS? */}
-                            {/* Actually line 106 says `if (isDashboardPath) return TENANT_LINKS;` for mobile. */}
-                            {/* For Desktop, lines 154+ iterate NAV_LINKS. This implies Tenant Dashboard on Desktop might NOT rely on Navbar links, or uses Sidebar? */}
-                            {/* But Step 420 showed `(tenant)` folder emptiness and `dashboard` folder emptiness regarding layout. */}
-                            {/* Wait, if Tenant uses `Navbar` for navigation, where are the links on Desktop? */}
-                            {/* If they are missing on Desktop Navbar, maybe they use a Sidebar that I missed? */}
-                            {/* Or maybe the user didn't build Desktop Tenant Nav yet? */}
-                            {/* User Request: "puts a red dot in the tenant space". */}
-                            {/* If I add it to `mobileLinks` (used in mobile menu), does it help Desktop? */}
-                            {/* If the user is on Desktop, and Tenant view relies on Navbar, they might only see Home/Properties... */}
-                            {/* Let's ensure Mobile Menu has the badge first. */}
-
-                            {(isAdminPath || isDashboardPath ? (isDashboardPath ? TENANT_LINKS : getMobileLinks()) : NAV_LINKS).map((link) => (
-                                <Link
-                                    key={link.href}
-                                    href={link.href}
-                                    className={cn(
-                                        "text-sm font-bold transition-all hover:text-primary whitespace-nowrap relative group flex items-center gap-2",
-                                        pathname === link.href ? "text-primary" : "text-muted-foreground"
-                                    )}
-                                >
-                                    {link.label}
-                                    {shouldShowBadge(link.label) && (
-                                        <span className="h-2 w-2 rounded-full bg-red-600 animate-pulse" />
-                                    )}
-                                    <span className={cn(
-                                        "absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300",
-                                        pathname === link.href ? "w-full" : "w-0 group-hover:w-full"
-                                    )} />
-                                </Link>
-                            ))}
-                        </div>
+                        {!(isAdminPath || isDashboardPath) && (
+                            <div className="flex items-center gap-6">
+                                {NAV_LINKS.map((link) => (
+                                    <Link
+                                        key={link.href}
+                                        href={link.href}
+                                        className={cn(
+                                            "text-sm font-bold transition-all hover:text-primary whitespace-nowrap relative group flex items-center gap-2",
+                                            pathname === link.href ? "text-primary" : "text-muted-foreground"
+                                        )}
+                                    >
+                                        {link.label}
+                                        <span className={cn(
+                                            "absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300",
+                                            pathname === link.href ? "w-full" : "w-0 group-hover:w-full"
+                                        )} />
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
 
                         <div className="flex items-center gap-4 pl-6 border-l border-border">
                             {isAdminPath && user?.id && <NotificationPanel userId={user.id} />}
@@ -274,12 +255,12 @@ export function Navbar({ user, ticketCount = 0 }: { user?: any, ticketCount?: nu
 
             {/* Mobile Menu Dropdown */}
             <div className={cn(
-                "xl:hidden absolute top-full left-0 w-full border-b shadow-2xl transition-all duration-300 ease-in-out overflow-hidden z-[60]",
-                isOpen ? "max-h-[100vh] opacity-100 border-border" : "max-h-0 opacity-0 border-transparent",
+                "xl:hidden absolute top-full left-0 w-full border-b shadow-2xl transition-all duration-300 ease-in-out z-[60]",
+                isOpen ? "max-h-[calc(100vh-5rem)] opacity-100 border-border overflow-y-auto" : "max-h-0 opacity-0 border-transparent overflow-hidden",
                 mounted && resolvedTheme === 'light' ? "bg-[#E3EEEF]" : "bg-background"
             )}>
-                <div className="px-6 py-8 space-y-8 backdrop-blur-xl">
-                    <div className="flex items-center justify-between pb-6 border-b border-border/50">
+                <div className="px-6 py-4 space-y-4 backdrop-blur-xl pb-32">
+                    <div className="flex items-center justify-between pb-4 border-b border-border/50">
                         <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Appearance</span>
                         <ModeToggle />
                     </div>
@@ -289,28 +270,28 @@ export function Navbar({ user, ticketCount = 0 }: { user?: any, ticketCount?: nu
                                 key={link.href}
                                 href={link.href}
                                 className={cn(
-                                    "flex items-center gap-4 text-xl font-bold tracking-tight transition-colors p-3 rounded-xl justify-between",
+                                    "flex items-center gap-4 text-sm font-bold tracking-tight transition-colors p-3 rounded-xl justify-between",
                                     pathname === link.href
                                         ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                                         : "text-foreground hover:bg-primary/5 hover:text-primary"
                                 )}
                             >
                                 <div className="flex items-center gap-4">
-                                    {link.icon && <link.icon size={22} className={pathname === link.href ? "text-primary-foreground" : "text-primary"} />}
+                                    {link.icon && <link.icon size={20} className={pathname === link.href ? "text-primary-foreground" : "text-primary"} />}
                                     <span className="uppercase">{link.label}</span>
                                 </div>
                                 {shouldShowBadge(link.label) && (
-                                    <span className="h-3 w-3 rounded-full bg-red-600 animate-pulse shadow-sm shadow-red-500/50" />
+                                    <span className="h-2.5 w-2.5 rounded-full bg-red-600 animate-pulse shadow-sm shadow-red-500/50" />
                                 )}
                             </Link>
                         ))}
                     </div>
 
-                    <div className="pt-8 border-t border-border/50">
+                    <div className="pt-4 border-t border-border/50">
                         {!(isAdminPath || isDashboardPath) ? (
-                            <Button asChild className="w-full gap-3 px-6 font-black text-xl py-7 rounded-xl shadow-xl shadow-primary/20">
+                            <Button asChild className="w-full gap-3 px-6 font-black text-lg py-3 rounded-xl shadow-xl shadow-primary/20">
                                 <Link href="/login">
-                                    <UserIcon size={24} />
+                                    <UserIcon size={20} />
                                     Portal Login
                                 </Link>
                             </Button>
@@ -326,8 +307,8 @@ export function Navbar({ user, ticketCount = 0 }: { user?: any, ticketCount?: nu
                                     </div>
                                 </div>
                                 <form action={handleSignOut} className="w-full">
-                                    <Button type="submit" variant="destructive" className="w-full gap-3 px-6 font-black text-xl py-7 rounded-xl shadow-xl shadow-destructive/20 active:scale-95 transition-transform">
-                                        <LogOut size={24} />
+                                    <Button type="submit" variant="destructive" className="w-full gap-3 px-6 font-black text-lg py-3 rounded-xl shadow-xl shadow-destructive/20 active:scale-95 transition-transform">
+                                        <LogOut size={20} />
                                         Sign Out
                                     </Button>
                                 </form>

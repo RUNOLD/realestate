@@ -270,6 +270,7 @@ model Payment {
 
 model Material {
   id           String  @id @default(cuid())
+  uniqueId     String? @unique // APMSMxxxx
   name         String
   category     String
   description  String?

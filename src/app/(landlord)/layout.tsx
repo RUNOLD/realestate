@@ -12,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/auth"; // We might need a client component for signout or server action
 
+import { SessionTimeout } from "@/components/auth/SessionTimeout";
+
 export default async function LandlordLayout({
     children,
 }: {
@@ -26,6 +28,7 @@ export default async function LandlordLayout({
 
     return (
         <div className="min-h-screen bg-muted/10 flex flex-col">
+            <SessionTimeout />
             {/* Top Navigation */}
             <header className="bg-card border-b border-border h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8 shadow-sm">
                 <Link href="/landlord/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">

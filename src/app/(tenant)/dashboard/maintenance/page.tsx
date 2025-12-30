@@ -22,9 +22,15 @@ export default async function MaintenancePage() {
         orderBy: { updatedAt: "desc" },
     });
 
+    const serializedTickets = tickets.map(t => ({
+        ...t,
+        costEstimated: t.costEstimated ? Number(t.costEstimated) : null,
+        costActual: t.costActual ? Number(t.costActual) : null,
+    }));
+
     return (
         <MaintenanceContent
-            initialTickets={tickets}
+            initialTickets={serializedTickets}
             userId={session.user.id}
         />
     );

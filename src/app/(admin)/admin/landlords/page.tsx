@@ -5,9 +5,28 @@ import { Button } from "@/components/ui/button";
 import { Plus, UserPlus, Shield, Info, Eye, Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-export default async function AdminLandlordsPage() {
+import { Search } from "@/components/admin/Search";
+
+interface PageProps {
+    searchParams: Promise<{ query?: string }>;
+}
+
+export default async function AdminLandlordsPage({ searchParams }: PageProps) {
+    const { query } = await searchParams;
+
+    const where: any = { role: 'LANDLORD' };
+
+    if (query) {
+        where.OR = [
+            { name: { contains: query, mode: 'insensitive' } },
+            { email: { contains: query, mode: 'insensitive' } },
+            { phone: { contains: query, mode: 'insensitive' } },
+            { uniqueId: { contains: query, mode: 'insensitive' } }
+        ];
+    }
+
     const landlords = await prisma.user.findMany({
-        where: { role: 'LANDLORD' },
+        where,
         include: {
             // @ts-ignore: ownedProperties exists in schema but client might be stale during build
             ownedProperties: {
@@ -37,6 +56,10 @@ export default async function AdminLandlordsPage() {
                     <p className="text-sm text-muted-foreground mt-1">
                         List of all registered landlords. Click on a landlord's name to view their full profile and managed properties.
                     </p>
+                </div>
+
+                <div className="p-4 border-b border-border">
+                    <Search placeholder="Search landlords by name, email, or ID..." />
                 </div>
 
                 <div className="overflow-x-auto">
@@ -72,6 +95,7 @@ export default async function AdminLandlordsPage() {
                                                     {landlord.name ? landlord.name.charAt(0).toUpperCase() : 'L'}
                                                 </div>
                                                 {landlord.name}
+                                                <span className="ml-2 text-xs text-muted-foreground font-mono">({landlord.uniqueId || 'No ID'})</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">{landlord.email}</td>

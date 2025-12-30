@@ -44,6 +44,13 @@ export default async function AdminTicketsPage({ searchParams }: { searchParams:
         orderBy: { name: 'asc' }
     });
 
+    // Serialize tickets for client component (Prisma Decimals cannot be passed directly)
+    const serializedTickets = tickets.map(t => ({
+        ...t,
+        costEstimated: t.costEstimated ? Number(t.costEstimated) : null,
+        costActual: t.costActual ? Number(t.costActual) : null,
+    }));
+
     return (
         <div className="min-h-screen bg-muted/5 p-6 sm:p-8 space-y-8">
             <div className="max-w-7xl mx-auto space-y-8">
@@ -55,7 +62,7 @@ export default async function AdminTicketsPage({ searchParams }: { searchParams:
                         <p className="text-muted-foreground mt-1">Manage maintenance requests and tenant issues.</p>
                     </div>
                     <div className="flex gap-2">
-                        <ExportTicketsButton tickets={tickets} />
+                        <ExportTicketsButton tickets={serializedTickets} />
                         <CreateTicketModal tenants={tenants} />
                     </div>
                 </div>
