@@ -4,10 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import bcrypt from 'bcryptjs';
-import { CreateTenantSchema, CreateStaffSchema, UpdateUserSchema } from "@/lib/schemas";
+import { CreateTenantSchema, CreateStaffSchema, CreateLandlordSchema, UpdateUserSchema } from "@/lib/schemas";
 import { createActivityLog, ActionType, EntityType } from "@/lib/logger";
+import { ActionState } from "@/lib/types";
 
-export async function createTenant(prevState: any, formData: FormData) {
+export async function createTenant(prevState: any, formData: FormData): Promise<ActionState> {
     const session = await auth();
     if (!session?.user?.id) return { error: "Not authenticated" };
 
@@ -225,7 +226,7 @@ export async function createTenant(prevState: any, formData: FormData) {
 }
 
 
-export async function createLandlord(prevState: any, formData: FormData) {
+export async function createLandlord(prevState: any, formData: FormData): Promise<ActionState> {
     const session = await auth();
     if (!session?.user?.id || (session.user as any).role !== 'ADMIN') {
         return { error: "Unauthorized. Only admins can create landlords." };
@@ -257,7 +258,6 @@ export async function createLandlord(prevState: any, formData: FormData) {
         isConsentGiven: getString("isConsentGiven"),
     };
 
-    const { CreateLandlordSchema } = await import("@/lib/schemas");
     const validatedFields = CreateLandlordSchema.safeParse(rawData);
 
     if (!validatedFields.success) {
@@ -327,7 +327,6 @@ export async function createLandlord(prevState: any, formData: FormData) {
             { name: data.name, role: 'LANDLORD', status: 'ACTIVE' }
         );
 
-        revalidatePath("/admin/team");
         revalidatePath("/admin/users");
         return { success: true, message: `Landlord ${data.name} created successfully.` };
 
@@ -337,7 +336,7 @@ export async function createLandlord(prevState: any, formData: FormData) {
     }
 }
 
-export async function createStaff(prevState: any, formData: FormData) {
+export async function createStaff(prevState: any, formData: FormData): Promise<ActionState> {
     const session = await auth();
     if (!session?.user?.id || (session.user as any).role !== 'ADMIN') {
         return { error: "Unauthorized. Only admins can create staff." };
@@ -354,7 +353,7 @@ export async function createStaff(prevState: any, formData: FormData) {
     const validatedFields = CreateStaffSchema.safeParse(rawData);
 
     if (!validatedFields.success) {
-        return { error: validatedFields.error.flatten().fieldErrors, message: "Validation failed" };
+        return { error: "Validation failed", details: validatedFields.error.flatten().fieldErrors };
     }
 
     const { name, email, phone, password, role } = validatedFields.data;
@@ -403,7 +402,7 @@ export async function createStaff(prevState: any, formData: FormData) {
     }
 }
 
-export async function approveUser(userId: string) {
+export async function approveUser(userId: string): Promise<ActionState> {
     const session = await auth();
     if (!session?.user?.id || (session.user as any).role !== 'ADMIN') return { error: "Unauthorized" };
 
@@ -423,14 +422,14 @@ export async function approveUser(userId: string) {
 
         revalidatePath("/admin/users");
         revalidatePath("/admin/approvals");
-        return { success: true };
+        return { success: true, message: "User approved successfully." };
     } catch (e) {
         console.error("Approve User Error:", e);
         return { error: "Failed to approve user" };
     }
 }
 
-export async function updateUser(prevState: any, formData: FormData) {
+export async function updateUser(prevState: any, formData: FormData): Promise<ActionState> {
     const session = await auth();
     if (!session?.user?.id || (session.user as any).role !== 'ADMIN') {
         return { error: "Unauthorized. Only admins can edit users." };
@@ -464,11 +463,10 @@ export async function updateUser(prevState: any, formData: FormData) {
     const validatedFields = UpdateUserSchema.safeParse(rawData);
 
     if (!validatedFields.success) {
-        return { error: validatedFields.error.flatten().fieldErrors, message: "Validation failed" };
+        return { error: "Validation failed", details: validatedFields.error.flatten().fieldErrors };
     }
 
     const data = validatedFields.data;
-    // const { id, name, email, phone, role, status } = validatedFields.data;
 
     try {
         const existingUser = await prisma.user.findUnique({
@@ -519,10 +517,6 @@ export async function updateUser(prevState: any, formData: FormData) {
                         bankName: data.bankName,
                         accountName: data.accountName,
                         accountNumber: data.accountNumber,
-                        // Only update consent if explicitly provided (checkbox checked or unchecked)
-                        // If it's a string "true", set true. If it was checkbox unchecked it might be undefined in raw, 
-                        // so we might need to handle unchecking. 
-                        // Simplified: If form has field 'isConsentGiven' as 'true' -> true. 
                         isConsentGiven: data.isConsentGiven === 'true',
                         consentDate: data.isConsentGiven === 'true' ? new Date() : undefined,
                         residentialAddress: data.residentialAddress,
@@ -554,7 +548,7 @@ export async function updateUser(prevState: any, formData: FormData) {
     }
 }
 
-export async function updateSelfPassword(prevState: any, formData: FormData) {
+export async function updateSelfPassword(prevState: any, formData: FormData): Promise<ActionState> {
     const session = await auth();
     if (!session?.user?.id) return { error: "Unauthorized" };
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { RegisterStaffForm } from "@/components/admin/users/RegisterStaffForm";
-import { RegisterLandlordForm } from "@/components/admin/users/RegisterLandlordForm";
+import RegisterLandlordForm from "@/components/admin/users/RegisterLandlordForm";
 import Link from "next/link";
 import { ChevronLeft, ShieldCheck, UserPlus, Briefcase } from "lucide-react";
 import { useState } from "react";

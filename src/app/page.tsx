@@ -201,17 +201,20 @@ export default async function Home() {
             Browse our latest listings or contact our agents to help you navigate the market with confidence.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/properties">
-              <button className="px-8 py-4 bg-primary-foreground text-primary dark:bg-primary dark:text-primary-foreground rounded-lg hover:bg-primary-foreground/90 transition-colors font-bold w-full sm:w-auto">
-                Browse Properties
-              </button>
+            <Link
+              href="/properties"
+              className="px-8 py-4 bg-primary-foreground text-primary dark:bg-primary dark:text-primary-foreground rounded-lg hover:bg-primary-foreground/90 transition-colors font-bold w-full sm:w-auto text-center"
+            >
+              Browse Properties
             </Link>
-            <Link href="/contact">
-              <button className="px-8 py-4 bg-transparent border-2 border-primary-foreground text-primary-foreground dark:border-primary dark:text-primary rounded-lg hover:bg-primary-foreground/10 transition-colors font-bold w-full sm:w-auto">
-                Contact Us
-              </button>
+            <Link
+              href="/contact"
+              className="px-8 py-4 bg-transparent border-2 border-primary-foreground text-primary-foreground dark:border-primary dark:text-primary rounded-lg hover:bg-primary-foreground/10 transition-colors font-bold w-full sm:w-auto text-center"
+            >
+              Contact Us
             </Link>
           </div>
+
         </div>
       </section>
 

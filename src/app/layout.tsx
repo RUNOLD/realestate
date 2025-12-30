@@ -16,12 +16,34 @@ import { auth } from "@/auth";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
+import { prisma } from "@/lib/prisma";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const session = await auth();
+
+  let ticketCount = 0;
+  if (session?.user) {
+    const role = (session.user as any).role;
+    const userId = (session.user as any).id; // standard session.user.id should work but casting safe
+
+    if (role === 'ADMIN' || role === 'STAFF') {
+      ticketCount = await prisma.ticket.count({
+        where: { status: { in: ['PENDING', 'IN_PROGRESS', 'AWAITING_CONFIRMATION'] } }
+      });
+    } else if (role === 'TENANT') {
+      ticketCount = await prisma.ticket.count({
+        where: {
+          userId: session.user.id,
+          status: { in: ['PENDING', 'IN_PROGRESS', 'AWAITING_CONFIRMATION'] }
+        }
+      });
+    }
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn(inter.variable, playfair.variable, "font-sans antialiased")}>
@@ -31,7 +53,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Navbar user={session?.user} />
+          <Navbar user={session?.user} ticketCount={ticketCount} />
           <div className="pt-24">
             {children}
           </div>

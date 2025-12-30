@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { NIGERIA_STATES_AND_LGAS } from '@/lib/nigeria-data';
 
 export function RegisterTenantForm() {
-    const [state, action, isPending] = useActionState(createTenant, null);
+    const [state, action, isPending] = useActionState(createTenant, { message: "", error: "", success: false, details: {} });
     const [step, setStep] = useState(1);
 
     // We need some local state to handle conditional renders (like Corporate)

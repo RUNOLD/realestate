@@ -36,7 +36,11 @@ export async function createActivityLog(
     action: ActionType | string,
     entity: EntityType | string,
     entityId: string | null,
-    details?: any
+    details?: any,
+    ipAddress?: string,
+    userAgent?: string,
+    previousState?: string,
+    newState?: string
 ) {
     try {
         await prisma.activityLog.create({
@@ -46,6 +50,10 @@ export async function createActivityLog(
                 entity: entity.toString(),
                 entityId,
                 details: details ? JSON.stringify(details) : null,
+                ipAddress,
+                userAgent,
+                previousState,
+                newState,
             },
         });
     } catch (error) {

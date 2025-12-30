@@ -1,5 +1,5 @@
 
-import { RegisterLandlordForm } from "@/components/admin/users/RegisterLandlordForm";
+import RegisterLandlordForm from "@/components/admin/users/RegisterLandlordForm";
 import Link from "next/link";
 import { ChevronLeft, Building2 } from "lucide-react";
 

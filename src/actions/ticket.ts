@@ -172,7 +172,15 @@ export async function approveTicket(ticketId: string, role: 'MANAGER' | 'ADMIN')
     }
 }
 
-export async function resolveTicket(ticketId: string) {
+
+export async function markTicketAsFixed(
+    ticketId: string,
+    data: {
+        resolutionNote: string,
+        costActual: number,
+        resolvedBy: string
+    }
+) {
     const session = await auth();
     const userRole = (session?.user as any)?.role;
 
@@ -181,30 +189,81 @@ export async function resolveTicket(ticketId: string) {
     }
 
     try {
-        await prisma.ticket.update({
+        const ticket = await prisma.ticket.update({
             where: { id: ticketId },
             data: {
-                status: 'RESOLVED',
-                approvalStatus: 'APPROVED' // Ensure it's marked as approved if resolved directly
-            }
+                status: 'AWAITING_CONFIRMATION',
+                resolutionNote: data.resolutionNote,
+                costActual: data.costActual,
+                resolvedBy: data.resolvedBy
+            },
+            include: { user: true }
         });
 
         await createActivityLog(
             session.user.id,
-            ActionType.APPROVE, // Reusing APPROVE for resolution log or add RESOLVE to ActionType if available
+            'FIXED',
             EntityType.TICKET,
             ticketId,
-            { newStatus: 'RESOLVED' }
+            { resolutionNote: data.resolutionNote, cost: data.costActual }
+        );
+
+        // Notify Tenant
+        await createNotification(
+            ticket.userId,
+            'MAINTENANCE',
+            'Maintenance Completed',
+            `Work on "${ticket.subject}" is complete. Please confirm resolution.`,
+            `/dashboard/maintenance`,
+            ticketId
         );
 
         revalidatePath("/admin/tickets");
         revalidatePath("/dashboard");
         return { success: true };
     } catch (e) {
-        console.error("Resolve Ticket Error:", e);
-        return { error: "Failed to resolve ticket" };
+        console.error("Mark Fixed Error:", e);
+        return { error: "Failed to update ticket" };
     }
 }
+
+export async function confirmTicketResolution(ticketId: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Not authenticated" };
+
+    try {
+        const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+        if (!ticket) return { error: "Ticket not found" };
+
+        if (ticket.userId !== session.user.id && (session.user as any).role !== 'ADMIN') {
+            return { error: "Unauthorized" };
+        }
+
+        await prisma.ticket.update({
+            where: { id: ticketId },
+            data: {
+                status: 'RESOLVED',
+                resolutionDate: new Date()
+            }
+        });
+
+        await createActivityLog(
+            session.user.id,
+            'RESOLVE',
+            EntityType.TICKET,
+            ticketId,
+            { confirmedBy: session.user.id }
+        );
+
+        revalidatePath("/dashboard");
+        revalidatePath("/admin/tickets");
+        return { success: true };
+    } catch (e) {
+        console.error("Confirm Ticket Error:", e);
+        return { error: "Failed to confirm resolution" };
+    }
+}
+
 
 export async function addComment(ticketId: string, content: string) {
     const session = await auth();

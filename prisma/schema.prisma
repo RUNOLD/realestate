@@ -5,8 +5,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -70,55 +70,56 @@ enum NotificationType {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  uniqueId      String?   @unique // APMSxxxx, APMxxxx
-  name          String?
-  email         String    @unique
-  phone         String?   // New: For Login
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  resetToken    String?
+  id               String     @id @default(cuid())
+  uniqueId         String?    @unique // APMSxxxx, APMxxxx
+  name             String?
+  email            String     @unique
+  phone            String? // New: For Login
+  emailVerified    DateTime?
+  image            String?
+  password         String?
+  resetToken       String?
   resetTokenExpiry DateTime?
-  role          Role      @default(USER)
-  status        UserStatus @default(ACTIVE) // Approval flow
+  role             Role       @default(USER)
+  status           UserStatus @default(ACTIVE) // Approval flow
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Tenant Specifics
   nextOfKinName  String?
   nextOfKinPhone String?
   employerName   String?
   jobTitle       String?
-  isEmployed     Boolean   @default(false)
+  isEmployed     Boolean @default(false)
 
   // Relations
-  tickets         Ticket[]
-  leases          Lease[]
-  payments        Payment[]
-  activityLogs    ActivityLog[]
-  contactSubmissions ContactSubmission[]
-  documents       Document[]
-  comments        TicketComment[]
-  managedProperties Property[] @relation("PropertyManager") // Staff managing properties
-  ownedProperties   Property[] @relation("PropertyOwner") // Landlord's properties
-  rentModifications RentModificationLog[] @relation("AdminModifier")
-  claimedTickets   Ticket[]              @relation("TicketClaimant")
-  notifications    Notification[]
+  tickets                 Ticket[]
+  leases                  Lease[]
+  payments                Payment[]
+  activityLogs            ActivityLog[]
+  contactSubmissions      ContactSubmission[]
+  documents               Document[]
+  comments                TicketComment[]
+  managedProperties       Property[]            @relation("PropertyManager") // Staff managing properties
+  ownedProperties         Property[]            @relation("PropertyOwner") // Landlord's properties
+  rentModifications       RentModificationLog[] @relation("AdminModifier")
+  claimedTickets          Ticket[]              @relation("TicketClaimant")
+  notifications           Notification[]
   notificationPreferences Json? // { email: boolean, sms: boolean, marketing: boolean }
 
   // Staff / HR Details
-  department      String?
-  salary          Float?
-  hireDate        DateTime?
-  homeAddress     String?
-  bankName        String?
-  accountNumber   String?
-  accountName     String?
+  department    String?
+  salary        Float?
+  hireDate      DateTime?
+  homeAddress   String?
+  bankName      String?
+  accountNumber String?
+  accountName   String?
 
-  tenantProfile   TenantProfile?
-  landlordProfile LandlordProfile?
+  tenantProfile       TenantProfile?
+  landlordProfile     LandlordProfile?
+  utilityTransactions UtilityTransaction[]
 }
 
 model Property {
@@ -129,237 +130,280 @@ model Property {
   location    String
   price       Float
   status      PropertyStatus @default(AVAILABLE)
-  program     String?        // e.g. "Lagos HOMS", "Rent-to-Own"
-  type        String?        // e.g. "Apartment", "House"
-  
-  images      String[]       // Postgres Array for images
-  features    String[]       // Postgres Array for features
-  
-  bedrooms    Int?
-  bathrooms   Int?
-  sqft        Int?
-  
-  // Relations
-  leases      Lease[]
-  payments    Payment[]      // Linked payments for landlord visibility
-  managerId   String?        // Staff responsible
-  manager     User?          @relation("PropertyManager", fields: [managerId], references: [id])
+  program     String? // e.g. "Lagos HOMS", "Rent-to-Own"
+  type        String? // e.g. "Apartment", "House"
 
-  ownerId     String?        // Making optional initially to facilitate migration of existing data, but will enforce in app logic
-  owner       User?          @relation("PropertyOwner", fields: [ownerId], references: [id])
+  images   String[] // Postgres Array for images
+  features String[] // Postgres Array for features
+
+  bedrooms  Int?
+  bathrooms Int?
+  sqft      Int?
+
+  // Relations
+  leases    Lease[]
+  payments  Payment[] // Linked payments for landlord visibility
+  managerId String? // Staff responsible
+  manager   User?     @relation("PropertyManager", fields: [managerId], references: [id])
+
+  ownerId String? // Making optional initially to facilitate migration of existing data, but will enforce in app logic
+  owner   User?   @relation("PropertyOwner", fields: [ownerId], references: [id])
 
   // Multi-unit Support
-  isMultiUnit Boolean        @default(false)
-  parentId    String?        // If this is a unit, link to the building
-  parent      Property?      @relation("Units", fields: [parentId], references: [id])
-  units       Property[]     @relation("Units")
-  unitNumber  String?        // e.g., "Flat 101"
-  
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  isMultiUnit Boolean    @default(false)
+  parentId    String? // If this is a unit, link to the building
+  parent      Property?  @relation("Units", fields: [parentId], references: [id])
+  units       Property[] @relation("Units")
+  unitNumber  String? // e.g., "Flat 101"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  utilityTransactions UtilityTransaction[]
 }
 
 model Lease {
-  id          String   @id @default(cuid())
-  startDate   DateTime
-  endDate     DateTime? // Indefinite or fixed
-  rentAmount  Float
-  isActive    Boolean  @default(true)
+  id         String    @id @default(cuid())
+  startDate  DateTime
+  endDate    DateTime? // Indefinite or fixed
+  rentAmount Float
+  isActive   Boolean   @default(true)
 
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  propertyId  String
-  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
-  rentLogs    RentModificationLog[]
+  rentLogs RentModificationLog[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Ticket {
-  id             String         @id @default(cuid())
-  subject        String
-  description    String?
-  status         TicketStatus   @default(PENDING)
-  priority       TicketPriority @default(MEDIUM)
-  category       String // Plumbing, Electrical, etc.
-  
-  images         String[]     // Postgres Array
-  
-  userId         String
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String         @id @default(cuid())
+  subject     String
+  description String?
+  status      TicketStatus   @default(PENDING)
+  priority    TicketPriority @default(MEDIUM)
+  category    String // Plumbing, Electrical, etc.
 
-  assignedToId   String?
+  images String[] // Postgres Array
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  assignedToId String?
   // assignedTo  User? ... (Future: Staff assignment)
 
-  claimedById    String?
-  claimant       User?           @relation("TicketClaimant", fields: [claimedById], references: [id])
+  claimedById String?
+  claimant    User?   @relation("TicketClaimant", fields: [claimedById], references: [id])
 
   // Approval Workflow
   requiresApproval Boolean        @default(false)
   approvalStatus   ApprovalStatus @default(APPROVED) // Default approved unless requires approval
-  approvedById     String?        // Admin who approved
+  approvedById     String? // Admin who approved
 
-  comments       TicketComment[]
-  
-  notifications  Notification[]
+  comments TicketComment[]
+
+  notifications Notification[]
 
   // Resolution Details (Maintenance 2.0)
   resolutionNote String?
-  resolvedBy     String?    // Name of staff/artisan
-  costEstimated  Decimal?   @db.Decimal(10, 2)
-  costActual     Decimal?   @db.Decimal(10, 2)
+  resolvedBy     String? // Name of staff/artisan
+  costEstimated  Decimal?  @db.Decimal(10, 2)
+  costActual     Decimal?  @db.Decimal(10, 2)
   resolutionDate DateTime?
 
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Notification {
-  id        String           @id @default(cuid())
-  userId    String
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  type      NotificationType
-  title     String
-  message   String?
-  link      String?          // e.g. /admin/tickets/id
-  isRead    Boolean          @default(false)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  ticketId  String?
-  ticket    Ticket?          @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+  type    NotificationType
+  title   String
+  message String?
+  link    String? // e.g. /admin/tickets/id
+  isRead  Boolean          @default(false)
 
-  createdAt DateTime         @default(now())
+  ticketId String?
+  ticket   Ticket? @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
 }
 
 model TicketComment {
   id        String   @id @default(cuid())
   content   String
   createdAt DateTime @default(now())
-  
-  ticketId  String
-  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Payment {
-  id             String        @id @default(cuid())
-  amount         Float
-  currency       String        @default("NGN")
-  reference      String        @unique
-  method         String        // 'Paystack', 'Transfer', 'Cash'
-  status         String        // 'SUCCESS', 'PENDING', 'FAILED' (Simple string for API mapping)
-  
+  id        String @id @default(cuid())
+  amount    Float
+  currency  String @default("NGN")
+  reference String @unique
+  method    String // 'Paystack', 'Transfer', 'Cash'
+  status    String // 'SUCCESS', 'PENDING', 'FAILED' (Simple string for API mapping)
+
   approvalStatus ApprovalStatus @default(APPROVED) // If manual transfer, needs approval
 
-  userId         String
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  propertyId     String?       // Make optional for existing payments
-  property       Property?     @relation(fields: [propertyId], references: [id])
-  
-  createdAt      DateTime      @default(now())
+  propertyId String? // Make optional for existing payments
+  property   Property? @relation(fields: [propertyId], references: [id])
+
+  createdAt DateTime @default(now())
 }
 
 model Material {
-  id          String   @id @default(cuid())
-  name        String
-  category    String
-  description String?
-  price       Float?
-  quantity    Int      @default(0)
+  id           String  @id @default(cuid())
+  name         String
+  category     String
+  description  String?
+  price        Float?
+  quantity     Int     @default(0)
   minThreshold Int     @default(5)
-  inStock     Boolean  @default(true)
-  location    String?  // 'Store A', 'Site B'
+  inStock      Boolean @default(true)
+  location     String? // 'Store A', 'Site B'
 
-  images      String[] // Postgres Array
+  images String[] // Postgres Array
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ContactSubmission {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  phone     String?
-  message   String
-  status    String   @default("UNREAD") // READ, UNREAD, REPLIED
-  
+  id      String  @id @default(cuid())
+  name    String
+  email   String
+  phone   String?
+  message String
+  status  String  @default("UNREAD") // READ, UNREAD, REPLIED
+
   // Optional linkage if logged in
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
 }
 
 model Document {
-  id        String   @id @default(cuid())
-  name      String
-  url       String
-  type      String   // 'LEASE', 'RECEIPT', 'ID'
-  category  String?  // 'Kyc', 'Contract'
-  
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id       String  @id @default(cuid())
+  name     String
+  url      String
+  type     String // 'LEASE', 'RECEIPT', 'ID'
+  category String? // 'Kyc', 'Contract'
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
 
 model ActivityLog {
-  id          String   @id @default(cuid())
-  action      String   // LOGIN, CREATE, UPDATE, DELETE, APPROVE
-  entity      String   // TICKET, USER, PAYMENT
-  entityId    String?
-  details     String?  // JSON string of changes
-  
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  createdAt   DateTime @default(now())
+  id       String  @id @default(cuid())
+  action   String // LOGIN, CREATE, UPDATE, DELETE, APPROVE
+  entity   String // TICKET, USER, PAYMENT
+  entityId String?
+  details  String? // JSON string of changes
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Enhanced Security & Audit
+  ipAddress     String?
+  userAgent     String?
+  previousState String?
+  newState      String?
+
+  createdAt DateTime @default(now())
+}
+
+model UtilityTransaction {
+  id          String  @id @default(cuid())
+  reference   String  @unique
+  utilityType String // ELECTRICITY, WATER
+  meterNumber String
+  token       String? // For electricity
+  amount      Float
+  commission  Float   @default(0)
+  totalPaid   Float
+  status      String // SUCCESS, FAILED, PENDING, REVERSED
+
+  provider String // PAYSTACK, MONNIFY, etc
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UtilityProvider {
+  id         String  @id @default(cuid())
+  name       String  @unique // ELECTRICITY_IKEDC
+  isActive   Boolean @default(true)
+  commission Float   @default(100)
+  minAmount  Float   @default(1000)
+  maxAmount  Float   @default(50000)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model RentModificationLog {
-  id             String   @id @default(cuid())
-  leaseId        String
-  lease          Lease    @relation(fields: [leaseId], references: [id], onDelete: Cascade)
-  
+  id      String @id @default(cuid())
+  leaseId String
+  lease   Lease  @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+
   previousAmount Float
   newAmount      Float
   reason         String?
-  
-  adminId        String
-  admin          User     @relation("AdminModifier", fields: [adminId], references: [id])
-  
-  createdAt      DateTime @default(now())
+
+  adminId String
+  admin   User   @relation("AdminModifier", fields: [adminId], references: [id])
+
+  createdAt DateTime @default(now())
 }
 
 model TenantProfile {
-  id             String   @id @default(cuid())
-  userId         String   @unique
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Personal Information
-  nationality    String?
-  maritalStatus  String?
-  gender         String?
-  dateOfBirth    DateTime?
-  spouseName     String?
-  spouseWork     String?
+  nationality        String?
+  maritalStatus      String?
+  gender             String?
+  dateOfBirth        DateTime?
+  spouseName         String?
+  spouseWork         String?
   residentialAddress String? // Current address
-  nearestBusStop String?
-  homeTownAddress String?
-  stateOfOrigin  String?
-  lga            String?
-  occupation     String?
-  placeOfWork    String?
-  positionHeld   String?
-  placeOfWorship String?
-  bankDetails    String? // Bank Information
+  nearestBusStop     String?
+  homeTownAddress    String?
+  stateOfOrigin      String?
+  lga                String?
+  occupation         String?
+  placeOfWork        String?
+  positionHeld       String?
+  placeOfWorship     String?
+  bankDetails        String? // Bank Information
 
   // Identity
   meansOfIdentification String? // ID Type
@@ -368,28 +412,28 @@ model TenantProfile {
   idExpiryDate          DateTime?
 
   // Corporate Tenant (Optional)
-  companyName         String?
-  incorporationDate   DateTime?
-  certificateNumber   String? 
-  businessType        String?
-  banker              String?
-  corporateEmail      String?
-  corporateWebsite    String?
-  contactPersonName   String?
-  contactPersonPhone  String?
-  corporateAddress    String?
-  branchOffice        String?
+  companyName        String?
+  incorporationDate  DateTime?
+  certificateNumber  String?
+  businessType       String?
+  banker             String?
+  corporateEmail     String?
+  corporateWebsite   String?
+  contactPersonName  String?
+  contactPersonPhone String?
+  corporateAddress   String?
+  branchOffice       String?
 
   // Property Requirements
-  propertyTypeRequired String?
-  locationRequired     String?
-  acceptOtherLocation  Boolean?
-  businessDescription  String?
-  tenancyNature        String? 
-  commencementDate     DateTime?
-  budgetPerAnnum       String?
-  leasePreference      String?
-  leaseYears           Int?
+  propertyTypeRequired       String?
+  locationRequired           String?
+  acceptOtherLocation        Boolean?
+  businessDescription        String?
+  tenancyNature              String?
+  commencementDate           DateTime?
+  budgetPerAnnum             String?
+  leasePreference            String?
+  leaseYears                 Int?
   serviceChargeAffordability Boolean?
   cautionDepositAgreement    Boolean?
 
@@ -403,24 +447,24 @@ model TenantProfile {
   reasonForLeaving        String?
 
   // Guarantors (JSON Array of {name, phone, address, occupation, placeOfWork})
-  guarantors              Json?
+  guarantors Json?
 
   // Agreement
-  agreedToTerms           Boolean @default(false)
-  signatureUrl            String?
-  
-  updatedAt      DateTime @updatedAt
+  agreedToTerms Boolean @default(false)
+  signatureUrl  String?
+
+  updatedAt DateTime @updatedAt
 }
 
 model LandlordProfile {
-  id             String   @id @default(cuid())
-  userId         String   @unique
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // A. Identity & Legal
-  landlordType   String? // Individual or Company
-  idType         String? // NIN, Passport, Driver's License
-  idNumber       String? // Stored string
+  landlordType       String? // Individual or Company
+  idType             String? // NIN, Passport, Driver's License
+  idNumber           String? // Stored string
   residentialAddress String? // Where they live
 
   // B. Ownership & Authority
@@ -434,8 +478,8 @@ model LandlordProfile {
 
   // D. Preferences & Consent
   preferredContactMethod String? // WhatsApp, Phone, Email
-  isConsentGiven         Boolean @default(false)
+  isConsentGiven         Boolean   @default(false)
   consentDate            DateTime?
 
-  updatedAt      DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 }

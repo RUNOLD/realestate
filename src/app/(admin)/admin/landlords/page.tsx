@@ -24,11 +24,11 @@ export default async function AdminLandlordsPage() {
                     <h1 className="text-3xl font-serif font-bold text-primary">Landlord Management</h1>
                     <p className="text-muted-foreground mt-1">Manage property owners and view their portfolios.</p>
                 </div>
-                <Link href="/admin/landlords/new">
-                    <Button className="gap-2">
+                <Button asChild className="gap-2">
+                    <Link href="/admin/landlords/new">
                         <UserPlus size={16} /> Add Landlord
-                    </Button>
-                </Link>
+                    </Link>
+                </Button>
             </div>
 
             <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
@@ -82,11 +82,11 @@ export default async function AdminLandlordsPage() {
                                             </Badge>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <Link href={`/admin/landlords/${landlord.id}`}>
-                                                <Button variant="outline" size="sm">
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={`/admin/landlords/${landlord.id}`}>
                                                     View Details
-                                                </Button>
-                                            </Link>
+                                                </Link>
+                                            </Button>
                                         </td>
                                     </tr>
                                 ))

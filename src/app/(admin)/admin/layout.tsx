@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { SessionTimeout } from "@/components/auth/SessionTimeout";
 
+import { prisma } from "@/lib/prisma";
+
 export default async function AdminLayout({
     children,
 }: {
@@ -28,12 +30,15 @@ export default async function AdminLayout({
         redirect('/login');
     }
 
-    const userRole = (session?.user as any)?.role || 'USER';
+    const activeTicketCount = await prisma.ticket.count({
+        where: {
+            status: {
+                in: ['PENDING', 'IN_PROGRESS', 'AWAITING_CONFIRMATION']
+            }
+        }
+    });
 
-    // REDUNDANT CHECK: Ensure correct role
-    if (userRole !== 'ADMIN' && userRole !== 'STAFF') {
-        redirect('/login'); // Or unauthorized page
-    }
+    const userRole = (session?.user as any)?.role || 'USER';
 
     const isSuperAdmin = userRole === 'ADMIN';
 
@@ -79,9 +84,14 @@ export default async function AdminLayout({
                                 <Building2 size={20} />
                                 Landlord Directory
                             </Link>
-                            <Link href="/admin/tickets" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
-                                <Ticket size={20} />
-                                Tickets
+                            <Link href="/admin/tickets" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Ticket size={20} />
+                                    Tickets
+                                </div>
+                                {activeTicketCount > 0 && (
+                                    <span className="h-2 w-2 rounded-full bg-red-600 animate-pulse" />
+                                )}
                             </Link>
                             {/* Materials - Allow Staff? Assuming yes as it is operational */}
                             <Link href="/admin/materials" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">

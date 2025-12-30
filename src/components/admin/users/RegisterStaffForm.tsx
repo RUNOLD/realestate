@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function RegisterStaffForm() {
-    const [state, action, isPending] = useActionState(createStaff, null);
+    const [state, action, isPending] = useActionState(createStaff, { message: "", error: "", success: false, details: {} });
 
     return (
         <form action={action} className="space-y-6">

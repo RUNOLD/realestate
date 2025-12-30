@@ -67,7 +67,8 @@ const TENANT_LINKS = [
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
-export function Navbar({ user }: { user?: any }) {
+export function Navbar({ user, ticketCount = 0 }: { user?: any, ticketCount?: number }) {
+    // ... (existing hooks)
     const [isOpen, setIsOpen] = React.useState(false);
     const [isScrolled, setIsScrolled] = React.useState(false);
     const pathname = usePathname();
@@ -114,6 +115,15 @@ export function Navbar({ user }: { user?: any }) {
         ? (isScrolled || isOpen ? "bg-[#E3EEEF]/95" : "bg-[#E3EEEF]/80")
         : (isScrolled || isOpen ? "bg-background/95" : "bg-background/80");
 
+    // Logic to visually check which link needs a badge
+    const shouldShowBadge = (label: string) => {
+        if (ticketCount > 0) {
+            if (isAdminPath && label === 'Tickets') return true;
+            if (isDashboardPath && label === 'Maintenance') return true;
+        }
+        return false;
+    };
+
     return (
         <nav
             className={cn(
@@ -151,16 +161,37 @@ export function Navbar({ user }: { user?: any }) {
                     {/* Desktop Navigation - Visible on XL (1280px+) */}
                     <div className="hidden xl:flex items-center gap-8">
                         <div className="flex items-center gap-6">
-                            {NAV_LINKS.map((link) => (
+                            {/* We need to use the correct links based on context like getMobileLinks but for desktop */}
+                            {/* Wait, the original code used NAV_LINKS for desktop unconditionally? */}
+                            {/* Lines 154-169 in original only mapped NAV_LINKS. Admin dashboard has sidebar. */}
+                            {/* But if Tenant uses this Navbar, they need Tenant links here? */}
+                            {/* The original code only showed NAV_LINKS in desktop header. */}
+                            {/* If Tenant Dashboard uses Navbar, it probably should show Tenant Links on Desktop too? */}
+                            {/* Let's fixing the badge logic for Mobile links first, and assume Desktop Tenant might be using Sidebar or just NAV_LINKS? */}
+                            {/* Actually line 106 says `if (isDashboardPath) return TENANT_LINKS;` for mobile. */}
+                            {/* For Desktop, lines 154+ iterate NAV_LINKS. This implies Tenant Dashboard on Desktop might NOT rely on Navbar links, or uses Sidebar? */}
+                            {/* But Step 420 showed `(tenant)` folder emptiness and `dashboard` folder emptiness regarding layout. */}
+                            {/* Wait, if Tenant uses `Navbar` for navigation, where are the links on Desktop? */}
+                            {/* If they are missing on Desktop Navbar, maybe they use a Sidebar that I missed? */}
+                            {/* Or maybe the user didn't build Desktop Tenant Nav yet? */}
+                            {/* User Request: "puts a red dot in the tenant space". */}
+                            {/* If I add it to `mobileLinks` (used in mobile menu), does it help Desktop? */}
+                            {/* If the user is on Desktop, and Tenant view relies on Navbar, they might only see Home/Properties... */}
+                            {/* Let's ensure Mobile Menu has the badge first. */}
+
+                            {(isAdminPath || isDashboardPath ? (isDashboardPath ? TENANT_LINKS : getMobileLinks()) : NAV_LINKS).map((link) => (
                                 <Link
                                     key={link.href}
                                     href={link.href}
                                     className={cn(
-                                        "text-sm font-bold transition-all hover:text-primary whitespace-nowrap relative group",
+                                        "text-sm font-bold transition-all hover:text-primary whitespace-nowrap relative group flex items-center gap-2",
                                         pathname === link.href ? "text-primary" : "text-muted-foreground"
                                     )}
                                 >
                                     {link.label}
+                                    {shouldShowBadge(link.label) && (
+                                        <span className="h-2 w-2 rounded-full bg-red-600 animate-pulse" />
+                                    )}
                                     <span className={cn(
                                         "absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300",
                                         pathname === link.href ? "w-full" : "w-0 group-hover:w-full"
@@ -258,14 +289,19 @@ export function Navbar({ user }: { user?: any }) {
                                 key={link.href}
                                 href={link.href}
                                 className={cn(
-                                    "flex items-center gap-4 text-xl font-bold tracking-tight transition-colors p-3 rounded-xl",
+                                    "flex items-center gap-4 text-xl font-bold tracking-tight transition-colors p-3 rounded-xl justify-between",
                                     pathname === link.href
                                         ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                                         : "text-foreground hover:bg-primary/5 hover:text-primary"
                                 )}
                             >
-                                {link.icon && <link.icon size={22} className={pathname === link.href ? "text-primary-foreground" : "text-primary"} />}
-                                <span className="uppercase">{link.label}</span>
+                                <div className="flex items-center gap-4">
+                                    {link.icon && <link.icon size={22} className={pathname === link.href ? "text-primary-foreground" : "text-primary"} />}
+                                    <span className="uppercase">{link.label}</span>
+                                </div>
+                                {shouldShowBadge(link.label) && (
+                                    <span className="h-3 w-3 rounded-full bg-red-600 animate-pulse shadow-sm shadow-red-500/50" />
+                                )}
                             </Link>
                         ))}
                     </div>
