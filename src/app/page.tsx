@@ -15,6 +15,8 @@ import {
   CheckCircle2
 } from "lucide-react";
 
+import { PropertyStatus } from "@prisma/client";
+
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
@@ -22,7 +24,7 @@ export default async function Home() {
   const featuredProperties = await prisma.property.findMany({
     take: 3,
     orderBy: { createdAt: 'desc' },
-    where: { status: 'AVAILABLE' }
+    where: { status: PropertyStatus.AVAILABLE }
   });
 
   return (

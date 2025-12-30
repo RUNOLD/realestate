@@ -167,7 +167,18 @@ export const UpdateUserSchema = z.object({
     email: z.string().email("Invalid email address"),
     phone: z.string().optional(),
     role: z.enum(["USER", "TENANT", "ADMIN", "STAFF", "LANDLORD"]),
-    status: z.enum(["ACTIVE", "PENDING"]),
+    status: z.enum(["ACTIVE", "PENDING", "SUSPENDED", "REJECTED"]), // Fixed enum to match DB
+
+    // Landlord Profile Optional Updates
+    bankName: z.string().optional(),
+    accountName: z.string().optional(),
+    accountNumber: z.string().optional(),
+    isConsentGiven: z.string().optional(),
+    residentialAddress: z.string().optional(),
+    idType: z.string().optional(),
+    idNumber: z.string().optional(),
+    landlordType: z.string().optional(),
+    relationshipToProperty: z.string().optional(),
 });
 
 export const CreatePropertySchema = z.object({

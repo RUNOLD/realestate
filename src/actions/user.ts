@@ -231,24 +231,30 @@ export async function createLandlord(prevState: any, formData: FormData) {
         return { error: "Unauthorized. Only admins can create landlords." };
     }
 
+    const getString = (key: string) => {
+        const value = formData.get(key);
+        if (!value || (typeof value === 'string' && value.trim() === '')) return undefined;
+        return value as string;
+    };
+
     const rawData = {
-        name: formData.get("name"),
-        email: formData.get("email"),
-        phone: formData.get("phone"),
-        password: formData.get("password"),
+        name: getString("name"),
+        email: getString("email"),
+        phone: getString("phone"),
+        password: getString("password"),
 
-        landlordType: formData.get("landlordType"),
-        idType: formData.get("idType"),
-        idNumber: formData.get("idNumber"),
-        residentialAddress: formData.get("residentialAddress"),
+        landlordType: getString("landlordType"),
+        idType: getString("idType"),
+        idNumber: getString("idNumber"),
+        residentialAddress: getString("residentialAddress"),
 
-        relationshipToProperty: formData.get("relationshipToProperty"),
+        relationshipToProperty: getString("relationshipToProperty"),
 
-        bankName: formData.get("bankName"),
-        accountName: formData.get("accountName"),
-        accountNumber: formData.get("accountNumber"),
-        preferredContactMethod: formData.get("preferredContactMethod"),
-        isConsentGiven: formData.get("isConsentGiven"),
+        bankName: getString("bankName"),
+        accountName: getString("accountName"),
+        accountNumber: getString("accountNumber"),
+        preferredContactMethod: getString("preferredContactMethod"),
+        isConsentGiven: getString("isConsentGiven"),
     };
 
     const { CreateLandlordSchema } = await import("@/lib/schemas");
@@ -259,6 +265,11 @@ export async function createLandlord(prevState: any, formData: FormData) {
     }
 
     const data = validatedFields.data;
+
+    // Redundant safety check to ensure critical fields are present
+    if (!data.name || !data.email || !data.password) {
+        return { error: "Validation failed: Critical fields missing." };
+    }
 
     try {
         const { generateUniqueId } = await import("@/lib/utils");
@@ -425,13 +436,29 @@ export async function updateUser(prevState: any, formData: FormData) {
         return { error: "Unauthorized. Only admins can edit users." };
     }
 
+    const getString = (k: string) => {
+        const v = formData.get(k);
+        return (!v || (typeof v === 'string' && v.trim() === '')) ? undefined : v as string;
+    };
+
     const rawData = {
         id: formData.get("id"),
         name: formData.get("name"),
         email: formData.get("email"),
-        phone: formData.get("phone"),
+        phone: getString("phone"),
         role: formData.get("role"),
         status: formData.get("status"),
+
+        // Landlord Extras
+        bankName: getString("bankName"),
+        accountName: getString("accountName"),
+        accountNumber: getString("accountNumber"),
+        isConsentGiven: getString("isConsentGiven"), // "true" or undefined
+        residentialAddress: getString("residentialAddress"),
+        idType: getString("idType"),
+        idNumber: getString("idNumber"),
+        landlordType: getString("landlordType"),
+        relationshipToProperty: getString("relationshipToProperty"),
     };
 
     const validatedFields = UpdateUserSchema.safeParse(rawData);
@@ -440,11 +467,12 @@ export async function updateUser(prevState: any, formData: FormData) {
         return { error: validatedFields.error.flatten().fieldErrors, message: "Validation failed" };
     }
 
-    const { id, name, email, phone, role, status } = validatedFields.data;
+    const data = validatedFields.data;
+    // const { id, name, email, phone, role, status } = validatedFields.data;
 
     try {
         const existingUser = await prisma.user.findUnique({
-            where: { id }
+            where: { id: data.id }
         });
 
         if (!existingUser) {
@@ -452,19 +480,58 @@ export async function updateUser(prevState: any, formData: FormData) {
         }
 
         // Check for email conflicts
-        if (email !== existingUser.email) {
-            const emailConflict = await prisma.user.findUnique({ where: { email } });
+        if (data.email !== existingUser.email) {
+            const emailConflict = await prisma.user.findUnique({ where: { email: data.email } });
             if (emailConflict) return { error: "A user with this email already exists." };
         }
 
-        await prisma.user.update({
-            where: { id },
-            data: {
-                name,
-                email,
-                phone: phone || null,
-                role: role as any,
-                status: status as any,
+        await prisma.$transaction(async (tx) => {
+            // 1. Update Base User
+            await tx.user.update({
+                where: { id: data.id },
+                data: {
+                    name: data.name,
+                    email: data.email,
+                    phone: data.phone || null,
+                    role: data.role as any,
+                    status: data.status as any,
+                }
+            });
+
+            // 2. If Landlord, Upsert Profile
+            if (data.role === 'LANDLORD') {
+                await tx.landlordProfile.upsert({
+                    where: { userId: data.id },
+                    create: {
+                        userId: data.id,
+                        bankName: data.bankName,
+                        accountName: data.accountName,
+                        accountNumber: data.accountNumber,
+                        isConsentGiven: data.isConsentGiven === 'true',
+                        consentDate: data.isConsentGiven === 'true' ? new Date() : null,
+                        residentialAddress: data.residentialAddress,
+                        idType: data.idType,
+                        idNumber: data.idNumber,
+                        landlordType: data.landlordType,
+                        relationshipToProperty: data.relationshipToProperty,
+                    },
+                    update: {
+                        bankName: data.bankName,
+                        accountName: data.accountName,
+                        accountNumber: data.accountNumber,
+                        // Only update consent if explicitly provided (checkbox checked or unchecked)
+                        // If it's a string "true", set true. If it was checkbox unchecked it might be undefined in raw, 
+                        // so we might need to handle unchecking. 
+                        // Simplified: If form has field 'isConsentGiven' as 'true' -> true. 
+                        isConsentGiven: data.isConsentGiven === 'true',
+                        consentDate: data.isConsentGiven === 'true' ? new Date() : undefined,
+                        residentialAddress: data.residentialAddress,
+                        idType: data.idType,
+                        idNumber: data.idNumber,
+                        landlordType: data.landlordType,
+                        relationshipToProperty: data.relationshipToProperty,
+                    }
+                });
             }
         });
 
@@ -472,15 +539,15 @@ export async function updateUser(prevState: any, formData: FormData) {
             session.user.id,
             ActionType.UPDATE,
             EntityType.USER,
-            id,
-            { name, role, status }
+            data.id,
+            { name: data.name, role: data.role, status: data.status }
         );
 
         revalidatePath("/admin/users");
-        revalidatePath(`/admin/users/${id}`);
+        revalidatePath(`/admin/users/${data.id}`);
         revalidatePath("/admin/team");
 
-        return { success: true, message: `User ${name} updated successfully.` };
+        return { success: true, message: `User ${data.name} updated successfully.` };
     } catch (e) {
         console.error("Update User Error:", e);
         return { error: "Failed to update user. Please try again." };

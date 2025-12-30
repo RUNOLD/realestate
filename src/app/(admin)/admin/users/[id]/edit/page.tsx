@@ -24,6 +24,7 @@ export default async function EditUserPage({
             phone: true,
             role: true,
             status: true,
+            landlordProfile: true,
         }
     });
 

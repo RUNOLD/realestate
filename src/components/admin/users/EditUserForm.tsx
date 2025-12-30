@@ -52,6 +52,7 @@ interface EditUserFormProps {
         phone: string | null;
         role: string;
         status: string;
+        landlordProfile?: any;
     };
 }
 
@@ -59,6 +60,7 @@ export function EditUserForm({ user }: EditUserFormProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [isOpen, setIsOpen] = useState(false);
+    const [selectedRole, setSelectedRole] = useState(user.role);
 
     async function handleConfirmSave() {
         const form = document.getElementById("edit-user-form") as HTMLFormElement;
@@ -180,7 +182,7 @@ export function EditUserForm({ user }: EditUserFormProps) {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-2">
                                     <Label className="text-[10px] uppercase font-black tracking-widest ml-1 opacity-70">Portfolio Role</Label>
-                                    <Select name="role" defaultValue={user.role}>
+                                    <Select name="role" defaultValue={user.role} onValueChange={setSelectedRole}>
                                         <SelectTrigger className="h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner focus:ring-1 focus:ring-primary">
                                             <SelectValue placeholder="Select a role" />
                                         </SelectTrigger>
@@ -217,6 +219,79 @@ export function EditUserForm({ user }: EditUserFormProps) {
                                 </div>
                             </div>
                         </div>
+
+                        {/* LANDLORD SPECIFIC SECTION */}
+                        {selectedRole === 'LANDLORD' && (
+                            <div className="space-y-6 animate-in slide-in-from-bottom-2">
+                                <div className="flex items-center gap-2 border-b border-border/50 pb-2">
+                                    <Activity size={16} className="text-primary" />
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Landlord Profile & Financials</h3>
+                                </div>
+
+                                {/* Identity / Address */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] uppercase font-black tracking-widest ml-1 opacity-70">Residential Address</Label>
+                                        <Input
+                                            name="residentialAddress"
+                                            defaultValue={user.landlordProfile?.residentialAddress || ""}
+                                            placeholder="Full Address"
+                                            className="h-14 px-4 bg-muted/30 border-none rounded-2xl font-bold shadow-inner"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] uppercase font-black tracking-widest ml-1 opacity-70">Relationship / Authority</Label>
+                                        <Select name="relationshipToProperty" defaultValue={user.landlordProfile?.relationshipToProperty || "Owner"}>
+                                            <SelectTrigger className="h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner">
+                                                <SelectValue placeholder="Select Relationship" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Owner">Owner</SelectItem>
+                                                <SelectItem value="Attorney">Attorney / Legal Rep</SelectItem>
+                                                <SelectItem value="FamilyRepresentative">Family Rep</SelectItem>
+                                                <SelectItem value="Agent">Agent</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+
+                                {/* Bank Details */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] uppercase font-black tracking-widest ml-1 opacity-70">Bank Name</Label>
+                                        <Input name="bankName" defaultValue={user.landlordProfile?.bankName || ""} placeholder="Bank" className="h-12 bg-muted/30 border-none rounded-xl" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] uppercase font-black tracking-widest ml-1 opacity-70">Account Name</Label>
+                                        <Input name="accountName" defaultValue={user.landlordProfile?.accountName || ""} placeholder="Acct Name" className="h-12 bg-muted/30 border-none rounded-xl" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] uppercase font-black tracking-widest ml-1 opacity-70">Account Number</Label>
+                                        <Input name="accountNumber" defaultValue={user.landlordProfile?.accountNumber || ""} placeholder="012..." className="h-12 bg-muted/30 border-none rounded-xl" />
+                                    </div>
+                                </div>
+
+                                {/* Legal Consent Manual Override */}
+                                <div className="bg-yellow-50/50 border border-yellow-200 p-6 rounded-2xl flex items-start gap-3">
+                                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-primary text-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
+                                        <input
+                                            type="checkbox"
+                                            name="isConsentGiven"
+                                            value="true"
+                                            defaultChecked={user.landlordProfile?.isConsentGiven}
+                                            className="h-4 w-4"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="font-bold text-yellow-900">Manual Consent Override</Label>
+                                        <p className="text-xs text-yellow-800/80 leading-relaxed">
+                                            Admin confirmation: By checking this box, you confirm that you have received physical or verbal data processing consent from this landlord.
+                                            This will mark their profile as "Consent Signed".
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
 
                     <CardFooter className="bg-muted/30 px-6 py-8 md:px-10 border-t flex flex-col sm:flex-row gap-4 justify-between items-center text-center sm:text-left">

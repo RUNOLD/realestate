@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from 'sonner';
+import { NIGERIA_STATES_AND_LGAS } from '@/lib/nigeria-data';
 
 export function RegisterTenantForm() {
     const [state, action, isPending] = useActionState(createTenant, null);
@@ -18,6 +19,7 @@ export function RegisterTenantForm() {
 
     // We need some local state to handle conditional renders (like Corporate)
     const [isCorporate, setIsCorporate] = useState(false);
+    const [selectedState, setSelectedState] = useState<string>("");
     const [guarantors, setGuarantors] = useState([{ name: '', phone: '', address: '', occupation: '', placeOfWork: '' }, { name: '', phone: '', address: '', occupation: '', placeOfWork: '' }]);
 
     const nextStep = () => setStep(s => s + 1);
@@ -87,7 +89,25 @@ export function RegisterTenantForm() {
                         <div className="grid md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Nationality</Label>
-                                <Input name="nationality" placeholder="Nigerian" />
+                                <Input
+                                    name="nationality"
+                                    list="nationality-options"
+                                    placeholder="Select or Type Nationality"
+                                />
+                                <datalist id="nationality-options">
+                                    <option value="Nigerian" />
+                                    <option value="British" />
+                                    <option value="American" />
+                                    <option value="Canadian" />
+                                    <option value="Ghanaian" />
+                                    <option value="South African" />
+                                    <option value="Kenyan" />
+                                    <option value="Indian" />
+                                    <option value="Lebanese" />
+                                    <option value="Chinese" />
+                                    <option value="French" />
+                                    <option value="German" />
+                                </datalist>
                             </div>
                             <div className="space-y-2">
                                 <Label>Date of Birth</Label>
@@ -142,11 +162,25 @@ export function RegisterTenantForm() {
                         <div className="grid md:grid-cols-2 gap-4 mt-4">
                             <div className="space-y-2">
                                 <Label>State of Origin</Label>
-                                <Input name="stateOfOrigin" />
+                                <Select name="stateOfOrigin" onValueChange={setSelectedState}>
+                                    <SelectTrigger><SelectValue placeholder="Select State" /></SelectTrigger>
+                                    <SelectContent className="max-h-[300px]">
+                                        {Object.keys(NIGERIA_STATES_AND_LGAS).sort().map((state) => (
+                                            <SelectItem key={state} value={state}>{state}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label>LGA</Label>
-                                <Input name="lga" />
+                                <Select name="lga" disabled={!selectedState}>
+                                    <SelectTrigger><SelectValue placeholder={selectedState ? "Select LGA" : "Select State First"} /></SelectTrigger>
+                                    <SelectContent className="max-h-[300px]">
+                                        {selectedState && NIGERIA_STATES_AND_LGAS[selectedState]?.map((lga) => (
+                                            <SelectItem key={lga} value={lga}>{lga}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                         <div className="grid md:grid-cols-2 gap-4 mt-4">

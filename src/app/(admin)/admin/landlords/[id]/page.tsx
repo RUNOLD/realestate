@@ -34,12 +34,14 @@ export default async function LandlordDetailPage({
                         include: { user: true } // Active tenant
                     }
                 }
-            }
+            },
+            landlordProfile: true // Include the profile data
         }
     });
 
     // Cast to any to avoid "ownedProperties does not exist" if types are stale
     const landlord = landlordRaw as any;
+    const profile = landlord.landlordProfile;
 
     if (!landlord || landlord.role !== 'LANDLORD') {
         notFound();
@@ -65,34 +67,91 @@ export default async function LandlordDetailPage({
             </div>
 
             {/* Profile Card */}
-            <Card className="border-border">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-foreground">
-                        <User className="h-5 w-5 text-muted-foreground" />
-                        Contact Information
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50 border border-border/50">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                            <Mail className="h-5 w-5" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="border-border h-full">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-foreground">
+                            <User className="h-5 w-5 text-muted-foreground" />
+                            Contact Information
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border/50">
+                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                <Mail className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">Email Address</p>
+                                <p className="text-base font-semibold text-foreground">{landlord.email}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Email Address</p>
-                            <p className="text-base font-semibold text-foreground">{landlord.email}</p>
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border/50">
+                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                <Phone className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">Phone Number</p>
+                                <p className="text-base font-semibold text-foreground">{landlord.phone || "Not provided"}</p>
+                            </div>
                         </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50 border border-border/50">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                            <Phone className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Phone Number</p>
-                            <p className="text-base font-semibold text-foreground">{landlord.phone || "Not provided"}</p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+                        {profile?.residentialAddress && (
+                            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border/50">
+                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <MapPin className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-muted-foreground">Residential Address</p>
+                                    <p className="text-base font-semibold text-foreground">{profile.residentialAddress}</p>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {profile && (
+                    <Card className="border-border h-full">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-foreground">
+                                <DollarSign className="h-5 w-5 text-muted-foreground" />
+                                Financial & Legal
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <p className="text-xs text-muted-foreground uppercase font-bold">Bank Name</p>
+                                    <p className="text-sm font-medium">{profile.bankName || "-"}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-xs text-muted-foreground uppercase font-bold">Account Name</p>
+                                    <p className="text-sm font-medium">{profile.accountName || "-"}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-xs text-muted-foreground uppercase font-bold">Account Number</p>
+                                    <p className="text-sm font-medium">{profile.accountNumber || "-"}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-xs text-muted-foreground uppercase font-bold">Landlord Type</p>
+                                    <p className="text-sm font-medium">{profile.landlordType || "-"}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-xs text-muted-foreground uppercase font-bold">ID Type</p>
+                                    <p className="text-sm font-medium">{profile.idType || "Not Set"}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-xs text-muted-foreground uppercase font-bold">Relationship</p>
+                                    <p className="text-sm font-medium">{profile.relationshipToProperty || "Owner"}</p>
+                                </div>
+                            </div>
+                            <div className="pt-4 border-t border-border mt-2">
+                                <Badge variant={profile.isConsentGiven ? "default" : "destructive"} className="w-full justify-center py-1">
+                                    {profile.isConsentGiven ? "Legal Consent Signed" : "Consent Pending"}
+                                </Badge>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
 
             {/* Properties Section (The Requested Feature) */}
             <div className="space-y-4">
