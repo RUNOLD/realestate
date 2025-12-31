@@ -67,7 +67,7 @@ export default async function LandlordDashboard() {
     const openTicketsCount = await prisma.ticket.count({
         where: {
             userId: { in: myTenantIds },
-            status: { in: ['OPEN', 'IN_PROGRESS'] }
+            status: { notIn: ['RESOLVED', 'CLOSED'] }
         }
     });
 

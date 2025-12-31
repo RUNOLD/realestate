@@ -108,7 +108,7 @@ export function CreateLeaseModal({ userId, properties }: { userId: string, prope
 
                     {/* Actions */}
                     <div className="flex gap-3 pt-2">
-                        <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="flex-1">Cancel</Button>
+                        <Button type="button" variant="outline" onClick={() => setIsOpen(false)} className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</Button>
                         <Button type="submit" className="flex-1 bg-gray-900 text-white" disabled={isPending}>
                             {isPending ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
                             {isPending ? ' Creating...' : 'Create Lease'}

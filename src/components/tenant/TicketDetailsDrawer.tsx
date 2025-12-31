@@ -85,8 +85,14 @@ export function TicketDetailsDrawer({ ticket, isOpen, onClose, currentUserId, is
                                             Management has marked this issue as fixed. If you are satisfied with the work, please confirm to close the ticket.
                                         </p>
                                         {ticket.resolutionNote && (
-                                            <div className="bg-white/50 p-2 rounded text-xs mt-2 italic text-purple-800 border border-purple-100">
-                                                Note: "{ticket.resolutionNote}"
+                                            <div className="bg-white/50 p-3 rounded-lg text-xs mt-2 text-purple-800 border border-purple-100 flex flex-col gap-2 shadow-sm">
+                                                <div className="flex justify-between items-center opacity-80 border-b border-purple-200/50 pb-1 text-[9px] font-bold uppercase tracking-tighter">
+                                                    <span>Fixed By: {ticket.artisanName || 'Internal Staff'}</span>
+                                                    <span>Payer: {ticket.payerType || 'COMPANY'}</span>
+                                                </div>
+                                                <p className="italic leading-relaxed">
+                                                    "{ticket.resolutionNote}"
+                                                </p>
                                             </div>
                                         )}
                                     </div>
@@ -98,6 +104,47 @@ export function TicketDetailsDrawer({ ticket, isOpen, onClose, currentUserId, is
                                 >
                                     {isPending ? "Confirming..." : "Yes, I Confirm Resolution"}
                                 </Button>
+                            </div>
+                        )}
+
+                        {/* Resolved Details for Closed/Resolved Tickets */}
+                        {(ticket.status === 'RESOLVED' || ticket.status === 'CLOSED') && (
+                            <div className="space-y-4">
+                                <h4 className="text-sm font-bold uppercase tracking-widest text-emerald-600 flex items-center gap-2">
+                                    <CheckCircle2 size={16} className="text-emerald-500" /> Resolution Summary
+                                </h4>
+                                <div className="bg-emerald-50/50 dark:bg-emerald-500/5 border border-emerald-100/50 dark:border-emerald-500/10 rounded-2xl p-5 space-y-4 shadow-sm">
+                                    <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-[11px]">
+                                        <div className="space-y-1">
+                                            <p className="text-muted-foreground font-bold uppercase tracking-tighter text-[9px]">Artisan / Team</p>
+                                            <p className="font-black text-foreground">{ticket.artisanName || 'Internal Staff'}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-muted-foreground font-bold uppercase tracking-tighter text-[9px]">Fixed On</p>
+                                            <p className="font-bold text-foreground">
+                                                {ticket.resolutionDate ? new Date(ticket.resolutionDate).toLocaleDateString() : new Date(ticket.updatedAt).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-muted-foreground font-bold uppercase tracking-tighter text-[9px]">Service Type</p>
+                                            <Badge variant="outline" className="text-[8px] bg-white/50">{ticket.category}</Badge>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-muted-foreground font-bold uppercase tracking-tighter text-[9px]">Payment Status</p>
+                                            <p className="font-bold text-emerald-600 flex items-center gap-1">
+                                                <CheckCircle2 size={10} /> Covered
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="pt-3 border-t border-emerald-100/50">
+                                        <p className="text-muted-foreground font-bold uppercase tracking-tighter text-[9px] mb-1.5 ml-1">Resolution Note</p>
+                                        <div className="bg-white/40 dark:bg-black/20 p-3 rounded-lg border border-emerald-100/30">
+                                            <p className="text-sm text-foreground italic leading-relaxed text-balance">
+                                                "{ticket.resolutionNote || 'The issue was resolved successfully.'}"
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         )}
 

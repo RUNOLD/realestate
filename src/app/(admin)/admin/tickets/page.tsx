@@ -34,7 +34,7 @@ export default async function AdminTicketsPage({ searchParams }: { searchParams:
 
     // 2. Calculate Stats
     const totalTickets = tickets.length;
-    const openTickets = tickets.filter(t => t.status === 'OPEN').length;
+    const openTickets = tickets.filter(t => !['RESOLVED', 'CLOSED'].includes(t.status)).length;
     const resolvedTickets = tickets.filter(t => t.status === 'RESOLVED').length;
 
     // 3. Fetch Tenants for Create Modal
@@ -250,7 +250,7 @@ export default async function AdminTicketsPage({ searchParams }: { searchParams:
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2 items-center">
                                                     {ticket.requiresApproval && (
-                                                        <TicketApprovalActions ticketId={ticket.id} approvalStatus={ticket.approvalStatus} />
+                                                        <TicketApprovalActions ticketId={ticket.id} approvalStatus={ticket.approvalStatus!} status={ticket.status} />
                                                     )}
                                                     <Link href={`/admin/tickets/${ticket.id}`} passHref>
                                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">

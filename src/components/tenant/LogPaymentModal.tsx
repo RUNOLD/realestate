@@ -46,7 +46,7 @@ export function LogPaymentModal({ tenantId }: { tenantId: string }) {
 
     if (!isOpen) {
         return (
-            <Button onClick={() => setIsOpen(true)} className="bg-primary text-white">
+            <Button onClick={() => setIsOpen(true)} className="bg-primary text-primary-foreground font-black shadow-lg">
                 <Plus className="mr-2 h-4 w-4" /> Log Payment
             </Button>
         );
@@ -74,8 +74,18 @@ export function LogPaymentModal({ tenantId }: { tenantId: string }) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Method</label>
-                        <select name="method" className="w-full rounded-md border border-gray-300 p-2 text-sm" required>
+                        <label className="text-sm font-black text-gray-700">Payment Category</label>
+                        <select name="category" className="w-full rounded-md border border-gray-300 p-2 text-sm font-bold bg-white" required>
+                            <option value="RENT">Rent Payment</option>
+                            <option value="SERVICE_CHARGE">Service Charge</option>
+                            <option value="CAUTION_DEPOSIT">Caution Deposit</option>
+                            <option value="OTHER">Other / Miscellaneous</option>
+                        </select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-black text-gray-700">Payment Method</label>
+                        <select name="method" className="w-full rounded-md border border-gray-300 p-2 text-sm font-bold bg-white" required>
                             <option value="Transfer">Bank Transfer</option>
                             <option value="Cash">Cash</option>
                             <option value="POS">POS</option>

@@ -22,11 +22,25 @@ import { DashboardHeader } from "@/components/admin/DashboardHeader";
 
 export default async function AdminDashboardPage() {
     const session = await auth();
-    if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'STAFF')) {
+    // Allow ADMIN, STAFF, and LANDLORD
+    if (!session?.user || !['ADMIN', 'STAFF', 'LANDLORD'].includes(session.user.role)) {
         redirect("/login");
     }
 
-    // 1. Fetch Real Stats from DB
+    const role = session.user.role;
+    const userId = session.user.id;
+
+    // Analytics Service
+    const { AnalyticsService } = await import("@/lib/analytics");
+    // Dynamic import to avoid circular dep issues during build if any, mostly cleanliness
+
+    // 1. Fetch Aggregated Metrics
+    const metrics = await AnalyticsService.getDashboardMetrics(userId, role);
+
+    // 2. Fetch Real-time Lists (RBAC)
+    const whereMap = role === 'LANDLORD' ? { landlordId: userId } : {};
+    const propWhereMap = role === 'LANDLORD' ? { ownerId: userId } : {};
+
     const [
         totalProperties,
         occupiedProperties,
@@ -34,43 +48,61 @@ export default async function AdminDashboardPage() {
         openTicketsCount,
         highPriorityTickets,
         recentTickets,
-        recentPayments,
+        recentPayments
     ] = await Promise.all([
-        prisma.property.count(),
-        prisma.lease.count({ where: { isActive: true } }),
-        prisma.user.count({ where: { role: 'TENANT', status: 'ACTIVE' } }),
-        prisma.ticket.count({ where: { status: 'OPEN' } }),
-        prisma.ticket.count({ where: { status: 'OPEN', priority: 'HIGH' } }),
+        prisma.property.count({ where: propWhereMap }),
+        prisma.lease.count({
+            where: { isActive: true, property: propWhereMap }
+        }),
+        // Active Tenants: For admin, all. For Landlord, unique tenants in their properties.
+        role === 'LANDLORD'
+            ? prisma.lease.findMany({
+                where: { isActive: true, property: propWhereMap },
+                select: { userId: true },
+                distinct: ['userId']
+            }).then(res => res.length)
+            : prisma.user.count({ where: { role: 'TENANT', status: 'ACTIVE' } }),
+
+        prisma.ticket.count({
+            where: {
+                status: { notIn: ['RESOLVED', 'CLOSED'] },
+                ...whereMap
+            }
+        }),
+        prisma.ticket.count({
+            where: {
+                status: { notIn: ['RESOLVED', 'CLOSED'] },
+                priority: { in: ['HIGH', 'URGENT'] } as any,
+                ...whereMap
+            }
+        }),
+
         prisma.ticket.findMany({
             where: {
-                status: {
-                    notIn: ['RESOLVED', 'CLOSED']
-                }
+                status: { notIn: ['RESOLVED', 'CLOSED'] },
+                ...whereMap
             },
             orderBy: { createdAt: 'desc' },
             take: 3,
             include: { user: true }
         }),
+
         prisma.payment.findMany({
+            where: role === 'LANDLORD'
+                ? { property: { ownerId: userId } } // Landlord sees payments for their properties
+                : {},
             orderBy: { createdAt: 'desc' },
             take: 5,
             include: { user: true }
         })
     ]);
 
-    // Monthly Revenue (Current Month)
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const revenueData = await prisma.payment.aggregate({
-        where: {
-            status: 'SUCCESS',
-            createdAt: { gte: firstDayOfMonth }
-        },
-        _sum: { amount: true }
-    });
+    // Revenue (from Metrics or fresh calculation)
+    const monthlyRevenue = metrics?.current?.totalRentCollected || 0;
+    const occupancyRate = metrics?.current?.occupancyRate || 0;
+    const trends = metrics?.trends;
 
     const vacantProperties = totalProperties - occupiedProperties;
-    const monthlyRevenue = revenueData._sum.amount || 0;
 
     // Formatting Helpers
     const formatCurrency = (val: number) =>
@@ -99,15 +131,18 @@ export default async function AdminDashboardPage() {
                         value={totalProperties.toString()}
                         subtext={`${occupiedProperties} Occupied • ${vacantProperties} Vacant`}
                         icon={Building2}
-                        trend="+12%"
+                        trend={trends?.occupancy} // Using occupancy trend as proxy for property health? Or N/A?
+                        // Actually trend for totalProperties is static usually. Let's use Occupancy trend here?
+                        // Or just hardcode logic if needed. The Requirement said "visual trend indicators".
                         color="blue"
+                        href="/admin/properties"
                     />
                     <DashboardCard
                         title="Active Tenants"
                         value={activeTenants.toString()}
                         subtext="Across all properties"
                         icon={Users}
-                        trend="+5%"
+                        trend={trends?.occupancy} // Occupancy trend correlates with tenants
                         color="indigo"
                         href="/admin/users?role=TENANT"
                     />
@@ -116,19 +151,20 @@ export default async function AdminDashboardPage() {
                         value={openTicketsCount.toString()}
                         subtext={`${highPriorityTickets} High Priority`}
                         icon={Ticket}
-                        trend={openTicketsCount > 0 ? `+${openTicketsCount}` : undefined}
-                        trendColor="text-red-600"
-                        trendBg="bg-red-50"
+                        trend={trends?.tickets}
+                        trendColor={openTicketsCount > (metrics?.current?.activeTickets || 0) ? "text-red-600" : "text-green-600"}
+                        // Simple logic: if Open > last month active, BAD (Red)?
+                        // Actually trend string includes +/-.
                         color="amber"
                         href="/admin/tickets"
                     />
-                    {session?.user.role === 'ADMIN' && (
+                    {session?.user.role !== 'TENANT' && ( // Allow Landlords to see Wallet?
                         <DashboardCard
                             title="Monthly Revenue"
                             value={formatCurrency(monthlyRevenue)}
                             subtext="Paid this month"
                             icon={Wallet}
-                            trend="+10.5%"
+                            trend={trends?.rent}
                             color="green"
                             href="/admin/financials"
                         />

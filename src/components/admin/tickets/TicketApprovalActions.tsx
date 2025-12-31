@@ -8,8 +8,34 @@ import { toast } from "sonner";
 
 import { ResolveTicketModal } from "./ResolveTicketModal";
 
-export function TicketApprovalActions({ ticketId, approvalStatus }: { ticketId: string, approvalStatus: string }) {
+export function TicketApprovalActions({ ticketId, approvalStatus, status }: { ticketId: string, approvalStatus: string, status: string }) {
     const [isPending, startTransition] = useTransition();
+
+    if (status === 'RESOLVED' || status === 'CLOSED') {
+        return (
+            <Button
+                disabled
+                size="sm"
+                className="bg-emerald-600/50 text-white gap-2 cursor-not-allowed border-none opacity-80"
+            >
+                <CheckCircle size={16} />
+                Fixed
+            </Button>
+        );
+    }
+
+    if (status === 'AWAITING_CONFIRMATION') {
+        return (
+            <Button
+                disabled
+                size="sm"
+                className="bg-purple-600/50 text-white gap-2 cursor-not-allowed border-none opacity-80"
+            >
+                <Wrench size={16} />
+                Awaiting Confirmation
+            </Button>
+        );
+    }
 
     const handleApprove = (role: 'MANAGER' | 'ADMIN') => {
         startTransition(async () => {

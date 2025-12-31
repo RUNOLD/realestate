@@ -34,21 +34,33 @@ export default async function RootLayout({
     if (role === 'ADMIN' || role === 'STAFF') {
       try {
         ticketCount = await prisma.ticket.count({
-          where: { status: { in: ['PENDING', 'IN_PROGRESS', 'AWAITING_CONFIRMATION'] } }
+          where: { status: { notIn: ['RESOLVED', 'CLOSED'] } }
         });
       } catch (error) {
-        console.error("Failed to fetch admin ticket count:", error);
+        console.error("Failed to fetch admin ticket count, trying raw query:", error);
+        try {
+          const result = await prisma.$queryRaw<any[]>`SELECT COUNT(*)::int as count FROM "Ticket" WHERE status NOT IN ('RESOLVED', 'CLOSED')`;
+          ticketCount = result[0]?.count || 0;
+        } catch (rawError) {
+          console.error("Raw query also failed:", rawError);
+        }
       }
     } else if (role === 'TENANT') {
       try {
         ticketCount = await prisma.ticket.count({
           where: {
             userId: session.user.id,
-            status: { in: ['PENDING', 'IN_PROGRESS', 'AWAITING_CONFIRMATION'] }
+            status: { notIn: ['RESOLVED', 'CLOSED'] }
           }
         });
       } catch (error) {
-        console.error("Failed to fetch tenant ticket count:", error);
+        console.error("Failed to fetch tenant ticket count, trying raw query:", error);
+        try {
+          const result = await prisma.$queryRaw<any[]>`SELECT COUNT(*)::int as count FROM "Ticket" WHERE "userId" = ${session.user.id} AND status NOT IN ('RESOLVED', 'CLOSED')`;
+          ticketCount = result[0]?.count || 0;
+        } catch (rawError) {
+          console.error("Raw query also failed:", rawError);
+        }
       }
     }
   }

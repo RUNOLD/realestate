@@ -115,6 +115,7 @@ export const CreatePaymentSchema = z.object({
     reference: z.string().min(5, "Reference is required"),
     method: z.string().min(2, "Payment method is required"),
     tenantId: z.string().min(1, "Tenant ID is required"),
+    category: z.string().optional().default("RENT"),
 });
 
 export const UploadDocumentSchema = z.object({

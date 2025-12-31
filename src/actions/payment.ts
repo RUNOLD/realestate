@@ -16,6 +16,7 @@ export async function createPayment(prevState: any, formData: FormData) {
         reference: formData.get("reference"),
         method: formData.get("method"),
         tenantId: formData.get("tenantId"),
+        category: formData.get("category"),
     };
 
     const validatedFields = CreatePaymentSchema.safeParse(rawData);
@@ -24,7 +25,7 @@ export async function createPayment(prevState: any, formData: FormData) {
         return { error: validatedFields.error.flatten().fieldErrors, message: "Validation failed" };
     }
 
-    const { amount, reference, method, tenantId } = validatedFields.data;
+    const { amount, reference, method, tenantId, category } = validatedFields.data;
 
     try {
         const existingPayment = await prisma.payment.findUnique({
@@ -46,6 +47,7 @@ export async function createPayment(prevState: any, formData: FormData) {
                 userId: tenantId,
                 status: 'SUCCESS',
                 approvalStatus,
+                category: category || 'RENT',
             }
         });
 

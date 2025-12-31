@@ -29,7 +29,9 @@ export function ResolveTicketModal({ ticketId }: ResolveTicketModalProps) {
     // Form State
     const [resolutionNote, setResolutionNote] = useState("");
     const [costActual, setCostActual] = useState("0");
-    const [resolvedBy, setResolvedBy] = useState("Internal Staff");
+    const [artisanName, setArtisanName] = useState("");
+    const [artisanPhone, setArtisanPhone] = useState("");
+    const [payerType, setPayerType] = useState<'LANDLORD' | 'COMPANY'>('LANDLORD');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -39,11 +41,18 @@ export function ResolveTicketModal({ ticketId }: ResolveTicketModalProps) {
             return;
         }
 
+        if (!artisanName.trim() || !artisanPhone.trim()) {
+            toast.error("Artisan name and phone number are required.");
+            return;
+        }
+
         startTransition(async () => {
             const res = await markTicketAsFixed(ticketId, {
                 resolutionNote,
                 costActual: parseFloat(costActual) || 0,
-                resolvedBy
+                artisanName,
+                artisanPhone,
+                payerType
             });
 
             if (res.error) {
@@ -58,30 +67,40 @@ export function ResolveTicketModal({ ticketId }: ResolveTicketModalProps) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white gap-2 shadow-sm">
+                <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white gap-2 shadow-sm font-bold">
                     <Wrench size={16} /> Mark as Fixed
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Mark Ticket as Fixed</DialogTitle>
+                    <DialogTitle className="text-xl font-bold">Mark Ticket as Fixed</DialogTitle>
                     <DialogDescription>
                         Complete the details below to finish the work. The tenant will be asked to confirm this resolution.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
                     <div className="space-y-2">
-                        <Label htmlFor="resolvedBy">Resolved By</Label>
+                        <Label htmlFor="artisanName" className="font-bold">Resolved By (Artisan Name)</Label>
                         <Input
-                            id="resolvedBy"
-                            value={resolvedBy}
-                            onChange={(e) => setResolvedBy(e.target.value)}
+                            id="artisanName"
+                            value={artisanName}
+                            onChange={(e) => setArtisanName(e.target.value)}
                             placeholder="e.g. John Doe (Plumber)"
                             required
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="cost">Total Cost (₦)</Label>
+                        <Label htmlFor="artisanPhone" className="font-bold">Artisan Phone Number</Label>
+                        <Input
+                            id="artisanPhone"
+                            value={artisanPhone}
+                            onChange={(e) => setArtisanPhone(e.target.value)}
+                            placeholder="e.g. 08012345678"
+                            required
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="cost" className="font-bold">Total Cost (₦)</Label>
                         <Input
                             id="cost"
                             type="number"
@@ -94,8 +113,42 @@ export function ResolveTicketModal({ ticketId }: ResolveTicketModalProps) {
                         />
                         <p className="text-[10px] text-muted-foreground">Only visible to Admins.</p>
                     </div>
+
+                    <div className="space-y-3 pt-2">
+                        <Label className="text-sm font-bold">Payer Type</Label>
+                        <div className="flex gap-4">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="payerType"
+                                    value="LANDLORD"
+                                    checked={payerType === 'LANDLORD'}
+                                    onChange={() => setPayerType('LANDLORD')}
+                                    className="w-4 h-4 accent-green-600"
+                                />
+                                <span className="text-sm font-medium">Landlord</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="payerType"
+                                    value="COMPANY"
+                                    checked={payerType === 'COMPANY'}
+                                    onChange={() => setPayerType('COMPANY')}
+                                    className="w-4 h-4 accent-green-600"
+                                />
+                                <span className="text-sm font-medium">Company</span>
+                            </label>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground italic">
+                            {payerType === 'LANDLORD'
+                                ? "Charges will be deducted from the landlord's next payout."
+                                : "Costs will be absorbed by the management company."}
+                        </p>
+                    </div>
+
                     <div className="space-y-2">
-                        <Label htmlFor="note">Resolution Note</Label>
+                        <Label htmlFor="note" className="font-bold">Resolution Note</Label>
                         <Textarea
                             id="note"
                             value={resolutionNote}
@@ -106,10 +159,10 @@ export function ResolveTicketModal({ ticketId }: ResolveTicketModalProps) {
                         />
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                        <Button type="button" variant="outline" onClick={() => setOpen(false)} className="font-bold">
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isPending} className="bg-green-600 hover:bg-green-700">
+                        <Button type="submit" disabled={isPending} className="bg-green-600 hover:bg-green-700 font-bold">
                             {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                             Complete Fix
                         </Button>

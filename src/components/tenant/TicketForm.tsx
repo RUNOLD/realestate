@@ -11,14 +11,14 @@ export function TicketForm() {
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
             <h3 className="text-lg font-bold text-primary mb-4">Submit Maintenance Request</h3>
             <form action={dispatch} className="grid md:grid-cols-2 gap-4">
-                <input name="subject" placeholder="Subject (e.g., Leaking Tap)" className="border p-2 rounded" required />
-                <select name="category" className="border p-2 rounded" required>
+                <input name="subject" placeholder="Subject (e.g., Leaking Tap)" className="border p-2 rounded bg-background text-foreground" required />
+                <select name="category" className="border p-2 rounded bg-background text-foreground" required>
                     <option value="PLUMBING">Plumbing</option>
                     <option value="ELECTRICAL">Electrical</option>
                     <option value="STRUCTURAL">Structural</option>
                     <option value="OTHER">Other</option>
                 </select>
-                <textarea name="description" placeholder="Describe the issue..." className="border p-2 rounded md:col-span-2" rows={3} required />
+                <textarea name="description" placeholder="Describe the issue..." className="border p-2 rounded md:col-span-2 bg-background text-foreground" rows={3} required />
 
                 {state?.error && (
                     <div className="text-red-500 text-sm md:col-span-2">

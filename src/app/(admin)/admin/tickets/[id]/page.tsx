@@ -5,8 +5,9 @@ import { ChatBox } from "@/components/admin/tickets/ChatBox";
 import { Badge } from "@/components/ui/badge"; // Ensure this exists or use standard badge
 import { Button } from "@/components/ui/button"; // Reused
 import Link from "next/link";
-import { ArrowLeft, Clock, User, Tag, AlertCircle } from "lucide-react";
+import { ArrowLeft, Clock, User, Tag, AlertCircle, CheckCircle2 } from "lucide-react";
 import { approveTicket } from "@/actions/ticket";
+import { cn } from "@/lib/utils";
 
 // Small Badge Component if not exists
 function StatusBadge({ status }: { status: string }) {
@@ -45,6 +46,17 @@ export default async function TicketDetailsPage({ params }: { params: Promise<{ 
     });
 
     if (!ticket) notFound();
+
+    // Fetch expense separately to avoid stale relation errors
+    let ticketExpense = null;
+    try {
+        ticketExpense = await (prisma as any).landlordExpense.findUnique({
+            where: { ticketId: id },
+            select: { status: true }
+        });
+    } catch (e) {
+        console.error("Expense fetch error:", e);
+    }
 
     // Check permissions: Admin/Staff can see all, Users can only see their own
     const userRole = (session.user as any).role;
@@ -112,6 +124,60 @@ export default async function TicketDetailsPage({ params }: { params: Promise<{ 
                                 {ticket.description}
                             </p>
                         </div>
+
+                        {/* Resolution Details */}
+                        {(ticket.status === 'RESOLVED' || ticket.status === 'AWAITING_CONFIRMATION' || ticket.resolutionNote) && (
+                            <div className="pt-6 border-t border-border space-y-4">
+                                <h3 className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    <CheckCircle2 size={16} className="text-emerald-500" /> Resolution Details
+                                </h3>
+                                <div className="bg-emerald-50/30 dark:bg-emerald-500/5 border border-emerald-100 dark:border-emerald-500/10 rounded-2xl p-5 shadow-sm space-y-4">
+                                    <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-xs">
+                                        <div className="space-y-1">
+                                            <p className="text-muted-foreground font-bold uppercase tracking-tighter text-[9px]">Artisan / Staff</p>
+                                            <p className="font-black text-foreground text-sm">{ticket.artisanName || ticket.resolvedBy || 'Internal Staff'}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-muted-foreground font-bold uppercase tracking-tighter text-[9px]">Contact Phone</p>
+                                            <p className="font-bold text-foreground text-sm">{ticket.artisanPhone || 'N/A'}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-muted-foreground font-bold uppercase tracking-tighter text-[9px]">Actual Cost</p>
+                                            <p className="font-black text-emerald-700 dark:text-emerald-400 text-sm">
+                                                ₦{Number(ticket.costActual || 0).toLocaleString()}
+                                            </p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-muted-foreground font-bold uppercase tracking-tighter text-[9px]">Billing Type</p>
+                                            <Badge variant="outline" className="text-[9px] font-bold bg-white/50">{ticket.payerType || 'COMPANY'}</Badge>
+                                        </div>
+                                    </div>
+
+                                    {ticket.payerType === 'LANDLORD' && (
+                                        <div className="pt-3 border-t border-emerald-100/50 flex items-center justify-between">
+                                            <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-70">Payment/Deduction Status</span>
+                                            <Badge className={cn(
+                                                "text-white text-[9px] h-4 px-1.5 uppercase font-black tracking-widest",
+                                                ticketExpense?.status === 'DEDUCTED' ? "bg-blue-600" :
+                                                    ticketExpense?.status === 'APPROVED' ? "bg-emerald-600" :
+                                                        "bg-amber-600"
+                                            )}>
+                                                {ticketExpense?.status || 'PENDING SETTLEMENT'}
+                                            </Badge>
+                                        </div>
+                                    )}
+
+                                    <div className="pt-3 border-t border-emerald-100/50 dark:border-emerald-500/10">
+                                        <p className="text-muted-foreground font-bold text-[9px] uppercase tracking-tighter mb-1.5">Resolution Note</p>
+                                        <div className="bg-white/40 dark:bg-black/20 p-3 rounded-lg border border-emerald-100/30">
+                                            <p className="text-sm text-foreground italic leading-relaxed text-balance">
+                                                "{ticket.resolutionNote || 'The issue was resolved successfully.'}"
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Actions for Admin */}
                         {userRole === 'ADMIN' && ticket.status !== 'RESOLVED' && (

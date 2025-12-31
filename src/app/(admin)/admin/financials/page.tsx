@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { FinancialsToolbar } from "@/components/admin/FinancialsToolbar";
 import { prisma } from "@/lib/prisma";
 
+import { ExportPayoutsButton } from "@/components/admin/financials/ExportPayoutsButton";
+
 export default async function FinancialsPage({
     searchParams,
 }: {
@@ -34,23 +36,40 @@ export default async function FinancialsPage({
 
     // 2. Fetch Data (Filtered)
     let payments: any[] = [];
+    let payouts: any[] = []; // Fetch Payouts for Export
+
     try {
-        payments = await prisma.payment.findMany({
-            where: {
-                createdAt: startDate ? { gte: startDate } : undefined,
-                status: status || undefined
-            },
-            orderBy: { createdAt: 'desc' },
-            include: {
-                user: {
-                    select: { name: true, email: true, image: true }
+        const [paymentsParams, payoutsParams] = await Promise.all([
+            prisma.payment.findMany({
+                where: {
+                    createdAt: startDate ? { gte: startDate } : undefined,
+                    status: status || undefined
+                },
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    user: {
+                        select: { name: true, email: true, image: true }
+                    }
+                },
+                take: period === 'all' && !status ? 100 : undefined
+            }),
+            prisma.payout.findMany({
+                where: {
+                    createdAt: startDate ? { gte: startDate } : undefined,
+                },
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    landlord: { select: { name: true, email: true } }
                 }
-            },
-            take: period === 'all' && !status ? 100 : undefined
-        });
+            })
+        ]);
+        payments = paymentsParams;
+        payouts = payoutsParams;
+
     } catch (e) {
         console.error("Financials Error:", e);
         payments = [];
+        payouts = [];
     }
 
     // 3. Calculate Stats (Real Data)
@@ -77,7 +96,10 @@ export default async function FinancialsPage({
                     <h1 className="text-3xl font-bold tracking-tight text-foreground">Financials</h1>
                     <p className="text-muted-foreground mt-1">Overview of your revenue streams and recent transactions.</p>
                 </div>
-                <FinancialsToolbar data={payments} currentPeriod={period} />
+                <div className="flex items-center gap-2">
+                    <ExportPayoutsButton payouts={payouts} />
+                    <FinancialsToolbar data={payments} currentPeriod={period} />
+                </div>
             </div>
 
             {/* KPI Cards Grid */}

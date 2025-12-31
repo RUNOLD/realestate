@@ -6,7 +6,7 @@ import { auth } from "@/auth";
 import { CreateTicketSchema, CreateAdminTicketSchema, AddCommentSchema } from "@/lib/schemas";
 import { createActivityLog, ActionType, EntityType } from "@/lib/logger";
 import { createNotification } from "./notification";
-import { NotificationType } from "@prisma/client";
+import { NotificationType, ExpenseStatus } from "@prisma/client";
 
 export async function createTicket(prevState: any, formData: FormData) {
     const session = await auth();
@@ -27,12 +27,59 @@ export async function createTicket(prevState: any, formData: FormData) {
     const { subject, description, category } = validatedFields.data;
 
     try {
+        // Find tenant's active lease to link property
+        const lease = await prisma.lease.findFirst({
+            where: { userId: session.user.id, isActive: true },
+            include: { property: { select: { id: true, ownerId: true, isMultiUnit: true, parentId: true } } }
+        });
+
+        if (!lease) {
+            return { error: "No active lease found. Cannot raise maintenance request." };
+        }
+
+        const propertyId = lease.property.parentId || lease.property.id; // Link to parent if unit, else self
+        const unitId = lease.property.parentId ? lease.property.id : null; // Logic: If parent exists, this is a unit
+        const landlordId = lease.property.ownerId;
+
+        if (!landlordId) {
+            return { error: "Property has no assigned landlord." };
+        }
+
+        // Repair Logic: Find active Rent Cycle for Landlord
+        let rentCycle = await prisma.rentCycle.findFirst({
+            where: {
+                landlordId,
+                status: 'OPEN',
+                endDate: { gte: new Date() }
+            }
+        });
+
+        // Auto-create Rent Cycle if none exists (Monthly Default)
+        if (!rentCycle) {
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+            rentCycle = await prisma.rentCycle.create({
+                data: {
+                    startDate: firstDay,
+                    endDate: lastDay,
+                    status: 'OPEN',
+                    landlordId
+                }
+            });
+        }
+
         const ticket = await prisma.ticket.create({
             data: {
                 subject,
                 description,
                 category: category as any,
                 userId: session.user.id,
+                propertyId,
+                unitId: lease.property.id, // Explicitly link the unit/property leased
+                rentCycleId: rentCycle.id,
+                landlordId,
                 status: "OPEN",
                 approvalStatus: "PENDING_MANAGER",
                 requiresApproval: true,
@@ -178,7 +225,9 @@ export async function markTicketAsFixed(
     data: {
         resolutionNote: string,
         costActual: number,
-        resolvedBy: string
+        artisanName: string,
+        artisanPhone: string,
+        payerType: 'LANDLORD' | 'COMPANY'
     }
 ) {
     const session = await auth();
@@ -188,6 +237,14 @@ export async function markTicketAsFixed(
         return { error: "Unauthorized" };
     }
 
+    // GAP ANALYSIS VALIDATION RULES
+    if (!data.artisanName || !data.artisanPhone) {
+        return { error: "Artisan Name and Phone are required." };
+    }
+    if (data.costActual < 0) {
+        return { error: "Cost cannot be negative." };
+    }
+
     try {
         const ticket = await prisma.ticket.update({
             where: { id: ticketId },
@@ -195,25 +252,59 @@ export async function markTicketAsFixed(
                 status: 'AWAITING_CONFIRMATION',
                 resolutionNote: data.resolutionNote,
                 costActual: data.costActual,
-                resolvedBy: data.resolvedBy
+
+                // Gap Fields
+                artisanName: data.artisanName,
+                artisanPhone: data.artisanPhone,
+                payerType: data.payerType,
+                tenantConfirmationStatus: 'PENDING',
+
+                // Legacy Fallback
+                resolvedBy: data.artisanName,
+                resolutionDate: new Date()
             },
             include: { user: true }
         });
+
+        // Repair-to-Settlement Logic
+        // ONLY create expense if Landlord is paying
+        if (data.payerType === 'LANDLORD' && data.costActual > 0 && ticket.propertyId && ticket.landlordId) {
+
+            const existingExpense = await prisma.landlordExpense.findUnique({ where: { ticketId: ticket.id } });
+
+            if (!existingExpense) {
+                await prisma.landlordExpense.create({
+                    data: {
+                        amount: data.costActual,
+                        description: `Repair Cost: ${ticket.subject} (Artisan: ${data.artisanName})`,
+                        ticketId: ticket.id,
+                        propertyId: ticket.propertyId,
+                        landlordId: ticket.landlordId,
+                        status: ExpenseStatus.PENDING, // Waits for Tenant Confirmation
+                        date: new Date()
+                    }
+                });
+            }
+        }
 
         await createActivityLog(
             session.user.id,
             'FIXED',
             EntityType.TICKET,
             ticketId,
-            { resolutionNote: data.resolutionNote, cost: data.costActual }
+            {
+                resolutionNote: data.resolutionNote,
+                cost: data.costActual,
+                payer: data.payerType
+            }
         );
 
-        // Notify Tenant
+        // Notify Tenant to Confirm
         await createNotification(
             ticket.userId,
             'MAINTENANCE',
-            'Maintenance Completed',
-            `Work on "${ticket.subject}" is complete. Please confirm resolution.`,
+            'Maintenance Completed - Please Confirm',
+            `Work on "${ticket.subject}" is marked complete. Please confirm the repair to finalize.`,
             `/dashboard/maintenance`,
             ticketId
         );
@@ -243,9 +334,19 @@ export async function confirmTicketResolution(ticketId: string) {
             where: { id: ticketId },
             data: {
                 status: 'RESOLVED',
+                tenantConfirmationStatus: 'CONFIRMED',
                 resolutionDate: new Date()
             }
         });
+
+        // Repair-to-Settlement: Approve Expense ONLY if it exists (i.e., was PayerType=LANDLORD)
+        const expense = await prisma.landlordExpense.findUnique({ where: { ticketId } });
+        if (expense && expense.status === 'PENDING') {
+            await prisma.landlordExpense.update({
+                where: { id: expense.id },
+                data: { status: 'APPROVED' }
+            });
+        }
 
         await createActivityLog(
             session.user.id,
@@ -261,6 +362,67 @@ export async function confirmTicketResolution(ticketId: string) {
     } catch (e) {
         console.error("Confirm Ticket Error:", e);
         return { error: "Failed to confirm resolution" };
+    }
+}
+
+export async function disputeTicket(ticketId: string, reason: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Not authenticated" };
+
+    try {
+        const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+        if (!ticket) return { error: "Ticket not found" };
+
+        if (ticket.userId !== session.user.id) {
+            return { error: "Unauthorized" };
+        }
+
+        await prisma.ticket.update({
+            where: { id: ticketId },
+            data: {
+                status: 'IN_PROGRESS', // Re-open ticket
+                tenantConfirmationStatus: 'DISPUTED'
+            }
+        });
+
+        // Add dispute reason as a comment
+        await prisma.ticketComment.create({
+            data: {
+                ticketId,
+                userId: session.user.id,
+                content: `[DISPUTE RAISED]: ${reason}`
+            }
+        });
+
+        // Log
+        await createActivityLog(
+            session.user.id,
+            ActionType.UPDATE, // Using generic update or arguably a custom type
+            EntityType.TICKET,
+            ticketId,
+            { action: 'DISPUTE', reason }
+        );
+
+        // Notify Admin
+        const admins = await prisma.user.findMany({ where: { role: 'ADMIN' } });
+        for (const admin of admins) {
+            await createNotification(
+                admin.id,
+                'MAINTENANCE',
+                'Ticket Disputed by Tenant',
+                `Ticket #${ticket.id.substring(0, 6)} resolution was disputed. Reason: ${reason}`,
+                `/admin/tickets/${ticketId}`,
+                ticketId
+            );
+        }
+
+        revalidatePath("/dashboard");
+        revalidatePath("/admin/tickets");
+        return { success: true };
+
+    } catch (e) {
+        console.error("Dispute Ticket Error:", e);
+        return { error: "Failed to dispute ticket" };
     }
 }
 

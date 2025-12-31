@@ -28,14 +28,14 @@ export function SearchFilter() {
 
                     {/* Location Input */}
                     <div className="md:col-span-4 space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-foreground/70 ml-1 flex items-center gap-1">
+                        <label className="text-xs font-black uppercase tracking-wider text-foreground ml-1 flex items-center gap-1">
                             <MapPin size={14} /> Location
                         </label>
                         <div className="relative group">
                             <input
                                 type="text"
                                 placeholder="E.g. Lekki, Ikoyi, V.I."
-                                className="w-full pl-4 pr-4 py-3 bg-muted/20 border-2 border-transparent focus:border-primary/20 hover:bg-muted/30 rounded-xl outline-none transition-all font-medium text-foreground placeholder:text-muted-foreground/80"
+                                className="w-full pl-4 pr-4 py-3 bg-muted/30 dark:bg-muted/10 border-2 border-border/50 focus:border-primary/40 hover:bg-muted/40 rounded-xl outline-none transition-all font-bold text-foreground placeholder:text-muted-foreground"
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
                             />
@@ -44,20 +44,20 @@ export function SearchFilter() {
 
                     {/* Type Select */}
                     <div className="md:col-span-3 space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-foreground/70 ml-1 flex items-center gap-1">
+                        <label className="text-xs font-black uppercase tracking-wider text-foreground ml-1 flex items-center gap-1">
                             <Home size={14} /> Property Type
                         </label>
                         <div className="relative">
                             <select
-                                className="w-full pl-4 pr-10 py-3 bg-muted/20 border-2 border-transparent focus:border-primary/20 hover:bg-muted/30 rounded-xl outline-none transition-all font-medium text-foreground appearance-none cursor-pointer"
+                                className="w-full pl-4 pr-10 py-3 bg-muted/30 dark:bg-muted/10 border-2 border-border/50 focus:border-primary/40 hover:bg-muted/40 rounded-xl outline-none transition-all font-bold text-foreground appearance-none cursor-pointer"
                                 value={type}
                                 onChange={(e) => setType(e.target.value)}
                             >
-                                <option value="">Any Type</option>
-                                <option value="apartment">Apartment</option>
-                                <option value="house">House</option>
-                                <option value="villa">Villa</option>
-                                <option value="office">Office Space</option>
+                                <option value="" className="bg-background text-foreground">Any Type</option>
+                                <option value="apartment" className="bg-background text-foreground">Apartment</option>
+                                <option value="house" className="bg-background text-foreground">House</option>
+                                <option value="villa" className="bg-background text-foreground">Villa</option>
+                                <option value="office" className="bg-background text-foreground">Office Space</option>
                             </select>
                             {/* Custom Arrow */}
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/50">
@@ -70,19 +70,19 @@ export function SearchFilter() {
 
                     {/* Price Range Select */}
                     <div className="md:col-span-3 space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-foreground/70 ml-1 flex items-center gap-1">
+                        <label className="text-xs font-black uppercase tracking-wider text-foreground ml-1 flex items-center gap-1">
                             <Banknote size={14} /> Price Range
                         </label>
                         <div className="relative">
                             <select
-                                className="w-full pl-4 pr-10 py-3 bg-muted/20 border-2 border-transparent focus:border-primary/20 hover:bg-muted/30 rounded-xl outline-none transition-all font-medium text-foreground appearance-none cursor-pointer"
+                                className="w-full pl-4 pr-10 py-3 bg-muted/30 dark:bg-muted/10 border-2 border-border/50 focus:border-primary/40 hover:bg-muted/40 rounded-xl outline-none transition-all font-bold text-foreground appearance-none cursor-pointer"
                                 value={priceRange}
                                 onChange={(e) => setPriceRange(e.target.value)}
                             >
-                                <option value="">Any Price</option>
-                                <option value="low">Under ₦1M</option>
-                                <option value="mid">₦1M - ₦5M</option>
-                                <option value="high">Above ₦5M</option>
+                                <option value="" className="bg-background text-foreground">Any Price</option>
+                                <option value="low" className="bg-background text-foreground">Under ₦1M</option>
+                                <option value="mid" className="bg-background text-foreground">₦1M - ₦5M</option>
+                                <option value="high" className="bg-background text-foreground">Above ₦5M</option>
                             </select>
                             {/* Custom Arrow */}
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/50">

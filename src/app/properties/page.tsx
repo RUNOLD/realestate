@@ -114,11 +114,11 @@ export default async function PropertiesPage({
                         <p className="text-muted-foreground mt-1">Showing {properties.length} active listings</p>
                     </div>
                     <div className="flex items-center gap-2 mt-4 md:mt-0">
-                        <span className="text-sm text-muted-foreground">Sort by:</span>
-                        <select className="bg-transparent font-medium text-foreground focus:outline-none cursor-pointer">
-                            <option>Newest Added</option>
-                            <option>Price: Low to High</option>
-                            <option>Price: High to Low</option>
+                        <span className="text-sm font-black uppercase tracking-widest text-foreground">Sort by:</span>
+                        <select className="bg-transparent font-black text-foreground focus:outline-none cursor-pointer hover:text-accent transition-colors">
+                            <option className="bg-background text-foreground font-bold">Newest Added</option>
+                            <option className="bg-background text-foreground font-bold">Price: Low to High</option>
+                            <option className="bg-background text-foreground font-bold">Price: High to Low</option>
                         </select>
                     </div>
                 </div>

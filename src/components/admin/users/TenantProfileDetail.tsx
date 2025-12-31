@@ -20,8 +20,8 @@ export function TenantProfileDetail({ profile }: TenantProfileDetailProps) {
 
     const InfoRow = ({ label, value }: { label: string, value: any }) => (
         <div className="flex flex-col gap-1 py-1">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</span>
-            <div className="text-sm">{formatValue(value)}</div>
+            <span className="text-[11px] font-black text-foreground/75 uppercase tracking-tight">{label}</span>
+            <div className="text-sm font-bold">{formatValue(value)}</div>
         </div>
     );
 

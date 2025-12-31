@@ -105,7 +105,12 @@ model User {
   ownedProperties         Property[]            @relation("PropertyOwner") // Landlord's properties
   rentModifications       RentModificationLog[] @relation("AdminModifier")
   claimedTickets          Ticket[]              @relation("TicketClaimant")
+  landlordTickets         Ticket[]              @relation("TicketLandlord") // Tickets where this user is the landlord
+  landlordExpenses        LandlordExpense[]
+  payouts                 Payout[]
   notifications           Notification[]
+  rentCycles              RentCycle[]
+  monthlyMetrics          MonthlyMetric[]
   notificationPreferences Json? // { email: boolean, sms: boolean, marketing: boolean }
 
   // Staff / HR Details
@@ -140,8 +145,13 @@ model Property {
   bathrooms Int?
   sqft      Int?
 
+  serviceCharge  Float? @default(0)
+  cautionDeposit Float? @default(0)
+
   // Relations
   leases    Lease[]
+  tickets   Ticket[]
+  expenses  LandlordExpense[]
   payments  Payment[] // Linked payments for landlord visibility
   managerId String? // Staff responsible
   manager   User?     @relation("PropertyManager", fields: [managerId], references: [id])
@@ -160,14 +170,23 @@ model Property {
   updatedAt DateTime @updatedAt
 
   utilityTransactions UtilityTransaction[]
+  monthlyMetrics      MonthlyMetric[]
+  unitsTickets        Ticket[] @relation("TicketUnit")
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  YEARLY
 }
 
 model Lease {
-  id         String    @id @default(cuid())
-  startDate  DateTime
-  endDate    DateTime? // Indefinite or fixed
-  rentAmount Float
-  isActive   Boolean   @default(true)
+  id           String       @id @default(cuid())
+  startDate    DateTime
+  endDate      DateTime? // Indefinite or fixed
+  rentAmount   Float
+  billingCycle BillingCycle @default(MONTHLY)
+  isActive     Boolean      @default(true)
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -205,19 +224,56 @@ model Ticket {
   approvalStatus   ApprovalStatus @default(APPROVED) // Default approved unless requires approval
   approvedById     String? // Admin who approved
 
+
+
+  // Repair-to-Settlement Links
+  propertyId       String? // Made optional for migration, but mandatory logic-wise
+  property         Property? @relation(fields: [propertyId], references: [id])
+  
+  landlordId       String?
+  landlord         User?     @relation("TicketLandlord", fields: [landlordId], references: [id])
+  
+  // New Gap Analysis Fields
+  unitId           String?
+  unit             Property? @relation("TicketUnit", fields: [unitId], references: [id])
+  
+  rentCycleId      String?
+  rentCycle        RentCycle? @relation(fields: [rentCycleId], references: [id])
+
+  expense          LandlordExpense?
+
   comments TicketComment[]
 
   notifications Notification[]
 
   // Resolution Details (Maintenance 2.0)
   resolutionNote String?
-  resolvedBy     String? // Name of staff/artisan
+  resolvedBy     String? // Name of staff/artisan (Legacy, use artisanName going forward)
+  
+  // -- Gap Analysis Fields --
+  artisanName    String?
+  artisanPhone   String?
+  payerType      TicketPayerType?          @default(LANDLORD) 
+  tenantConfirmationStatus TenantConfirmationStatus @default(PENDING)
+  // -------------------------
+
   costEstimated  Decimal?  @db.Decimal(10, 2)
   costActual     Decimal?  @db.Decimal(10, 2)
   resolutionDate DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum TicketPayerType {
+  LANDLORD
+  COMPANY
+}
+
+enum TenantConfirmationStatus {
+  PENDING
+  CONFIRMED
+  DISPUTED
 }
 
 model Notification {
@@ -256,6 +312,7 @@ model Payment {
   reference String @unique
   method    String // 'Paystack', 'Transfer', 'Cash'
   status    String // 'SUCCESS', 'PENDING', 'FAILED' (Simple string for API mapping)
+  category  String @default("RENT") // RENT, SERVICE_CHARGE, CAUTION_DEPOSIT, OTHER
 
   approvalStatus ApprovalStatus @default(APPROVED) // If manual transfer, needs approval
 
@@ -483,4 +540,103 @@ model LandlordProfile {
   consentDate            DateTime?
 
   updatedAt DateTime @updatedAt
+}
+
+// --- NEW FINANCIAL MODELS ---
+
+enum ExpenseStatus {
+  PENDING   // Created, waiting for tenant confirmation
+  APPROVED  // Confirmed by tenant, ready for deduction
+  DEDUCTED  // Applied to a Payout/Settlement
+  REJECTED  // Disputed
+}
+
+model LandlordExpense {
+  id          String   @id @default(cuid())
+  amount      Float
+  description String
+  date        DateTime @default(now())
+  status      ExpenseStatus @default(PENDING)
+
+  // Links
+  ticketId    String?   @unique
+  ticket      Ticket?   @relation(fields: [ticketId], references: [id])
+
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id])
+
+  landlordId  String
+  landlord    User     @relation(fields: [landlordId], references: [id])
+
+  payoutId    String?
+  payout      Payout?  @relation(fields: [payoutId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Payout {
+  id              String   @id @default(cuid())
+  reference       String   @unique // PO-2025-01-xxxx
+  
+  landlordId      String
+  landlord        User     @relation(fields: [landlordId], references: [id])
+
+  amount          Float    // Final calculated amount (Rent - Expenses)
+  periodStart     DateTime
+  periodEnd       DateTime
+  
+  rentCycleId     String?
+  rentCycle       RentCycle? @relation(fields: [rentCycleId], references: [id])
+  
+  status          String   @default("PENDING") // PENDING, PROCESSED
+
+  expenses        LandlordExpense[]
+  
+  // Expenses Snapshot (JSON to freeze the state of what was deducted)
+  expenseSnapshot Json?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// --- NEW REPAIR & ANALYTICS MODELS ---
+
+model RentCycle {
+  id        String   @id @default(cuid())
+  startDate DateTime
+  endDate   DateTime
+  status    String   @default("OPEN") // OPEN, CLOSED
+  
+  landlordId String
+  landlord   User   @relation(fields: [landlordId], references: [id])
+  
+  tickets    Ticket[]
+  payouts    Payout[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MonthlyMetric {
+  id        String   @id @default(cuid())
+  month     DateTime // First day of the month
+  
+  // Scopes (can be global, per-landlord, or per-property)
+  landlordId String?
+  landlord   User?   @relation(fields: [landlordId], references: [id])
+  
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id])
+
+  // Metrics
+  totalRentCollected Float @default(0)
+  occupancyRate      Float @default(0) // Percentage 0-100
+  activeTickets      Int   @default(0)
+  churnRate          Float @default(0) // Tenants left / Total tenants
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([month, landlordId, propertyId]) // Prevent dupes for same scope/month
 }

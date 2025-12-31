@@ -79,7 +79,7 @@ export function ChatBox({ ticketId, initialComments, currentUserIds, claimedById
 
         // Optimistic Update
         const optimisticComment: Comment = {
-            id: crypto.randomUUID(),
+            id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
             content,
             createdAt: new Date().toISOString(),
             user: { id: currentUserIds, name: 'You', role: isTenant ? 'Tenant' : 'Staff' }

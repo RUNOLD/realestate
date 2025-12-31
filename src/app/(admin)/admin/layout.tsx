@@ -30,13 +30,46 @@ export default async function AdminLayout({
         redirect('/login');
     }
 
-    const activeTicketCount = await prisma.ticket.count({
-        where: {
-            status: {
-                in: ['PENDING', 'IN_PROGRESS', 'AWAITING_CONFIRMATION']
-            }
+    const userId = session.user.id; // Define userId here for use in notification count
+
+    let unreadCount = 0;
+    try {
+        unreadCount = await prisma.notification.count({
+            where: {
+                userId,
+                isRead: false,
+                type: 'CHAT',
+                ticketId: { not: null }
+            } // specifically checking new replies/chats for the maintenance dot AND ensure ticket exists
+        });
+    } catch (error) {
+        console.error("Failed to fetch notification count, trying raw query:", error);
+        try {
+            const result = await prisma.$queryRaw<any[]>`SELECT COUNT(*)::int as count FROM "Notification" WHERE "userId" = ${userId} AND "isRead" = false AND "type" = 'CHAT' AND "ticketId" IS NOT NULL`;
+            unreadCount = result[0]?.count || 0;
+        } catch (rawError) {
+            console.error("Raw query also failed:", rawError);
         }
-    });
+    }
+
+    let activeTicketCount = 0;
+    try {
+        activeTicketCount = await prisma.ticket.count({
+            where: {
+                status: {
+                    notIn: ['RESOLVED', 'CLOSED']
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Failed to fetch admin ticket count, trying raw query:", error);
+        try {
+            const result = await prisma.$queryRaw<any[]>`SELECT COUNT(*)::int as count FROM "Ticket" WHERE status NOT IN ('RESOLVED', 'CLOSED')`;
+            activeTicketCount = result[0]?.count || 0;
+        } catch (rawError) {
+            console.error("Raw query also failed:", rawError);
+        }
+    }
 
     const userRole = (session?.user as any)?.role || 'USER';
 
