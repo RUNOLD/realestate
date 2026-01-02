@@ -15,6 +15,8 @@ export async function createProperty(formData: FormData) {
     const ownerId = formData.get("ownerId") as string;
     const isMultiUnit = formData.get("isMultiUnit") === "true" || formData.get("isMultiUnit") === "on";
     const unitCount = formData.get("unitCount") ? parseInt(formData.get("unitCount") as string) : 0;
+    const serviceCharge = formData.get("serviceCharge") ? parseFloat(formData.get("serviceCharge") as string) : 0;
+    const cautionDeposit = formData.get("cautionDeposit") ? parseFloat(formData.get("cautionDeposit") as string) : 0;
 
     // Specifications
     const bedrooms = formData.get("bedrooms") ? parseInt(formData.get("bedrooms") as string) : null;
@@ -75,7 +77,9 @@ export async function createProperty(formData: FormData) {
         bedrooms,
         bathrooms,
         sqft,
-        ownerId
+        ownerId,
+        serviceCharge,
+        cautionDeposit
     };
 
     try {
@@ -147,6 +151,8 @@ export async function updateProperty(propertyId: string, formData: FormData) {
     const bedrooms = formData.get("bedrooms") ? parseInt(formData.get("bedrooms") as string) : null;
     const bathrooms = formData.get("bathrooms") ? parseInt(formData.get("bathrooms") as string) : null;
     const sqft = formData.get("sqft") ? parseInt(formData.get("sqft") as string) : null;
+    const serviceCharge = formData.get("serviceCharge") ? parseFloat(formData.get("serviceCharge") as string) : 0;
+    const cautionDeposit = formData.get("cautionDeposit") ? parseFloat(formData.get("cautionDeposit") as string) : 0;
 
     if (!propertyId || !title || !description || isNaN(price) || !location || !type) {
         throw new Error("Missing required fields");
@@ -177,6 +183,8 @@ export async function updateProperty(propertyId: string, formData: FormData) {
                 bedrooms,
                 bathrooms,
                 sqft,
+                serviceCharge,
+                cautionDeposit
             }
         });
     } catch (error) {

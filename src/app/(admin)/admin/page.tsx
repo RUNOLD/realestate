@@ -122,7 +122,7 @@ export default async function AdminDashboardPage() {
             <div className="max-w-7xl mx-auto space-y-8">
 
                 {/* 1. Header Section */}
-                <DashboardHeader currentDate={currentDate} />
+                <DashboardHeader currentDate={currentDate} userName={session?.user?.name} />
 
                 {/* 2. KPI Overview Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -27,9 +27,10 @@ import { Loader2 } from "lucide-react";
 interface TenantAdminQuickActionsProps {
     tenantId: string;
     hasLease: boolean;
+    leaseId?: string;
 }
 
-export function TenantAdminQuickActions({ tenantId, hasLease }: TenantAdminQuickActionsProps) {
+export function TenantAdminQuickActions({ tenantId, hasLease, leaseId }: TenantAdminQuickActionsProps) {
     const [isPending, startTransition] = useTransition();
 
     const handleAction = (action: () => Promise<any>, successMsg: string) => {
@@ -81,7 +82,11 @@ export function TenantAdminQuickActions({ tenantId, hasLease }: TenantAdminQuick
                             className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer"
                             onSelect={() => {
                                 if (confirm("Are you sure you want to terminate this lease?")) {
-                                    handleAction(() => terminateLease(tenantId), "Lease terminated");
+                                    if (leaseId) {
+                                        handleAction(() => terminateLease(leaseId), "Lease terminated");
+                                    } else {
+                                        toast.error("Lease ID not found");
+                                    }
                                 }
                             }}
                         >

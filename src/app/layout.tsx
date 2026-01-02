@@ -8,8 +8,24 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
-  title: "Ayoola Property Management",
-  description: "Luxury Property Management and Sourcing Services",
+  title: {
+    default: "Ayoola Property Management | Luxury Real Estate & Sourcing",
+    template: "%s | Ayoola Property Management"
+  },
+  description: "Premier real estate sourcing and property management services in Nigeria. Find your dream home with Ayoola Property.",
+  keywords: ["Real Estate Nigeria", "Property Management Lagos", "Luxury Apartments Rent", "Ayoola Property", "House Sourcing Lagos"],
+  openGraph: {
+    type: "website",
+    locale: "en_NG",
+    url: "https://ayoolarealestate.com",
+    siteName: "Ayoola Property Management",
+  },
+  alternates: {
+    canonical: "https://ayoolarealestate.com",
+  },
+  verification: {
+    google: "QwgTHB7_d7ejDTk_M8ksKsyFb0qGy5Mscl2jfqzN47k",
+  }
 };
 
 import { auth } from "@/auth";

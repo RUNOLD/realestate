@@ -55,6 +55,8 @@ export default async function DashboardPage() {
 
         const activeTickets = tickets.filter(t => t.status !== 'CLOSED' && t.status !== 'RESOLVED');
         const rentAmount = activeLease?.rentAmount || 0;
+        const serviceCharge = activeLease?.property.serviceCharge || 0;
+        const totalRecurring = rentAmount + serviceCharge;
 
         return (
             <div className="space-y-8">
@@ -70,7 +72,7 @@ export default async function DashboardPage() {
                     <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
                         <h3 className="text-sm font-medium text-muted-foreground mb-2">Next Rent Payment</h3>
                         <div className="text-2xl font-bold text-primary mb-3">
-                            {rentAmount > 0 ? `₦${rentAmount.toLocaleString()}` : 'No Active Lease'}
+                            {totalRecurring > 0 ? `₦${totalRecurring.toLocaleString()}` : 'No Active Lease'}
                         </div>
 
                         {rentAmount > 0 && (

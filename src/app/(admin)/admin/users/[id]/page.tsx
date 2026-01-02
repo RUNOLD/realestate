@@ -12,7 +12,8 @@ import {
     Clock,
     FileText,
     Coins,
-    ShieldCheck
+    ShieldCheck,
+    Download
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -126,7 +127,11 @@ export default async function UserDetailPage(props: PageProps) {
                     </div>
                 </div>
                 {user.role === 'TENANT' && (
-                    <TenantAdminQuickActions tenantId={user.id} hasLease={!!financials?.lease} />
+                    <TenantAdminQuickActions
+                        tenantId={user.id}
+                        hasLease={!!financials?.lease}
+                        leaseId={financials?.lease?.id}
+                    />
                 )}
             </div>
 
@@ -177,13 +182,15 @@ export default async function UserDetailPage(props: PageProps) {
                                         <h3 className="font-bold text-lg mb-4 text-primary flex items-center gap-2">
                                             <Shield size={18} /> Customer Service Note
                                         </h3>
-                                        <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-lg">
-                                            <p className="text-sm text-blue-800 leading-relaxed">
-                                                This tenant is currently in <span className="font-bold underline uppercase">{financials?.status}</span> status.
-                                                When resolving tickets, prioritize high-impact maintenance issues.
-                                                Outstanding balance: <span className="font-bold text-red-600">₦{financials?.balance.toLocaleString()}</span>.
-                                            </p>
-                                        </div>
+                                        {user.role === 'TENANT' && financials && (
+                                            <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-lg">
+                                                <p className="text-sm text-blue-800 leading-relaxed">
+                                                    This tenant is currently in <span className="font-bold underline uppercase">{financials.status}</span> status.
+                                                    When resolving tickets, prioritize high-impact maintenance issues.
+                                                    Outstanding balance: <span className="font-bold text-red-600">₦{financials.balance?.toLocaleString() || 0}</span>.
+                                                </p>
+                                            </div>
+                                        )}
 
                                         {!financials?.lease && (
                                             <div className="mt-6 p-6 border-2 border-dashed rounded-xl text-center space-y-4">
@@ -270,16 +277,18 @@ export default async function UserDetailPage(props: PageProps) {
                             <Card>
                                 <div className="p-6 border-b flex justify-between items-center">
                                     <h3 className="font-bold text-lg">Detailed Payment History</h3>
-                                    <div className="flex items-center gap-4 text-sm">
-                                        <div className="text-right">
-                                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Due (Rent)</p>
-                                            <p className="font-bold">₦{financials?.totalDue.toLocaleString()}</p>
+                                    {financials && (
+                                        <div className="flex items-center gap-4 text-sm">
+                                            <div className="text-right">
+                                                <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Due (Rent)</p>
+                                                <p className="font-bold">₦{financials.totalDue?.toLocaleString() || 0}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Paid (Rent)</p>
+                                                <p className="font-bold text-green-600">₦{financials.totalPaid?.toLocaleString() || 0}</p>
+                                            </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Paid (Rent)</p>
-                                            <p className="font-bold text-green-600">₦{financials?.totalPaid.toLocaleString()}</p>
-                                        </div>
-                                    </div>
+                                    )}
                                 </div>
                                 <div className="divide-y">
                                     {user.payments.length === 0 ? (

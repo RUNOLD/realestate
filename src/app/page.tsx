@@ -12,12 +12,25 @@ import {
   Search,
   Star,
   Quote,
-  CheckCircle2
+  CheckCircle2,
+  Map as MapIcon,
+  Compass
 } from "lucide-react";
+import Image from "next/image";
 
 import { PropertyStatus } from "@prisma/client";
 
 export const dynamic = 'force-dynamic';
+
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Luxury Real Estate & Property Management in Lagos",
+  description: "Discover premium rental properties, expert property management, and specialized sourcing services in the most sought-after locations in Lagos.",
+  alternates: {
+    canonical: "https://ayoolarealestate.com",
+  }
+};
 
 export default async function Home() {
   // Fetch featured properties
@@ -58,12 +71,14 @@ export default async function Home() {
               <div key={property.id} className="group bg-card rounded-2xl overflow-hidden border border-border/50 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 flex flex-col h-full">
                 {/* Image Container */}
                 <div className="relative h-64 overflow-hidden">
-                  <img
+                  <Image
                     src={property.images.length > 0 ? property.images[0] : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
-                    alt={property.title}
-                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                    alt={`Property ${property.title} in ${property.location}`}
+                    fill
+                    className="object-cover transform group-hover:scale-110 transition-transform duration-700"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
-                  <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm text-foreground px-3 py-1 rounded-md text-xs font-bold shadow-sm">
+                  <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm text-foreground px-3 py-1 rounded-md text-xs font-bold shadow-sm z-10">
                     FOR RENT
                   </div>
                   <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-sm">
@@ -190,6 +205,79 @@ export default async function Home() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Local SEO Area Guide Section */}
+      <section className="py-24 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6">
+            <div className="text-left max-w-2xl">
+              <span className="text-accent font-semibold tracking-wider text-sm uppercase flex items-center gap-2">
+                <Compass size={16} /> Neighborhood Discovery
+              </span>
+              <h2 className="text-3xl md:text-5xl font-serif font-bold text-primary mt-4">Explore Lagos Living</h2>
+              <p className="text-muted-foreground mt-4 text-lg">
+                Discover the perfect location for your next chapter. From the vibrant energy of the mainland to the coastal luxury of the island.
+              </p>
+            </div>
+            <Link href="/properties" className="group flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:bg-accent transition-all">
+              Discover All Areas <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                name: "Lekki Phase 1",
+                slug: "lekki",
+                desc: "Modern luxury living with the best entertainment and lifestyle hubs in Lagos.",
+                image: "https://images.unsplash.com/photo-1590059300624-9b8ae2517869?q=80&w=800&auto=format&fit=crop",
+                tag: "Bustling & Modern"
+              },
+              {
+                name: "Old Ikoyi",
+                slug: "ikoyi",
+                desc: "The pinnacle of prestige and tranquility. Home to diplomacy and heritage.",
+                image: "https://images.unsplash.com/photo-1549558549-415fe4c37b60?q=80&w=800&auto=format&fit=crop",
+                tag: "Elite & Serene"
+              },
+              {
+                name: "Ikeja GRA",
+                slug: "ikeja",
+                desc: "Centrally located with lush greenery and premium residential accessibility.",
+                image: "https://images.unsplash.com/photo-1610410091802-5321527494f3?q=80&w=800&auto=format&fit=crop",
+                tag: "Connected & Green"
+              }
+            ].map((area, index) => (
+              <div key={index} className="group relative h-[450px] rounded-2xl overflow-hidden shadow-lg border border-border/50">
+                <Image
+                  src={area.image}
+                  alt={area.name}
+                  fill
+                  className="object-cover transform group-hover:scale-110 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/20 to-transparent"></div>
+
+                <div className="absolute top-4 left-4 z-10">
+                  <span className="bg-white/90 backdrop-blur-sm text-primary px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-tighter">
+                    {area.tag}
+                  </span>
+                </div>
+
+                <div className="absolute bottom-6 left-6 right-6 z-10">
+                  <h3 className="text-2xl font-serif font-bold text-white mb-2">{area.name}</h3>
+                  <p className="text-white/80 text-sm mb-6 line-clamp-2">{area.desc}</p>
+                  <Link
+                    href={`/properties?location=${area.slug}`}
+                    className="flex items-center gap-2 text-white font-bold hover:text-accent transition-colors"
+                  >
+                    View Properties <ArrowRight size={16} />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

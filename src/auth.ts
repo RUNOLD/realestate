@@ -37,6 +37,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     const user = await getUser(identifier);
                     if (!user) return null;
 
+                    if (user.status === 'SUSPENDED') {
+                        throw new Error('Your account has been suspended. Please contact administration.');
+                    }
+
                     let passwordsMatch = false;
                     if (user.password?.startsWith('$2')) {
                         passwordsMatch = await bcrypt.compare(password, user.password);

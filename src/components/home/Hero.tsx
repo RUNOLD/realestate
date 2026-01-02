@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NextImage from "next/image";
 
 export function Hero() {
     return (
@@ -6,10 +7,12 @@ export function Hero() {
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
                 {/* Placeholder for high-quality hero image */}
-                <img
+                <NextImage
                     src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2666&auto=format&fit=crop"
                     alt="Luxury Home"
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    priority
                 />
                 <div className="absolute inset-0 bg-primary/60 mix-blend-multiply"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>

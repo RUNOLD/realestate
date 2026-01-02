@@ -176,6 +176,35 @@ export default async function EditPropertyPage(props: { params: Promise<{ id: st
                                         </div>
                                     </div>
 
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label htmlFor="serviceCharge" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Service Charge (Annual)</label>
+                                            <div className="relative">
+                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">₦</div>
+                                                <Input
+                                                    id="serviceCharge"
+                                                    name="serviceCharge"
+                                                    type="number"
+                                                    defaultValue={property.serviceCharge || 0}
+                                                    className="pl-8 h-12 bg-muted/50 border-transparent focus:border-primary focus:bg-background transition-all text-foreground"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label htmlFor="cautionDeposit" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Caution Fee (One-time)</label>
+                                            <div className="relative">
+                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">₦</div>
+                                                <Input
+                                                    id="cautionDeposit"
+                                                    name="cautionDeposit"
+                                                    type="number"
+                                                    defaultValue={property.cautionDeposit || 0}
+                                                    className="pl-8 h-12 bg-muted/50 border-transparent focus:border-primary focus:bg-background transition-all text-foreground"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-2">
                                         <label htmlFor="status" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Listing Status</label>
                                         <div className="relative">

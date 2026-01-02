@@ -20,9 +20,10 @@ import { LogOut } from "lucide-react";
 
 interface DashboardHeaderProps {
     currentDate: string;
+    userName?: string | null;
 }
 
-export function DashboardHeader({ currentDate }: DashboardHeaderProps) {
+export function DashboardHeader({ currentDate, userName }: DashboardHeaderProps) {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const router = useRouter();
@@ -39,7 +40,7 @@ export function DashboardHeader({ currentDate }: DashboardHeaderProps) {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
             <div className="space-y-1">
                 <p className="text-sm font-semibold tracking-wide text-muted-foreground uppercase opacity-80">{currentDate}</p>
-                <h1 className="text-3xl font-black tracking-tight text-foreground">Welcome back, Admin</h1>
+                <h1 className="text-3xl font-black tracking-tight text-foreground">Welcome back, {userName || 'Admin'}</h1>
                 <p className="text-muted-foreground font-medium">Here is what's happening with your portfolio today.</p>
             </div>
             <div className="flex gap-3">

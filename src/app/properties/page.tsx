@@ -13,8 +13,30 @@ import {
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { SearchFilter } from "@/components/home/SearchFilter";
+import Image from "next/image";
 
 export const dynamic = 'force-dynamic';
+
+import { Metadata } from "next";
+
+export async function generateMetadata({ searchParams }: { searchParams: Promise<any> }): Promise<Metadata> {
+    const params = await searchParams;
+    const location = params?.location;
+    const type = params?.type;
+
+    let title = "Premium Property Listings";
+    if (location && type) title = `${type}s for Rent in ${location}`;
+    else if (location) title = `Properties for Rent in ${location}`;
+    else if (type) title = `Luxury ${type}s for Rent`;
+
+    return {
+        title,
+        description: `Explore our exclusive selection of ${type || 'property'} listings in ${location || 'Lagos'}. Start your premium living journey today.`,
+        alternates: {
+            canonical: "https://ayoolarealestate.com/properties",
+        }
+    };
+}
 
 export default async function PropertiesPage({
     searchParams,
@@ -31,7 +53,10 @@ export default async function PropertiesPage({
     };
 
     if (location) {
-        where.location = { contains: location };
+        where.location = {
+            contains: location,
+            mode: 'insensitive' // Smart Matching (Case Insensitive)
+        };
     }
 
     if (type) {
@@ -44,7 +69,7 @@ export default async function PropertiesPage({
         } else if (priceRange === 'mid') {
             where.price = { gte: 1000000, lte: 5000000 };
         } else if (priceRange === 'high') {
-            where.price = { gt: 5000000 };
+            where.price = { gte: 5000000 }; // Better Price Logic (Open-ended)
         }
     }
 
@@ -129,12 +154,15 @@ export default async function PropertiesPage({
                             <Search className="w-8 h-8 text-muted-foreground" />
                         </div>
                         <h3 className="text-2xl font-bold text-foreground">No matches found</h3>
-                        <p className="text-muted-foreground mt-2 max-w-md mx-auto mb-8">
-                            We currently don't have properties matching {location ? `"${location}"` : 'your criteria'}, but our inventory changes daily.
+                        <p className="text-muted-foreground mt-2 max-w-md mx-auto mb-8 leading-relaxed">
+                            We currently don't have properties matching {location ? `"${location}"` : 'your criteria'}. <br />
+                            <span className="font-semibold text-foreground italic">Suggestion:</span> Try searching for a different area or clear your filters to see all available listings.
                         </p>
-                        <Link href="/properties" className="px-6 py-3 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 transition-colors inline-block">
-                            Clear Filters
-                        </Link>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <Link href="/properties" className="px-8 py-3 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 transition-all shadow-md">
+                                Clear All Filters
+                            </Link>
+                        </div>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -146,10 +174,12 @@ export default async function PropertiesPage({
                                 <Link href={`/properties/${property.id}`} key={property.id} className="group block h-full">
                                     <article className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border border-border h-full flex flex-col">
                                         <div className="relative h-72 overflow-hidden">
-                                            <img
+                                            <Image
                                                 src={property.images.length > 0 ? property.images[0] : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
-                                                alt={property.title}
-                                                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                                                alt={`Property ${property.title} in ${property.location}`}
+                                                fill
+                                                className="object-cover transform group-hover:scale-105 transition-transform duration-700"
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                             />
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60" />
 
@@ -184,15 +214,15 @@ export default async function PropertiesPage({
                                             <div className="flex items-center justify-between py-4 border-t border-border/60 mt-auto">
                                                 <div className="flex items-center gap-2 text-sm text-muted-foreground" title="Bedrooms">
                                                     <BedDouble size={18} />
-                                                    <span className="font-medium text-foreground">3</span>
+                                                    <span className="font-medium text-foreground">{property.bedrooms || 0}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2 text-sm text-muted-foreground" title="Bathrooms">
                                                     <Bath size={18} />
-                                                    <span className="font-medium text-foreground">2</span>
+                                                    <span className="font-medium text-foreground">{property.bathrooms || 0}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2 text-sm text-muted-foreground" title="Square Footage">
                                                     <Maximize size={18} />
-                                                    <span className="font-medium text-foreground">1,200</span>
+                                                    <span className="font-medium text-foreground">{property.sqft?.toLocaleString() || 0}</span>
                                                 </div>
                                             </div>
 

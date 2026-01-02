@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 
 export async function sendTenantReminder(tenantId: string) {
     const session = await auth();
-    if ((session?.user as any)?.role !== 'ADMIN') return { error: "Unauthorized" };
+    if (!session?.user?.id || (session.user as any)?.role !== 'ADMIN') return { error: "Unauthorized" };
 
     try {
         // Mock sending reminder (email/sms)
@@ -28,14 +28,18 @@ export async function sendTenantReminder(tenantId: string) {
 
 export async function suspendTenantPortal(tenantId: string) {
     const session = await auth();
-    if ((session?.user as any)?.role !== 'ADMIN') return { error: "Unauthorized" };
+    if (!session?.user?.id || (session.user as any)?.role !== 'ADMIN') return { error: "Unauthorized" };
 
     try {
         await prisma.user.update({
             where: { id: tenantId },
-            data: { isActive: false }
+            data: { status: 'SUSPENDED' }
         });
 
+        // The original code had `if (!session?.user) return { error: "Unauthorized" };` here,
+        // but the preceding check `!session?.user?.id || (session.user as any)?.role !== 'ADMIN'`
+        // already ensures `session.user` exists if we reach this point and are authorized.
+        // So, `session.user.id` is safe to access.
         await createActivityLog(
             session.user.id,
             ActionType.UPDATE,
@@ -62,6 +66,7 @@ export async function blacklistTenant(tenantId: string) {
             data: { role: 'TENANT' } // Or similar, maybe a new 'BLACKLISTED' status?
         });
 
+        if (!session?.user) return { error: "Unauthorized" };
         await createActivityLog(
             session.user.id,
             ActionType.UPDATE,

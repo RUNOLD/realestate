@@ -172,6 +172,9 @@ model Property {
   utilityTransactions UtilityTransaction[]
   monthlyMetrics      MonthlyMetric[]
   unitsTickets        Ticket[] @relation("TicketUnit")
+
+  @@index([location])
+  @@index([type])
 }
 
 enum BillingCycle {

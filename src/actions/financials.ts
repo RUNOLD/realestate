@@ -201,7 +201,17 @@ export async function getTenantFinancials(userId: string) {
         nextRentDate = startDate;
     }
 
-    const totalDue = cyclesElapsed * lease.rentAmount;
+    const totalRentDue = cyclesElapsed * lease.rentAmount;
+
+    // Service charge calculation: paid with every year's rent
+    // Calculate how many years have passed (or started)
+    const yearsElapsed = Math.floor(differenceInYears(today, startDate)) + 1;
+    const totalServiceChargeDue = (lease.property.serviceCharge || 0) * yearsElapsed;
+
+    // Caution fee is a one-time payment
+    const totalCautionDue = lease.property.cautionDeposit || 0;
+
+    const totalDue = totalRentDue + totalServiceChargeDue + totalCautionDue;
 
     const payments = await prisma.payment.findMany({
         where: { userId, status: 'SUCCESS' }
