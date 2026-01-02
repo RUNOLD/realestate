@@ -72,22 +72,20 @@ export default async function PropertyDetailPage({ params }: PageProps) {
         "@type": "RealEstateListing",
         "name": property.title,
         "description": property.description,
-        "url": `https://ayoolarealestate.com/properties/${property.id}`,
-        "image": property.images.length > 0 ? property.images[0] : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3",
+        "image": property.images[0] || "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3",
         "offers": {
             "@type": "Offer",
             "price": property.price,
             "priceCurrency": "NGN",
-            "availability": "https://schema.org/InStock",
-            "url": `https://ayoolarealestate.com/properties/${property.id}`
+            "availability": "https://schema.org/InStock"
         },
         "address": {
             "@type": "PostalAddress",
+            "streetAddress": property.location,
             "addressLocality": property.location,
             "addressRegion": "Lagos",
             "addressCountry": "NG"
-        },
-        "numberOfRooms": property.bedrooms || 0
+        }
     };
 
     const breadcrumbLd = {
