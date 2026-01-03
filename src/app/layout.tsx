@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     template: "%s | Ayoola Property Management"
   },
   description: "Premier real estate sourcing and property management services in Nigeria. Find your dream home with Ayoola Property.",
-  keywords: ["Real Estate Nigeria", "Property Management Lagos", "Luxury Apartments Rent", "Ayoola Property", "House Sourcing Lagos"],
+  keywords: ["Real Estate Nigeria", "Property Management Ibadan", "Luxury Apartments Rent", "Ayoola Property", "House Sourcing Ibadan"],
   openGraph: {
     type: "website",
     locale: "en_NG",
@@ -92,9 +92,16 @@ export default async function RootLayout({
         >
           <SessionProviderWrapper>
             <Navbar user={session?.user} ticketCount={ticketCount} />
-            <div className="pt-24">
+            <div className="pt-24 min-h-[calc(100vh-60px)]">
               {children}
             </div>
+            <footer className="py-8 border-t border-border bg-background">
+              <div className="max-w-7xl mx-auto px-4 text-center">
+                <p className="text-sm text-muted-foreground font-medium">
+                  © 2026 Ayoola Property Management & Sourcing Services LTD. RC NO. 9040390
+                </p>
+              </div>
+            </footer>
           </SessionProviderWrapper>
           <Toaster />
         </ThemeProvider>

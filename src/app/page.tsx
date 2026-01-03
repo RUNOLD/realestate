@@ -25,8 +25,8 @@ export const dynamic = 'force-dynamic';
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Luxury Real Estate & Property Management in Lagos",
-  description: "Discover premium rental properties, expert property management, and specialized sourcing services in the most sought-after locations in Lagos.",
+  title: "Luxury Real Estate & Property Management in Ibadan",
+  description: "Discover premium rental properties, expert property management, and specialized sourcing services in the most sought-after locations in Ibadan.",
   alternates: {
     canonical: "https://ayoolarealestate.com",
   }
@@ -55,9 +55,9 @@ export default async function Home() {
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
           <div className="max-w-2xl">
             <span className="text-accent font-semibold tracking-wider text-sm uppercase">Exclusive Offers</span>
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mt-2">Featured Listings</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mt-2">Featured Properties</h2>
             <p className="text-muted-foreground mt-3">
-              Explore our hand-picked selection of premium properties available for rent.
+              Discover a curated selection of professionaly managed properties for your comfort.
             </p>
           </div>
           <Link href="/properties" className="hidden md:flex items-center text-primary font-medium hover:text-accent transition-colors">
@@ -72,7 +72,9 @@ export default async function Home() {
                 {/* Image Container */}
                 <div className="relative h-64 overflow-hidden">
                   <Image
-                    src={property.images.length > 0 ? property.images[0] : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
+                    src={(property.images && property.images.length > 0 && (property.images[0].startsWith('http') || property.images[0].startsWith('/')))
+                      ? property.images[0]
+                      : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
                     alt={`Property ${property.title} in ${property.location}`}
                     fill
                     className="object-cover transform group-hover:scale-110 transition-transform duration-700"
@@ -81,8 +83,8 @@ export default async function Home() {
                   <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm text-foreground px-3 py-1 rounded-md text-xs font-bold shadow-sm z-10">
                     FOR RENT
                   </div>
-                  <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-sm">
-                    {property.status}
+                  <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-black shadow-sm uppercase tracking-wider">
+                    {property.status === 'AVAILABLE' ? 'AVAILABLE NOW' : property.status}
                   </div>
                 </div>
 
@@ -106,23 +108,19 @@ export default async function Home() {
                       <Bath size={16} />
                       <span className="font-medium text-foreground">{property.bathrooms ?? 0}</span> <span className="text-xs">Baths</span>
                     </div>
-                    <div className="flex items-center gap-1 text-muted-foreground text-sm">
-                      <Maximize size={16} />
-                      <span className="font-medium text-foreground">{property.sqft?.toLocaleString() ?? 0}</span> <span className="text-xs">sqft</span>
-                    </div>
                   </div>
 
                   <div className="flex justify-between items-center pt-4 border-t border-border/60">
                     <div>
-                      <span className="text-xs text-muted-foreground block">Price</span>
+                      <span className="text-[10px] text-muted-foreground block uppercase font-bold tracking-tight">Annual Rent</span>
                       <span className="text-lg font-bold text-primary">₦{property.price.toLocaleString()}</span>
                       <span className="text-xs text-muted-foreground">/year</span>
                     </div>
                     <Link
                       href={`/properties/${property.id}`}
-                      className="px-4 py-2 bg-muted hover:bg-primary hover:text-white rounded-lg text-sm font-medium transition-all"
+                      className="px-4 py-2 bg-muted hover:bg-primary hover:text-white rounded-lg text-xs font-bold transition-all uppercase tracking-tight"
                     >
-                      Details
+                      View Details
                     </Link>
                   </div>
                 </div>
@@ -136,7 +134,7 @@ export default async function Home() {
         </div>
 
         <div className="mt-10 md:hidden text-center">
-          <Link href="/properties" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-primary/90">
+          <Link href="/properties" className="inline-flex items-center justify-center px-10 py-4 bg-primary text-primary-foreground dark:bg-accent dark:text-accent-foreground rounded-full font-bold shadow-xl hover:scale-105 transition-all">
             View All Properties
           </Link>
         </div>
@@ -149,7 +147,7 @@ export default async function Home() {
             <span className="text-accent font-semibold tracking-wider text-sm uppercase">Our Expertise</span>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mt-2 mb-4">Why Choose Us?</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              We provide comprehensive real estate solutions, from property sourcing to full-scale management.
+              We deliver end-to-end property solutions combining professional management with modern technology for better results.
             </p>
           </div>
 
@@ -157,17 +155,17 @@ export default async function Home() {
             {[
               {
                 title: "Property Sourcing",
-                desc: "We use our extensive network to find properties that perfectly match your lifestyle and budget requirements.",
+                desc: "We leverage our market expertise and professional networks to source properties that match your needs, preferences and budget through a trusted network of developers, landlords and agents.",
                 icon: <Search className="w-8 h-8 text-accent" />
               },
               {
-                title: "Property Management",
-                desc: "End-to-end management of your assets, ensuring optimal returns, maintenance handling, and tenant satisfaction.",
+                title: "Comprehensive Property Management",
+                desc: "Covering rent collection, maintenance coordination, tenant support and performance reporting, designed to protect your asset optimize returns and ensure tenant satisfaction.",
                 icon: <CheckCircle2 className="w-8 h-8 text-accent" />
               },
               {
                 title: "Premium Materials",
-                desc: "Direct supply of high-quality construction materials for your renovation or building projects at competitive rates.",
+                desc: "Construction & Renovation materials -Reliable supply of quality construction and renovation materials for property development and upgrade project at competitive rates.",
                 icon: <Star className="w-8 h-8 text-accent" />
               },
             ].map((service, index) => (
@@ -186,107 +184,42 @@ export default async function Home() {
       {/* Testimonials Section (New) */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-4">Client Success Stories</h2>
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-4">WHAT CLIENTS CAN EXPECT</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[1, 2, 3].map((i) => (
+          {[
+            {
+              title: "Transparent Property Management",
+              content: "We commit to clear communication, accurate records, and transparent handling of rent, expenses, and property performance at all times."
+            },
+            {
+              title: "Reliable Rent Collection & Reporting",
+              content: "We ensure structured rent collection processes, timely remittance, and clear reporting so you always know how your property is performing."
+            },
+            {
+              title: "Proactive Property Care",
+              content: "We coordinate maintenance, inspections, and tenant issues promptly to protect your asset and preserve long-term value."
+            }
+          ].map((item, i) => (
             <div key={i} className="bg-card p-8 rounded-xl border border-border relative">
               <Quote className="text-accent/20 absolute top-6 right-6 w-12 h-12" />
               <div className="flex gap-1 mb-4 text-yellow-400">
                 {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
               </div>
-              <p className="text-muted-foreground italic mb-6">"I found my dream apartment within days. The team was incredibly professional and the paperwork process was seamless."</p>
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-gray-200 rounded-full mr-3"></div>
-                <div>
-                  <h4 className="font-bold text-sm text-primary">Happy Tenant</h4>
-                  <p className="text-xs text-muted-foreground">Lagos, Nigeria</p>
-                </div>
-              </div>
+              <h4 className="font-bold text-lg text-primary mb-2">{item.title}</h4>
+              <p className="text-muted-foreground italic mb-6">"{item.content}"</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Local SEO Area Guide Section */}
-      <section className="py-24 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6">
-            <div className="text-left max-w-2xl">
-              <span className="text-accent font-semibold tracking-wider text-sm uppercase flex items-center gap-2">
-                <Compass size={16} /> Neighborhood Discovery
-              </span>
-              <h2 className="text-3xl md:text-5xl font-serif font-bold text-primary mt-4">Explore Lagos Living</h2>
-              <p className="text-muted-foreground mt-4 text-lg">
-                Discover the perfect location for your next chapter. From the vibrant energy of the mainland to the coastal luxury of the island.
-              </p>
-            </div>
-            <Link href="/properties" className="group flex items-center gap-2 px-6 py-3 bg-primary text-white dark:bg-accent dark:text-accent-foreground rounded-full font-bold hover:opacity-90 transition-all">
-              Discover All Areas <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Lekki Phase 1",
-                slug: "lekki",
-                desc: "Modern luxury living with the best entertainment and lifestyle hubs in Lagos.",
-                image: "https://images.unsplash.com/photo-1590059300624-9b8ae2517869?q=80&w=800&auto=format&fit=crop",
-                tag: "Bustling & Modern"
-              },
-              {
-                name: "Old Ikoyi",
-                slug: "ikoyi",
-                desc: "The pinnacle of prestige and tranquility. Home to diplomacy and heritage.",
-                image: "https://images.unsplash.com/photo-1549558549-415fe4c37b60?q=80&w=800&auto=format&fit=crop",
-                tag: "Elite & Serene"
-              },
-              {
-                name: "Ikeja GRA",
-                slug: "ikeja",
-                desc: "Centrally located with lush greenery and premium residential accessibility.",
-                image: "https://images.unsplash.com/photo-1610410091802-5321527494f3?q=80&w=800&auto=format&fit=crop",
-                tag: "Connected & Green"
-              }
-            ].map((area, index) => (
-              <div key={index} className="group relative h-[450px] rounded-2xl overflow-hidden shadow-lg border border-border/50">
-                <Image
-                  src={area.image}
-                  alt={area.name}
-                  fill
-                  className="object-cover transform group-hover:scale-110 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/20 to-transparent"></div>
-
-                <div className="absolute top-4 left-4 z-10">
-                  <span className="bg-white/90 backdrop-blur-sm text-slate-900 px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-tighter">
-                    {area.tag}
-                  </span>
-                </div>
-
-                <div className="absolute bottom-6 left-6 right-6 z-10">
-                  <h3 className="text-2xl font-serif font-bold text-white mb-2">{area.name}</h3>
-                  <p className="text-white/80 text-sm mb-6 line-clamp-2">{area.desc}</p>
-                  <Link
-                    href={`/properties?location=${area.slug}`}
-                    className="flex items-center gap-2 text-white font-bold hover:text-accent transition-colors"
-                  >
-                    View Properties <ArrowRight size={16} />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* CTA / Contact Section (New) */}
       <section className="bg-primary text-primary-foreground dark:bg-card dark:text-foreground py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6 text-primary-foreground dark:text-foreground">Ready to find your new home?</h2>
           <p className="text-lg text-primary-foreground/80 dark:text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Browse our latest listings or contact our agents to help you navigate the market with confidence.
+            Browse available properties or speak with our team for professional guidance on renting, managing, sourcing and marketing property.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

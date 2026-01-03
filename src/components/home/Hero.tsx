@@ -26,12 +26,11 @@ export function Hero() {
                     Premium Real Estate Services
                 </span>
                 <h1 className="text-4xl sm:text-6xl md:text-7xl font-serif font-bold text-white mb-8 tracking-tight leading-tight">
-                    Find Your Place of <br className="hidden sm:block" />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70">Luxury & Comfort</span>
+                    A <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70">Smarter way</span> to rent, <br className="hidden sm:block" />
+                    own & manage property
                 </h1>
                 <p className="text-lg sm:text-xl md:text-2xl text-gray-200 mb-10 max-w-3xl mx-auto font-light leading-relaxed">
-                    Discover a curated selection of Nigeria's finest properties.
-                    From exclusive sourcing to seamless management, we redefine excellence.
+                    We combine professional property management with modern technology, offering secure online rent payment, tenant & landlord portals, and transparent landlord reporting.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">

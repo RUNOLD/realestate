@@ -31,7 +31,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 
     return {
         title,
-        description: `Explore our exclusive selection of ${type || 'property'} listings in ${location || 'Lagos'}. Start your premium living journey today.`,
+        description: `Explore our exclusive selection of ${type || 'property'} listings in ${location || 'Ibadan'}. Start your premium living journey today.`,
         alternates: {
             canonical: "https://ayoolarealestate.com/properties",
         }
@@ -41,12 +41,14 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 export default async function PropertiesPage({
     searchParams,
 }: {
-    searchParams?: { [key: string]: string | string[] | undefined };
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
     const params = await searchParams;
-    const location = params?.location as string | undefined;
-    const type = params?.type as string | undefined;
-    const priceRange = params?.priceRange as string | undefined;
+
+    // Safely extract string parameters (handle potential arrays from URL)
+    const location = typeof params?.location === 'string' ? params.location : Array.isArray(params?.location) ? params.location[0] : undefined;
+    const type = typeof params?.type === 'string' ? params.type : Array.isArray(params?.type) ? params.type[0] : undefined;
+    const priceRange = typeof params?.priceRange === 'string' ? params.priceRange : Array.isArray(params?.priceRange) ? params.priceRange[0] : undefined;
 
     const where: any = {
         status: "AVAILABLE",
@@ -94,12 +96,11 @@ export default async function PropertiesPage({
                 </div>
 
                 <div className="relative max-w-7xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-6xl font-serif font-bold text-primary-foreground dark:text-foreground mb-6 tracking-tight">
-                        Find Your Next <span className="text-accent">Dream Home</span>
+                    <h1 className="text-4xl md:text-6xl font-serif font-bold text-primary-foreground dark:text-white mb-6 tracking-tight">
+                        Find your next <span className="text-accent">home with us</span>
                     </h1>
-                    <p className="text-primary-foreground/80 dark:text-muted-foreground max-w-2xl mx-auto text-lg md:text-xl mb-10 leading-relaxed">
-                        Browse our exclusive collection of premium rental properties.
-                        From modern city apartments to serene suburban villas.
+                    <p className="text-primary-foreground/90 dark:text-slate-200 max-w-2xl mx-auto text-lg md:text-xl mb-10 leading-relaxed font-medium">
+                        Browse available rental properties managed by our team across IBADAN and surrounding areas
                     </p>
 
                     {/* Search/Filter Bar */}
@@ -117,7 +118,7 @@ export default async function PropertiesPage({
                             </div>
                             <div className="flex gap-2">
                                 <select name="type" defaultValue={type} className="px-4 py-3 bg-muted/30 text-foreground font-medium rounded-lg hover:bg-muted/50 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-primary/20 border border-transparent">
-                                    <option value="">Any Type</option>
+                                    <option value="">All Property Types</option>
                                     <option value="Apartment">Apartment</option>
                                     <option value="house">House</option>
                                     <option value="villa">Villa</option>
@@ -133,8 +134,8 @@ export default async function PropertiesPage({
 
             <div className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
                 {/* Section Header */}
-                <div className="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-border pb-6">
-                    <div>
+                <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-10 border-b border-border pb-6">
+                    <div className="text-center md:text-left">
                         <h2 className="text-3xl font-serif font-bold text-primary">Available Properties</h2>
                         <p className="text-muted-foreground mt-1">Showing {properties.length} active listings</p>
                     </div>
@@ -175,7 +176,9 @@ export default async function PropertiesPage({
                                     <article className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border border-border h-full flex flex-col">
                                         <div className="relative h-72 overflow-hidden">
                                             <Image
-                                                src={property.images.length > 0 ? property.images[0] : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
+                                                src={(property.images && property.images.length > 0 && (property.images[0].startsWith('http') || property.images[0].startsWith('/')))
+                                                    ? property.images[0]
+                                                    : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
                                                 alt={`Property ${property.title} in ${property.location}`}
                                                 fill
                                                 className="object-cover transform group-hover:scale-105 transition-transform duration-700"

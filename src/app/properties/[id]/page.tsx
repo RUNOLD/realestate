@@ -135,7 +135,9 @@ export default async function PropertyDetailPage({ params }: PageProps) {
             {/* Hero Image Section */}
             <div className="relative h-[50vh] bg-gray-900">
                 <Image
-                    src={property.images.length > 0 ? property.images[0] : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
+                    src={(property.images && property.images.length > 0 && (property.images[0].startsWith('http') || property.images[0].startsWith('/')))
+                        ? property.images[0]
+                        : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
                     alt={`${property.title} hero image`}
                     fill
                     className="object-cover opacity-60"
@@ -326,7 +328,9 @@ async function RelatedProperties({ location, currentId }: { location: string; cu
                             <article className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border border-border h-full flex flex-col">
                                 <div className="relative h-64 overflow-hidden">
                                     <Image
-                                        src={p.images.length > 0 ? p.images[0] : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
+                                        src={(p.images && p.images.length > 0 && (p.images[0].startsWith('http') || p.images[0].startsWith('/')))
+                                            ? p.images[0]
+                                            : "https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?q=80&w=2070&auto=format&fit=crop"}
                                         alt={p.title}
                                         fill
                                         className="object-cover transform group-hover:scale-105 transition-transform duration-700"

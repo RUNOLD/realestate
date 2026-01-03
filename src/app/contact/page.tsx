@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
     title: "Contact Our Real Estate Experts",
-    description: "Get in touch with Ayoola Property Management for luxury rentals, professional property management, and specialized sourcing services in Lagos.",
+    description: "Get in touch with Ayoola Property Management for luxury rentals, professional property management, and specialized sourcing services in Ibadan.",
     alternates: {
         canonical: "https://ayoolarealestate.com/contact",
     }
@@ -27,14 +27,13 @@ export default function ContactPage() {
                 <div className="absolute inset-0 opacity-10 pattern-grid-lg"></div>
                 <div className="max-w-4xl mx-auto text-center py-24 px-4 relative z-10">
                     <span className="text-accent font-bold tracking-wider uppercase text-sm mb-2 block">
-                        We are here to help
+                        Get in touch with Ayoola Property Management
                     </span>
                     <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6 text-primary-foreground dark:text-foreground">
                         Let's Start a Conversation
                     </h1>
                     <p className="text-lg md:text-xl text-primary-foreground/80 dark:text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                        Whether you are looking to buy, rent, or need property management advice,
-                        our team is ready to guide you through every step.
+                        Whether you are seeking property management services, sourcing support or general enquiries, our team is available to assist.
                     </p>
                 </div>
             </div>
@@ -53,8 +52,8 @@ export default function ContactPage() {
                                         <Phone size={20} />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-base">Call Us Directly</h3>
-                                        <p className="text-muted-foreground text-sm mb-1">Mon-Fri from 8am to 6pm</p>
+                                        <h3 className="font-bold text-base">Phone support</h3>
+                                        <p className="text-muted-foreground text-sm mb-1">Mon-Fri from 9am to 5pm</p>
                                         <a href="tel:+2348050758674" className="block text-lg font-bold hover:text-accent transition-colors">+234 805 075 8674</a>
                                         <a href="tel:+2348033824750" className="block text-lg font-bold hover:text-accent transition-colors">+234 803 382 4750</a>
                                     </div>
@@ -66,7 +65,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-base">Email Support</h3>
-                                        <p className="text-muted-foreground text-sm mb-1">We respond within 24 hours</p>
+                                        <p className="text-muted-foreground text-sm mb-1">We aim to respond within 24 hours</p>
                                         <a href="mailto:info@ayoolaproperty.com" className="block font-medium hover:text-accent transition-colors">info@ayoolaproperty.com</a>
                                     </div>
                                 </div>
@@ -78,10 +77,10 @@ export default function ContactPage() {
                                     <div>
                                         <h3 className="font-bold text-base">Visit Our Office</h3>
                                         <p className="text-muted-foreground text-sm">
-                                            123 Luxury Lane, Victoria Island,<br />
-                                            Lagos, Nigeria
+                                            1st Floor, Theodolite House, 54, New State Hospital Road, <br />
+                                            Off Ring Road, Ibadan, Oyo State, Nigeria.
                                         </p>
-                                        <a href="https://www.google.com/maps/search/?api=1&query=123+Luxury+Lane,+Victoria+Island,+Lagos,+Nigeria" target="_blank" rel="noopener noreferrer" className="text-sm text-accent font-semibold mt-2 inline-flex items-center hover:underline">
+                                        <a href="https://www.google.com/maps/search/?api=1&query=Theodolite+House,+54,+New+State+Hospital+Road,+Off+Ring+Road,+Ibadan,+Oyo+State,+Nigeria" target="_blank" rel="noopener noreferrer" className="text-sm text-accent font-semibold mt-2 inline-flex items-center hover:underline">
                                             Get Directions <ArrowRight size={14} className="ml-1" />
                                         </a>
                                     </div>
@@ -107,7 +106,7 @@ export default function ContactPage() {
                     <div className="lg:col-span-7">
                         <div className="bg-white dark:bg-card p-8 md:p-10 rounded-2xl shadow-xl border border-border h-full">
                             <h2 className="text-2xl font-bold text-primary dark:text-foreground mb-2">Send us a Message</h2>
-                            <p className="text-muted-foreground mb-8">Fill out the form below and an agent will be in touch shortly.</p>
+                            <p className="text-muted-foreground mb-8">Complete the form below and our team will respond as soon as possible..</p>
 
                             <Suspense fallback={<div className="h-64 flex items-center justify-center">Loading form...</div>}>
                                 <ContactForm />
@@ -122,11 +121,11 @@ export default function ContactPage() {
                     <div className="grid md:grid-cols-2 gap-6 text-left">
                         <div className="bg-white dark:bg-card p-6 rounded-xl border border-border shadow-sm">
                             <h4 className="font-bold mb-2 flex items-center gap-2 text-foreground"><Clock size={16} className="text-accent" /> What are your inspection times?</h4>
-                            <p className="text-sm text-muted-foreground">Inspections are typically scheduled between 9 AM and 5 PM, Monday through Saturday. Special arrangements can be made for Sundays.</p>
+                            <p className="text-sm text-muted-foreground">Inspections are typically scheduled between 9 AM and 5 PM, Monday through Saturday. inspections outside these hours can be arranged through prior agreements.</p>
                         </div>
                         <div className="bg-white dark:bg-card p-6 rounded-xl border border-border shadow-sm">
-                            <h4 className="font-bold mb-2 flex items-center gap-2 text-foreground"><MapPin size={16} className="text-accent" /> Do you cover areas outside Lagos?</h4>
-                            <p className="text-sm text-muted-foreground">Our primary focus is Lagos Island and Mainland, but we handle select premium properties in Abuja and Port Harcourt.</p>
+                            <h4 className="font-bold mb-2 flex items-center gap-2 text-foreground"><MapPin size={16} className="text-accent" /> Do you cover areas outside Ibadan?</h4>
+                            <p className="text-sm text-muted-foreground">Our primary area of operation is Ibadan and surrounding areas; service in Lagos and other locations may be considered subject to availability.</p>
                         </div>
                     </div>
                 </div>

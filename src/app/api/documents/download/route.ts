@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Security Check: Ensure URL is from Cloudinary
-    if (!fileUrl.includes("res.cloudinary.com")) {
+    if (!fileUrl.includes("cloudinary.com")) {
         console.error("Invalid file source blocked:", fileUrl);
         return new NextResponse(`Invalid file source: ${fileUrl}`, { status: 403 });
     }
@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
             }
         });
         if (!response.ok) {
+            console.error(`Cloudinary Fetch Failed: ${response.status} ${response.statusText} for URL: ${fileUrl}`);
             throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
         }
 

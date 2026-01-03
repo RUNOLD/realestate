@@ -34,7 +34,7 @@ export function SearchFilter() {
                         <div className="relative group">
                             <input
                                 type="text"
-                                placeholder="E.g. Lekki, Ikoyi, V.I."
+                                placeholder="E.g. Bodija, Akala Express, Jericho"
                                 className="w-full pl-4 pr-4 py-3 bg-muted/30 dark:bg-muted/10 border-2 border-border/50 focus:border-primary/40 hover:bg-muted/40 rounded-xl outline-none transition-all font-bold text-foreground placeholder:text-muted-foreground"
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
@@ -53,7 +53,7 @@ export function SearchFilter() {
                                 value={type}
                                 onChange={(e) => setType(e.target.value)}
                             >
-                                <option value="" className="bg-background text-foreground">Any Type</option>
+                                <option value="" className="bg-background text-foreground">All Property Types</option>
                                 <option value="apartment" className="bg-background text-foreground">Apartment</option>
                                 <option value="house" className="bg-background text-foreground">House</option>
                                 <option value="villa" className="bg-background text-foreground">Villa</option>

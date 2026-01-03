@@ -26,10 +26,10 @@ export default function ServicesPage() {
                 </div>
                 <div className="relative z-10 container mx-auto px-4 text-center">
                     <h1 className="text-4xl md:text-6xl font-serif font-bold text-white mb-6">
-                        Our Expertise
+                        Our Services
                     </h1>
                     <p className="text-slate-300 max-w-2xl mx-auto text-lg md:text-xl font-light">
-                        Comprehensive solutions for every stage of your real estate journey. From breaking ground to handing over keys.
+                        Professional real estate services covering property sourcing, management, sales, development support and tenant coordination. We are designed to support property owners, investors and tenants.
                     </p>
                 </div>
             </div>
@@ -45,20 +45,24 @@ export default function ServicesPage() {
                         </div>
                         <h2 className="text-3xl font-serif font-bold text-slate-900 dark:text-foreground mb-4">Property Management</h2>
                         <p className="text-slate-600 dark:text-muted-foreground text-lg leading-relaxed mb-6">
-                            Maximize your ROI without the headache. We handle the day-to-day operations of your asset, ensuring high occupancy rates and satisfied tenants.
+                            Professional management of residential and commercial properties focused on protecting your asset, optimizing returns and ensuring smooth day-to-day operations.
                         </p>
                         <ul className="space-y-3 mb-8">
                             <li className="flex items-start gap-3 text-slate-700 dark:text-muted-foreground">
                                 <CheckCircle2 className="w-5 h-5 text-accent mt-0.5" />
-                                <span>Tenant screening and placement</span>
+                                <span>TENANT SCREENING AND PLACEMENT</span>
                             </li>
                             <li className="flex items-start gap-3 text-slate-700 dark:text-muted-foreground">
                                 <CheckCircle2 className="w-5 h-5 text-accent mt-0.5" />
-                                <span>Rent collection and financial reporting</span>
+                                <span>RENT COLLECTION AND FINANCIAL REPORTING</span>
                             </li>
                             <li className="flex items-start gap-3 text-slate-700 dark:text-muted-foreground">
                                 <CheckCircle2 className="w-5 h-5 text-accent mt-0.5" />
-                                <span>Routine maintenance and emergency repairs</span>
+                                <span>ROUTINE MAINTENANCE AND EMERGENCY REPAIRS</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-slate-700 dark:text-muted-foreground">
+                                <CheckCircle2 className="w-5 h-5 text-accent mt-0.5" />
+                                <span>PROPERTY INSPECTIONS</span>
                             </li>
                         </ul>
                         <Link href="/contact" className="text-primary font-semibold hover:text-accent inline-flex items-center group">
@@ -89,20 +93,20 @@ export default function ServicesPage() {
                         </div>
                         <h2 className="text-3xl font-serif font-bold text-slate-900 dark:text-foreground mb-4">Property Sourcing</h2>
                         <p className="text-slate-600 dark:text-muted-foreground text-lg leading-relaxed mb-6">
-                            Finding the right investment requires local knowledge and due diligence. We scour the market to find land and properties that match your financial goals.
+                            Sourcing the right property requires strong local knowledge and thorough due diligence. We identify land and properties that align with your investment objectives and risk profile.
                         </p>
                         <ul className="space-y-3 mb-8">
                             <li className="flex items-start gap-3 text-slate-700 dark:text-muted-foreground">
                                 <CheckCircle2 className="w-5 h-5 text-accent mt-0.5" />
-                                <span>Off-market opportunities</span>
+                                <span>OFF-MARKET OPPORTUNITIES</span>
                             </li>
                             <li className="flex items-start gap-3 text-slate-700 dark:text-muted-foreground">
                                 <CheckCircle2 className="w-5 h-5 text-accent mt-0.5" />
-                                <span>Legal verification and title search</span>
+                                <span>LEGAL VERIFICATION AND TITLE SEARCH</span>
                             </li>
                             <li className="flex items-start gap-3 text-slate-700 dark:text-muted-foreground">
                                 <CheckCircle2 className="w-5 h-5 text-accent mt-0.5" />
-                                <span>Negotiation and closing support</span>
+                                <span>NEGOTIATION AND CLOSING SUPPORT</span>
                             </li>
                         </ul>
                         <Link href="/contact" className="text-primary font-semibold hover:text-accent inline-flex items-center group">
@@ -119,24 +123,24 @@ export default function ServicesPage() {
                         </div>
                         <h2 className="text-3xl font-serif font-bold text-slate-900 dark:text-foreground mb-4">Building Materials Supply</h2>
                         <p className="text-slate-600 dark:text-muted-foreground text-lg leading-relaxed mb-6">
-                            Quality construction starts with quality materials. We source and deliver authentic building supplies directly to your site, eliminating the risk of substandard products.
+                            We source and supply quality construction materials for building and renovation projects, ensuring reliability, proper specifications and timely site delivery.
                         </p>
                         <ul className="space-y-3 mb-8">
                             <li className="flex items-start gap-3 text-slate-700 dark:text-muted-foreground">
                                 <CheckCircle2 className="w-5 h-5 text-accent mt-0.5" />
-                                <span>Direct-from-manufacturer pricing</span>
+                                <span>DIRECT-FROM-MANUFACTURER PRICING</span>
                             </li>
                             <li className="flex items-start gap-3 text-slate-700 dark:text-muted-foreground">
                                 <CheckCircle2 className="w-5 h-5 text-accent mt-0.5" />
-                                <span>Logistics and site delivery</span>
+                                <span>LOGISTICS AND SITE DELIVERY</span>
                             </li>
                             <li className="flex items-start gap-3 text-slate-700 dark:text-muted-foreground">
                                 <CheckCircle2 className="w-5 h-5 text-accent mt-0.5" />
-                                <span>Quality assurance checks</span>
+                                <span>QUALITY ASSURANCE CHECKS</span>
                             </li>
                         </ul>
                         <Link href="/contact" className="text-primary font-semibold hover:text-accent inline-flex items-center group">
-                            Order Materials <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                            Request Materials Supply <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </div>
                     <div className="order-1 lg:order-2 h-[400px] rounded-2xl overflow-hidden shadow-xl">
@@ -153,18 +157,18 @@ export default function ServicesPage() {
             <section className="bg-slate-50 dark:bg-muted/5 py-24 px-4 sm:px-6 lg:px-8">
                 <div className="container mx-auto">
                     <div className="text-center max-w-3xl mx-auto mb-16">
-                        <h2 className="text-3xl font-serif font-bold text-slate-900 mb-4">How We Work</h2>
+                        <h2 className="text-3xl font-serif font-bold text-slate-900 mb-4">How We Deliver Our Services</h2>
                         <p className="text-slate-600">
-                            Transparent, efficient, and tailored to your needs. Here is what to expect when you partner with Ayoola.
+                            A clear, transparent and efficient process designed to deliver the right outcomes for our clients.
                         </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                         {[
-                            { step: "01", title: "Consultation", desc: "We discuss your goals, budget, and specific requirements." },
-                            { step: "02", title: "Strategy", desc: "We design a tailored plan, whether it's sourcing a property or managing one." },
-                            { step: "03", title: "Execution", desc: "Our team goes to work, handling logistics, negotiations, and operations." },
-                            { step: "04", title: "Reporting", desc: "You receive detailed updates and transparent reports on progress." }
+                            { step: "01", title: "Consultation", desc: "We take time to understand your objectives, budget and property requirements." },
+                            { step: "02", title: "Strategy & planning", desc: "We develop a structured plan aligned with your goals, whether for property sourcing, management or development support." },
+                            { step: "03", title: "Execution", desc: "We implement the agreed strategy, managing coordination, negotiations and day-to-day operations." },
+                            { step: "04", title: "Reporting & Updates", desc: "We provide regular updates and clear reporting, keeping you informed at every stage." }
                         ].map((item, idx) => (
                             <div key={idx} className="bg-white dark:bg-card p-8 rounded-xl border border-slate-100 dark:border-border shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
                                 <span className="text-6xl font-bold text-slate-100 dark:text-muted/10 absolute -top-4 -right-4 select-none group-hover:text-accent/10 transition-colors">
@@ -183,16 +187,16 @@ export default function ServicesPage() {
             {/* 4. CTA Section */}
             <section className="py-20 bg-primary dark:bg-card text-white dark:text-foreground">
                 <div className="container mx-auto px-4 text-center">
-                    <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Need a Custom Solution?</h2>
+                    <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Need a Tailored Property Solution?</h2>
                     <p className="text-primary-foreground/80 dark:text-muted-foreground max-w-2xl mx-auto mb-8 text-lg">
-                        Every real estate journey is unique. Contact us today to discuss your specific project requirements.
+                        Every property requirement is different, speak with our team to discuss a solution tailored to your needs.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link
                             href="/contact"
                             className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-slate-900 shadow hover:bg-slate-100 transition-colors"
                         >
-                            <Phone className="mr-2 h-4 w-4" /> Book a Consultation
+                            <Phone className="mr-2 h-4 w-4" /> Schedule a Consultation
                         </Link>
                     </div>
                 </div>
