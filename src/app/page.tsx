@@ -221,7 +221,7 @@ export default async function Home() {
                 Discover the perfect location for your next chapter. From the vibrant energy of the mainland to the coastal luxury of the island.
               </p>
             </div>
-            <Link href="/properties" className="group flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:bg-accent transition-all">
+            <Link href="/properties" className="group flex items-center gap-2 px-6 py-3 bg-primary text-white dark:bg-accent dark:text-accent-foreground rounded-full font-bold hover:opacity-90 transition-all">
               Discover All Areas <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -260,7 +260,7 @@ export default async function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/20 to-transparent"></div>
 
                 <div className="absolute top-4 left-4 z-10">
-                  <span className="bg-white/90 backdrop-blur-sm text-primary px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-tighter">
+                  <span className="bg-white/90 backdrop-blur-sm text-slate-900 px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-tighter">
                     {area.tag}
                   </span>
                 </div>

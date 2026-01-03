@@ -14,8 +14,10 @@ export function Hero() {
                     className="object-cover"
                     priority
                 />
-                <div className="absolute inset-0 bg-primary/60 mix-blend-multiply"></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-primary/60 dark:bg-black/80 mix-blend-multiply"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90"></div>
+                {/* Extra darkening for dark mode to ensure text contrast */}
+                <div className="absolute inset-0 hidden dark:block bg-black/40"></div>
             </div>
 
             {/* Content */}
