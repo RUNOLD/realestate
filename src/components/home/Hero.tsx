@@ -3,7 +3,7 @@ import NextImage from "next/image";
 
 export function Hero() {
     return (
-        <div className="relative bg-primary h-[80vh] min-h-[600px] max-h-[900px] flex items-center justify-center overflow-hidden">
+        <div className="relative bg-primary min-h-[600px] md:h-[80vh] md:max-h-[900px] flex items-center justify-center overflow-hidden">
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
                 {/* Placeholder for high-quality hero image */}
@@ -21,7 +21,7 @@ export function Hero() {
             </div>
 
             {/* Content */}
-            <div className="relative z-20 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto -mt-20">
+            <div className="relative z-20 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto py-20 md:py-0 md:-mt-20">
                 <span className="inline-block py-1 px-3 rounded-full bg-accent/20 text-accent border border-accent/20 text-sm font-semibold tracking-wide uppercase mb-6 backdrop-blur-sm">
                     Premium Real Estate Services
                 </span>

@@ -22,7 +22,7 @@ export function SearchFilter() {
     };
 
     return (
-        <div className="relative z-30 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 sm:-mt-32 pointer-events-none">
+        <div className="relative z-30 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 md:-mt-24 sm:-mt-32 pointer-events-none">
             <div className="bg-card/95 backdrop-blur-md rounded-2xl shadow-2xl border border-border/50 p-6 pointer-events-auto">
                 <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
 
