@@ -19,10 +19,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogPaymentModal } from "@/components/tenant/LogPaymentModal";
 import { useTransition } from "react";
-import { sendTenantReminder, suspendTenantPortal, blacklistTenant } from "@/actions/admin";
-import { terminateLease } from "@/actions/property";
+import { sendTenantReminder, suspendTenantPortal } from "@/actions/admin";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { BlacklistModal } from "./BlacklistModal";
+import { TerminateLeaseModal } from "./TerminateLeaseModal";
 
 interface TenantAdminQuickActionsProps {
     tenantId: string;
@@ -77,37 +78,17 @@ export function TenantAdminQuickActions({ tenantId, hasLease, leaseId }: TenantA
                         <span>Suspend Tenant Portal</span>
                     </DropdownMenuItem>
 
-                    {hasLease && (
-                        <DropdownMenuItem
-                            className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer"
-                            onSelect={() => {
-                                if (confirm("Are you sure you want to terminate this lease?")) {
-                                    if (leaseId) {
-                                        handleAction(() => terminateLease(leaseId), "Lease terminated");
-                                    } else {
-                                        toast.error("Lease ID not found");
-                                    }
-                                }
-                            }}
-                        >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Terminate Lease</span>
-                        </DropdownMenuItem>
+                    {hasLease && leaseId && (
+                        <div className="px-1 py-1">
+                            <TerminateLeaseModal leaseId={leaseId} />
+                        </div>
                     )}
 
                     <DropdownMenuSeparator />
 
-                    <DropdownMenuItem
-                        className="text-destructive focus:bg-destructive/10 cursor-pointer"
-                        onSelect={() => {
-                            if (confirm("Blacklist this tenant? This is an internal flag.")) {
-                                handleAction(() => blacklistTenant(tenantId), "Tenant blacklisted");
-                            }
-                        }}
-                    >
-                        <UserX className="mr-2 h-4 w-4" />
-                        <span>Blacklist (Internal)</span>
-                    </DropdownMenuItem>
+                    <div className="px-1 py-1">
+                        <BlacklistModal tenantId={tenantId} />
+                    </div>
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>

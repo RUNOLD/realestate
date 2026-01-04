@@ -55,15 +55,18 @@ export async function suspendTenantPortal(tenantId: string) {
     }
 }
 
-export async function blacklistTenant(tenantId: string) {
+export async function blacklistTenant(tenantId: string, reason?: string) {
     const session = await auth();
     if ((session?.user as any)?.role !== 'ADMIN') return { error: "Unauthorized" };
 
     try {
         // Implement blacklisting logic (e.g., adding to a Blacklist table or flag)
-        await prisma.user.update({
+        await (prisma.user as any).update({
             where: { id: tenantId },
-            data: { role: 'TENANT' } // Or similar, maybe a new 'BLACKLISTED' status?
+            data: {
+                role: 'TENANT', // Ensure they are marked as tenant
+                blacklistReason: reason || "No reason provided"
+            }
         });
 
         if (!session?.user) return { error: "Unauthorized" };
@@ -72,7 +75,7 @@ export async function blacklistTenant(tenantId: string) {
             ActionType.UPDATE,
             EntityType.USER,
             tenantId,
-            { action: "Blacklisted Tenant" }
+            { action: "Blacklisted Tenant", reason }
         );
 
         revalidatePath(`/admin/users/${tenantId}`);

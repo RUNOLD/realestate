@@ -16,7 +16,7 @@ export async function createPayment(prevState: any, formData: FormData) {
         reference: formData.get("reference"),
         method: formData.get("method"),
         tenantId: formData.get("tenantId"),
-        category: formData.get("category"),
+        category: formData.getAll("category"), // Capture all selected categories
     };
 
     const validatedFields = CreatePaymentSchema.safeParse(rawData);
@@ -39,15 +39,22 @@ export async function createPayment(prevState: any, formData: FormData) {
         const userRole = (session.user as any).role;
         const approvalStatus = userRole === 'STAFF' ? ApprovalStatus.PENDING_ADMIN : ApprovalStatus.APPROVED;
 
+        // Auto-resolve Property from Lease
+        const activeLease = await prisma.lease.findFirst({
+            where: { userId: tenantId, isActive: true },
+            select: { propertyId: true }
+        });
+
         const payment = await prisma.payment.create({
             data: {
                 amount,
                 reference,
                 method,
                 userId: tenantId,
+                propertyId: activeLease?.propertyId, // AUTOMATED RESOLUTION
                 status: 'SUCCESS',
                 approvalStatus,
-                category: category || 'RENT',
+                category: Array.isArray(category) ? category.join(", ") : (category || 'RENT'),
             }
         });
 
@@ -56,7 +63,7 @@ export async function createPayment(prevState: any, formData: FormData) {
             ActionType.CREATE,
             EntityType.PAYMENT,
             payment.id,
-            { amount, reference, approvalStatus }
+            { amount, reference, approvalStatus, propertyId: activeLease?.propertyId }
         );
 
         revalidatePath(`/admin/users/${tenantId}`);
@@ -96,12 +103,19 @@ export async function approvePayment(paymentId: string) {
 export async function verifyPayment(reference: string, amount: number, userId: string): Promise<{ success: boolean; error?: string }> {
     try {
         if (reference.startsWith('mock_')) {
+            // Auto-resolve Property from Lease
+            const activeLease = await prisma.lease.findFirst({
+                where: { userId: userId, isActive: true },
+                select: { propertyId: true }
+            });
+
             await prisma.payment.create({
                 data: {
                     amount: amount,
                     reference: reference,
                     status: 'SUCCESS',
                     userId: userId,
+                    propertyId: activeLease?.propertyId, // AUTOMATED RESOLUTION
                     method: 'Paystack (Mock)',
                     approvalStatus: ApprovalStatus.PENDING_ADMIN
                 }
@@ -136,12 +150,19 @@ export async function verifyPayment(reference: string, amount: number, userId: s
 
             const amountInNaira = data.data.amount / 100;
 
+            // Auto-resolve Property from Lease
+            const activeLease = await prisma.lease.findFirst({
+                where: { userId: userId, isActive: true },
+                select: { propertyId: true }
+            });
+
             await prisma.payment.create({
                 data: {
                     amount: amountInNaira,
                     reference: reference,
                     status: 'SUCCESS',
                     userId: userId,
+                    propertyId: activeLease?.propertyId, // AUTOMATED RESOLUTION
                     method: data.data.channel || 'Paystack',
                     approvalStatus: ApprovalStatus.PENDING_ADMIN
                 }

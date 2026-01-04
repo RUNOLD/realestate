@@ -176,7 +176,7 @@ export default async function EditPropertyPage(props: { params: Promise<{ id: st
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-6">
                                         <div className="space-y-2">
                                             <label htmlFor="serviceCharge" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Service Charge (Annual)</label>
                                             <div className="relative">
@@ -200,6 +200,20 @@ export default async function EditPropertyPage(props: { params: Promise<{ id: st
                                                     type="number"
                                                     defaultValue={property.cautionDeposit || 0}
                                                     className="pl-8 h-12 bg-muted/50 border-transparent focus:border-primary focus:bg-background transition-all text-foreground"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label htmlFor="managementFee" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Mgt Fee (%)</label>
+                                            <div className="relative">
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">%</div>
+                                                <Input
+                                                    id="managementFee"
+                                                    name="managementFee"
+                                                    type="number"
+                                                    step="0.1"
+                                                    defaultValue={(property as any).managementFee || 10}
+                                                    className="pr-8 h-12 bg-muted/50 border-transparent focus:border-primary focus:bg-background transition-all text-foreground"
                                                 />
                                             </div>
                                         </div>

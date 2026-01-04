@@ -140,7 +140,12 @@ export default async function UserDetailPage(props: PageProps) {
             ) : (
                 <div className="space-y-6">
                     {/* Snapshot */}
-                    {financials && <TenantSnapshot financials={financials as any} />}
+                    {financials && (
+                        <TenantSnapshot
+                            financials={financials as any}
+                            blacklistReason={(user as any).blacklistReason}
+                        />
+                    )}
 
                     <Tabs defaultValue="overview" className="w-full">
                         <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 mb-6 space-x-6">

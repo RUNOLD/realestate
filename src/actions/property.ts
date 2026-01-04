@@ -34,7 +34,8 @@ export async function createLease(prevState: any, formData: FormData) {
                 rentAmount,
                 startDate,
                 endDate,
-                isActive: true
+                isActive: true,
+                billingCycle: 'YEARLY'
             }
         });
 
@@ -112,7 +113,7 @@ export async function updateRent(leaseId: string, newAmount: number, reason: str
     }
 }
 
-export async function terminateLease(leaseId: string) {
+export async function terminateLease(leaseId: string, terminationDate?: string) {
     const session = await auth();
     if (!session?.user?.id || (session.user as any).role !== 'ADMIN') return { error: "Unauthorized" };
 
@@ -125,11 +126,14 @@ export async function terminateLease(leaseId: string) {
         if (!lease) return { error: "Lease not found" };
 
         await prisma.$transaction([
-            prisma.lease.update({
+            (prisma.lease as any).update({
                 where: { id: leaseId },
-                data: { isActive: false }
+                data: {
+                    isActive: false,
+                    terminationDate: terminationDate ? new Date(terminationDate) : new Date()
+                }
             }),
-            prisma.property.update({
+            (prisma.property as any).update({
                 where: { id: lease.propertyId },
                 data: { status: 'AVAILABLE' }
             })
@@ -140,7 +144,7 @@ export async function terminateLease(leaseId: string) {
             ActionType.UPDATE,
             EntityType.LEASE,
             leaseId,
-            { details: "Lease Terminated", propertyId: lease.propertyId }
+            { details: "Lease Terminated", propertyId: lease.propertyId, terminationDate }
         );
 
         revalidatePath("/admin/properties");

@@ -139,16 +139,20 @@ export default async function PropertyDetailsPage(props: { params: Promise<{ id:
                             </div>
                             <CardContent className="p-6 space-y-4">
                                 <div className="flex justify-between text-sm py-3 border-b border-border/50">
-                                    <span className="text-muted-foreground font-medium">Property Type</span>
-                                    <span className="font-bold text-foreground">{property.type}</span>
+                                    <span className="text-muted-foreground font-medium">Service Charge</span>
+                                    <span className="font-bold text-foreground">₦{property.serviceCharge?.toLocaleString() || 0}</span>
                                 </div>
                                 <div className="flex justify-between text-sm py-3 border-b border-border/50">
-                                    <span className="text-muted-foreground font-medium">Listed On</span>
-                                    <span className="font-bold text-foreground">{property.createdAt.toLocaleDateString()}</span>
+                                    <span className="text-muted-foreground font-medium">Caution Fee</span>
+                                    <span className="font-bold text-foreground">₦{property.cautionDeposit?.toLocaleString() || 0}</span>
+                                </div>
+                                <div className="flex justify-between text-sm py-3 border-b border-border/50">
+                                    <span className="text-muted-foreground font-medium">Management Fee</span>
+                                    <span className="font-bold text-accent">{(property as any).managementFee || 10}%</span>
                                 </div>
                                 <div className="flex justify-between text-sm py-3">
                                     <span className="text-muted-foreground font-medium">Property ID</span>
-                                    <span className="font-mono text-xs bg-muted px-2 py-1 rounded text-foreground">{property.id.split('-')[0].toUpperCase()}...</span>
+                                    <span className="font-mono text-xs bg-muted px-2 py-1 rounded text-foreground">{property.uniqueId || 'N/A'}</span>
                                 </div>
                             </CardContent>
                         </Card>

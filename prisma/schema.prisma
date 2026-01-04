@@ -1,5 +1,3 @@
-// This usage of Prisma Schema is for PostgreSQL
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,13 +8,444 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// Enums
+model User {
+  id                      String                @id @default(cuid())
+  name                    String?
+  email                   String                @unique
+  phone                   String?
+  emailVerified           DateTime?
+  image                   String?
+  password                String?
+  resetToken              String?
+  resetTokenExpiry        DateTime?
+  role                    Role                  @default(USER)
+  status                  UserStatus            @default(ACTIVE)
+  blacklistReason         String?
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  nextOfKinName           String?
+  nextOfKinPhone          String?
+  employerName            String?
+  jobTitle                String?
+  isEmployed              Boolean               @default(false)
+  notificationPreferences Json?
+  accountName             String?
+  accountNumber           String?
+  bankName                String?
+  department              String?
+  hireDate                DateTime?
+  homeAddress             String?
+  salary                  Float?
+  uniqueId                String?               @unique
+  activityLogs            ActivityLog[]
+  contactSubmissions      ContactSubmission[]
+  documents               Document[]
+  landlordExpenses        LandlordExpense[]
+  landlordProfile         LandlordProfile?
+  leases                  Lease[]
+  monthlyMetrics          MonthlyMetric[]
+  notifications           Notification[]
+  payments                Payment[]
+  payouts                 Payout[]
+  managedProperties       Property[]            @relation("PropertyManager")
+  ownedProperties         Property[]            @relation("PropertyOwner")
+  rentCycles              RentCycle[]
+  rentModifications       RentModificationLog[] @relation("AdminModifier")
+  tenantProfile           TenantProfile?
+  claimedTickets          Ticket[]              @relation("TicketClaimant")
+  landlordTickets         Ticket[]              @relation("TicketLandlord")
+  tickets                 Ticket[]
+  comments                TicketComment[]
+  utilityTransactions     UtilityTransaction[]
+}
+
+model Property {
+  id                  String               @id @default(cuid())
+  title               String
+  description         String
+  location            String
+  price               Float
+  status              PropertyStatus       @default(AVAILABLE)
+  program             String?
+  type                String?
+  images              String[]
+  features            String[]
+  managerId           String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  bathrooms           Int?
+  bedrooms            Int?
+  sqft                Int?
+  isMultiUnit         Boolean              @default(false)
+  ownerId             String?
+  parentId            String?
+  unitNumber          String?
+  uniqueId            String?              @unique
+  cautionDeposit      Float?               @default(0)
+  serviceCharge       Float?               @default(0)
+  managementFee       Float                @default(10)
+  expenses            LandlordExpense[]
+  leases              Lease[]
+  monthlyMetrics      MonthlyMetric[]
+  payments            Payment[]
+  payouts             Payout[]             @relation("PropertyPayouts")
+  manager             User?                @relation("PropertyManager", fields: [managerId], references: [id])
+  owner               User?                @relation("PropertyOwner", fields: [ownerId], references: [id])
+  parent              Property?            @relation("Units", fields: [parentId], references: [id])
+  units               Property[]           @relation("Units")
+  tickets             Ticket[]
+  unitsTickets        Ticket[]             @relation("TicketUnit")
+  utilityTransactions UtilityTransaction[]
+
+  @@index([location])
+  @@index([type])
+}
+
+model Lease {
+  id           String                @id @default(cuid())
+  startDate    DateTime
+  endDate      DateTime?
+  rentAmount   Float
+  isActive     Boolean               @default(true)
+  terminationDate DateTime?
+  userId       String
+  propertyId   String
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  billingCycle BillingCycle          @default(MONTHLY)
+  property     Property              @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user         User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rentLogs     RentModificationLog[]
+}
+
+model Ticket {
+  id                       String                   @id @default(cuid())
+  subject                  String
+  description              String?
+  status                   TicketStatus             @default(PENDING)
+  priority                 TicketPriority           @default(MEDIUM)
+  category                 String
+  images                   String[]
+  userId                   String
+  assignedToId             String?
+  requiresApproval         Boolean                  @default(false)
+  approvalStatus           ApprovalStatus           @default(APPROVED)
+  approvedById             String?
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime                 @updatedAt
+  claimedById              String?
+  costActual               Decimal?                 @db.Decimal(10, 2)
+  costEstimated            Decimal?                 @db.Decimal(10, 2)
+  resolutionDate           DateTime?
+  resolutionNote           String?
+  resolvedBy               String?
+  landlordId               String?
+  propertyId               String?
+  rentCycleId              String?
+  unitId                   String?
+  artisanName              String?
+  artisanPhone             String?
+  payerType                TicketPayerType?         @default(LANDLORD)
+  tenantConfirmationStatus TenantConfirmationStatus @default(PENDING)
+  expense                  LandlordExpense?
+  notifications            Notification[]
+  claimant                 User?                    @relation("TicketClaimant", fields: [claimedById], references: [id])
+  landlord                 User?                    @relation("TicketLandlord", fields: [landlordId], references: [id])
+  property                 Property?                @relation(fields: [propertyId], references: [id])
+  rentCycle                RentCycle?               @relation(fields: [rentCycleId], references: [id])
+  unit                     Property?                @relation("TicketUnit", fields: [unitId], references: [id])
+  user                     User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments                 TicketComment[]
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String?
+  link      String?
+  isRead    Boolean          @default(false)
+  ticketId  String?
+  createdAt DateTime         @default(now())
+  ticket    Ticket?          @relation(fields: [ticketId], references: [id])
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TicketComment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  ticketId  String
+  userId    String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id             String         @id @default(cuid())
+  amount         Float
+  currency       String         @default("NGN")
+  reference      String         @unique
+  method         String
+  status         String
+  approvalStatus ApprovalStatus @default(APPROVED)
+  userId         String
+  createdAt      DateTime       @default(now())
+  propertyId     String?
+  category       String         @default("RENT")
+  property       Property?      @relation(fields: [propertyId], references: [id])
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Material {
+  id           String   @id @default(cuid())
+  name         String
+  category     String
+  description  String?
+  price        Float?
+  quantity     Int      @default(0)
+  minThreshold Int      @default(5)
+  inStock      Boolean  @default(true)
+  location     String?
+  images       String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  uniqueId     String?  @unique
+}
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  message   String
+  status    String   @default("UNREAD")
+  userId    String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  type      String
+  category  String?
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ActivityLog {
+  id            String   @id @default(cuid())
+  action        String
+  entity        String
+  entityId      String?
+  details       String?
+  userId        String?
+  createdAt     DateTime @default(now())
+  ipAddress     String?
+  newState      String?
+  previousState String?
+  userAgent     String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UtilityTransaction {
+  id          String    @id @default(cuid())
+  reference   String    @unique
+  utilityType String
+  meterNumber String
+  token       String?
+  amount      Float
+  commission  Float     @default(0)
+  totalPaid   Float
+  status      String
+  provider    String
+  userId      String
+  propertyId  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  property    Property? @relation(fields: [propertyId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+}
+
+model UtilityProvider {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  isActive   Boolean  @default(true)
+  commission Float    @default(100)
+  minAmount  Float    @default(1000)
+  maxAmount  Float    @default(50000)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model RentModificationLog {
+  id             String   @id @default(cuid())
+  leaseId        String
+  previousAmount Float
+  newAmount      Float
+  reason         String?
+  adminId        String
+  createdAt      DateTime @default(now())
+  admin          User     @relation("AdminModifier", fields: [adminId], references: [id])
+  lease          Lease    @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+}
+
+model TenantProfile {
+  id                         String    @id @default(cuid())
+  userId                     String    @unique
+  nationality                String?
+  maritalStatus              String?
+  gender                     String?
+  dateOfBirth                DateTime?
+  spouseName                 String?
+  spouseWork                 String?
+  residentialAddress         String?
+  nearestBusStop             String?
+  homeTownAddress            String?
+  stateOfOrigin              String?
+  lga                        String?
+  occupation                 String?
+  placeOfWork                String?
+  positionHeld               String?
+  placeOfWorship             String?
+  bankDetails                String?
+  meansOfIdentification      String?
+  idNumber                   String?
+  idIssueDate                DateTime?
+  idExpiryDate               DateTime?
+  companyName                String?
+  incorporationDate          DateTime?
+  certificateNumber          String?
+  businessType               String?
+  banker                     String?
+  corporateEmail             String?
+  corporateWebsite           String?
+  contactPersonName          String?
+  contactPersonPhone         String?
+  corporateAddress           String?
+  branchOffice               String?
+  propertyTypeRequired       String?
+  locationRequired           String?
+  acceptOtherLocation        Boolean?
+  businessDescription        String?
+  tenancyNature              String?
+  commencementDate           DateTime?
+  budgetPerAnnum             String?
+  leasePreference            String?
+  leaseYears                 Int?
+  serviceChargeAffordability Boolean?
+  cautionDepositAgreement    Boolean?
+  lastAddress                String?
+  lastSize                   String?
+  lastRentPaid               String?
+  periodOfPayment            String?
+  expirationDate             DateTime?
+  lastLandlordNameAddress    String?
+  reasonForLeaving           String?
+  guarantors                 Json?
+  agreedToTerms              Boolean   @default(false)
+  signatureUrl               String?
+  updatedAt                  DateTime  @updatedAt
+  user                       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LandlordProfile {
+  id                     String    @id @default(cuid())
+  userId                 String    @unique
+  landlordType           String?
+  idType                 String?
+  idNumber               String?
+  residentialAddress     String?
+  relationshipToProperty String?
+  proofOfAuthorityUrl    String?
+  bankName               String?
+  accountName            String?
+  accountNumber          String?
+  preferredContactMethod String?
+  isConsentGiven         Boolean   @default(false)
+  consentDate            DateTime?
+  updatedAt              DateTime  @updatedAt
+  user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LandlordExpense {
+  id          String        @id @default(cuid())
+  amount      Float
+  description String
+  date        DateTime      @default(now())
+  status      ExpenseStatus @default(PENDING)
+  ticketId    String?       @unique
+  propertyId  String
+  landlordId  String
+  payoutId    String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  landlord    User          @relation(fields: [landlordId], references: [id])
+  payout      Payout?       @relation(fields: [payoutId], references: [id])
+  property    Property      @relation(fields: [propertyId], references: [id])
+  ticket      Ticket?       @relation(fields: [ticketId], references: [id])
+}
+
+model Payout {
+  id              String            @id @default(cuid())
+  reference       String            @unique
+  landlordId      String
+  amount          Float
+  periodStart     DateTime
+  periodEnd       DateTime
+  description     String?
+  status          String            @default("PENDING")
+  expenseSnapshot Json?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  rentCycleId     String?
+  propertyId      String?
+  expenses        LandlordExpense[]
+  landlord        User              @relation(fields: [landlordId], references: [id])
+  property        Property?         @relation("PropertyPayouts", fields: [propertyId], references: [id])
+  rentCycle       RentCycle?        @relation(fields: [rentCycleId], references: [id])
+}
+
+model RentCycle {
+  id         String   @id @default(cuid())
+  startDate  DateTime
+  endDate    DateTime
+  status     String   @default("OPEN")
+  landlordId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  payouts    Payout[]
+  landlord   User     @relation(fields: [landlordId], references: [id])
+  tickets    Ticket[]
+}
+
+model MonthlyMetric {
+  id                 String    @id @default(cuid())
+  month              DateTime
+  landlordId         String?
+  propertyId         String?
+  totalRentCollected Float     @default(0)
+  occupancyRate      Float     @default(0)
+  activeTickets      Int       @default(0)
+  churnRate          Float     @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  landlord           User?     @relation(fields: [landlordId], references: [id])
+  property           Property? @relation(fields: [propertyId], references: [id])
+
+  @@unique([month, landlordId, propertyId])
+}
+
 enum Role {
   ADMIN
   STAFF
   TENANT
-  LANDLORD // Added
-  USER // Fallback/Default
+  USER
+  LANDLORD
 }
 
 enum UserStatus {
@@ -34,12 +463,12 @@ enum PropertyStatus {
 }
 
 enum TicketStatus {
-  PENDING
+  OPEN
   IN_PROGRESS
-  AWAITING_CONFIRMATION
   RESOLVED
   CLOSED
-  OPEN // Deprecated, kept for safety until migration complete
+  PENDING
+  AWAITING_CONFIRMATION
 }
 
 enum TicketPriority {
@@ -69,203 +498,10 @@ enum NotificationType {
   ALERT
 }
 
-model User {
-  id               String     @id @default(cuid())
-  uniqueId         String?    @unique // APMSxxxx, APMxxxx
-  name             String?
-  email            String     @unique
-  phone            String? // New: For Login
-  emailVerified    DateTime?
-  image            String?
-  password         String?
-  resetToken       String?
-  resetTokenExpiry DateTime?
-  role             Role       @default(USER)
-  status           UserStatus @default(ACTIVE) // Approval flow
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Tenant Specifics
-  nextOfKinName  String?
-  nextOfKinPhone String?
-  employerName   String?
-  jobTitle       String?
-  isEmployed     Boolean @default(false)
-
-  // Relations
-  tickets                 Ticket[]
-  leases                  Lease[]
-  payments                Payment[]
-  activityLogs            ActivityLog[]
-  contactSubmissions      ContactSubmission[]
-  documents               Document[]
-  comments                TicketComment[]
-  managedProperties       Property[]            @relation("PropertyManager") // Staff managing properties
-  ownedProperties         Property[]            @relation("PropertyOwner") // Landlord's properties
-  rentModifications       RentModificationLog[] @relation("AdminModifier")
-  claimedTickets          Ticket[]              @relation("TicketClaimant")
-  landlordTickets         Ticket[]              @relation("TicketLandlord") // Tickets where this user is the landlord
-  landlordExpenses        LandlordExpense[]
-  payouts                 Payout[]
-  notifications           Notification[]
-  rentCycles              RentCycle[]
-  monthlyMetrics          MonthlyMetric[]
-  notificationPreferences Json? // { email: boolean, sms: boolean, marketing: boolean }
-
-  // Staff / HR Details
-  department    String?
-  salary        Float?
-  hireDate      DateTime?
-  homeAddress   String?
-  bankName      String?
-  accountNumber String?
-  accountName   String?
-
-  tenantProfile       TenantProfile?
-  landlordProfile     LandlordProfile?
-  utilityTransactions UtilityTransaction[]
-}
-
-model Property {
-  id          String         @id @default(cuid())
-  uniqueId    String?        @unique // APMSIBxxxx
-  title       String
-  description String
-  location    String
-  price       Float
-  status      PropertyStatus @default(AVAILABLE)
-  program     String? // e.g. "Lagos HOMS", "Rent-to-Own"
-  type        String? // e.g. "Apartment", "House"
-
-  images   String[] // Postgres Array for images
-  features String[] // Postgres Array for features
-
-  bedrooms  Int?
-  bathrooms Int?
-  sqft      Int?
-
-  serviceCharge  Float? @default(0)
-  cautionDeposit Float? @default(0)
-
-  // Relations
-  leases    Lease[]
-  tickets   Ticket[]
-  expenses  LandlordExpense[]
-  payments  Payment[] // Linked payments for landlord visibility
-  managerId String? // Staff responsible
-  manager   User?     @relation("PropertyManager", fields: [managerId], references: [id])
-
-  ownerId String? // Making optional initially to facilitate migration of existing data, but will enforce in app logic
-  owner   User?   @relation("PropertyOwner", fields: [ownerId], references: [id])
-
-  // Multi-unit Support
-  isMultiUnit Boolean    @default(false)
-  parentId    String? // If this is a unit, link to the building
-  parent      Property?  @relation("Units", fields: [parentId], references: [id])
-  units       Property[] @relation("Units")
-  unitNumber  String? // e.g., "Flat 101"
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  utilityTransactions UtilityTransaction[]
-  monthlyMetrics      MonthlyMetric[]
-  unitsTickets        Ticket[] @relation("TicketUnit")
-
-  @@index([location])
-  @@index([type])
-}
-
 enum BillingCycle {
   MONTHLY
   QUARTERLY
   YEARLY
-}
-
-model Lease {
-  id           String       @id @default(cuid())
-  startDate    DateTime
-  endDate      DateTime? // Indefinite or fixed
-  rentAmount   Float
-  billingCycle BillingCycle @default(MONTHLY)
-  isActive     Boolean      @default(true)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  rentLogs RentModificationLog[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Ticket {
-  id          String         @id @default(cuid())
-  subject     String
-  description String?
-  status      TicketStatus   @default(PENDING)
-  priority    TicketPriority @default(MEDIUM)
-  category    String // Plumbing, Electrical, etc.
-
-  images String[] // Postgres Array
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  assignedToId String?
-  // assignedTo  User? ... (Future: Staff assignment)
-
-  claimedById String?
-  claimant    User?   @relation("TicketClaimant", fields: [claimedById], references: [id])
-
-  // Approval Workflow
-  requiresApproval Boolean        @default(false)
-  approvalStatus   ApprovalStatus @default(APPROVED) // Default approved unless requires approval
-  approvedById     String? // Admin who approved
-
-
-
-  // Repair-to-Settlement Links
-  propertyId       String? // Made optional for migration, but mandatory logic-wise
-  property         Property? @relation(fields: [propertyId], references: [id])
-  
-  landlordId       String?
-  landlord         User?     @relation("TicketLandlord", fields: [landlordId], references: [id])
-  
-  // New Gap Analysis Fields
-  unitId           String?
-  unit             Property? @relation("TicketUnit", fields: [unitId], references: [id])
-  
-  rentCycleId      String?
-  rentCycle        RentCycle? @relation(fields: [rentCycleId], references: [id])
-
-  expense          LandlordExpense?
-
-  comments TicketComment[]
-
-  notifications Notification[]
-
-  // Resolution Details (Maintenance 2.0)
-  resolutionNote String?
-  resolvedBy     String? // Name of staff/artisan (Legacy, use artisanName going forward)
-  
-  // -- Gap Analysis Fields --
-  artisanName    String?
-  artisanPhone   String?
-  payerType      TicketPayerType?          @default(LANDLORD) 
-  tenantConfirmationStatus TenantConfirmationStatus @default(PENDING)
-  // -------------------------
-
-  costEstimated  Decimal?  @db.Decimal(10, 2)
-  costActual     Decimal?  @db.Decimal(10, 2)
-  resolutionDate DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 enum TicketPayerType {
@@ -279,367 +515,9 @@ enum TenantConfirmationStatus {
   DISPUTED
 }
 
-model Notification {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  type    NotificationType
-  title   String
-  message String?
-  link    String? // e.g. /admin/tickets/id
-  isRead  Boolean          @default(false)
-
-  ticketId String?
-  ticket   Ticket? @relation(fields: [ticketId], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now())
-}
-
-model TicketComment {
-  id        String   @id @default(cuid())
-  content   String
-  createdAt DateTime @default(now())
-
-  ticketId String
-  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Payment {
-  id        String @id @default(cuid())
-  amount    Float
-  currency  String @default("NGN")
-  reference String @unique
-  method    String // 'Paystack', 'Transfer', 'Cash'
-  status    String // 'SUCCESS', 'PENDING', 'FAILED' (Simple string for API mapping)
-  category  String @default("RENT") // RENT, SERVICE_CHARGE, CAUTION_DEPOSIT, OTHER
-
-  approvalStatus ApprovalStatus @default(APPROVED) // If manual transfer, needs approval
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  propertyId String? // Make optional for existing payments
-  property   Property? @relation(fields: [propertyId], references: [id])
-
-  createdAt DateTime @default(now())
-}
-
-model Material {
-  id           String  @id @default(cuid())
-  uniqueId     String? @unique // APMSMxxxx
-  name         String
-  category     String
-  description  String?
-  price        Float?
-  quantity     Int     @default(0)
-  minThreshold Int     @default(5)
-  inStock      Boolean @default(true)
-  location     String? // 'Store A', 'Site B'
-
-  images String[] // Postgres Array
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model ContactSubmission {
-  id      String  @id @default(cuid())
-  name    String
-  email   String
-  phone   String?
-  message String
-  status  String  @default("UNREAD") // READ, UNREAD, REPLIED
-
-  // Optional linkage if logged in
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-}
-
-model Document {
-  id       String  @id @default(cuid())
-  name     String
-  url      String
-  type     String // 'LEASE', 'RECEIPT', 'ID'
-  category String? // 'Kyc', 'Contract'
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-}
-
-model ActivityLog {
-  id       String  @id @default(cuid())
-  action   String // LOGIN, CREATE, UPDATE, DELETE, APPROVE
-  entity   String // TICKET, USER, PAYMENT
-  entityId String?
-  details  String? // JSON string of changes
-
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Enhanced Security & Audit
-  ipAddress     String?
-  userAgent     String?
-  previousState String?
-  newState      String?
-
-  createdAt DateTime @default(now())
-}
-
-model UtilityTransaction {
-  id          String  @id @default(cuid())
-  reference   String  @unique
-  utilityType String // ELECTRICITY, WATER
-  meterNumber String
-  token       String? // For electricity
-  amount      Float
-  commission  Float   @default(0)
-  totalPaid   Float
-  status      String // SUCCESS, FAILED, PENDING, REVERSED
-
-  provider String // PAYSTACK, MONNIFY, etc
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  propertyId String?
-  property   Property? @relation(fields: [propertyId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model UtilityProvider {
-  id         String  @id @default(cuid())
-  name       String  @unique // ELECTRICITY_IKEDC
-  isActive   Boolean @default(true)
-  commission Float   @default(100)
-  minAmount  Float   @default(1000)
-  maxAmount  Float   @default(50000)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model RentModificationLog {
-  id      String @id @default(cuid())
-  leaseId String
-  lease   Lease  @relation(fields: [leaseId], references: [id], onDelete: Cascade)
-
-  previousAmount Float
-  newAmount      Float
-  reason         String?
-
-  adminId String
-  admin   User   @relation("AdminModifier", fields: [adminId], references: [id])
-
-  createdAt DateTime @default(now())
-}
-
-model TenantProfile {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Personal Information
-  nationality        String?
-  maritalStatus      String?
-  gender             String?
-  dateOfBirth        DateTime?
-  spouseName         String?
-  spouseWork         String?
-  residentialAddress String? // Current address
-  nearestBusStop     String?
-  homeTownAddress    String?
-  stateOfOrigin      String?
-  lga                String?
-  occupation         String?
-  placeOfWork        String?
-  positionHeld       String?
-  placeOfWorship     String?
-  bankDetails        String? // Bank Information
-
-  // Identity
-  meansOfIdentification String? // ID Type
-  idNumber              String?
-  idIssueDate           DateTime?
-  idExpiryDate          DateTime?
-
-  // Corporate Tenant (Optional)
-  companyName        String?
-  incorporationDate  DateTime?
-  certificateNumber  String?
-  businessType       String?
-  banker             String?
-  corporateEmail     String?
-  corporateWebsite   String?
-  contactPersonName  String?
-  contactPersonPhone String?
-  corporateAddress   String?
-  branchOffice       String?
-
-  // Property Requirements
-  propertyTypeRequired       String?
-  locationRequired           String?
-  acceptOtherLocation        Boolean?
-  businessDescription        String?
-  tenancyNature              String?
-  commencementDate           DateTime?
-  budgetPerAnnum             String?
-  leasePreference            String?
-  leaseYears                 Int?
-  serviceChargeAffordability Boolean?
-  cautionDepositAgreement    Boolean?
-
-  // Previous Tenancy
-  lastAddress             String?
-  lastSize                String?
-  lastRentPaid            String?
-  periodOfPayment         String? // Yearly/Monthly
-  expirationDate          DateTime?
-  lastLandlordNameAddress String?
-  reasonForLeaving        String?
-
-  // Guarantors (JSON Array of {name, phone, address, occupation, placeOfWork})
-  guarantors Json?
-
-  // Agreement
-  agreedToTerms Boolean @default(false)
-  signatureUrl  String?
-
-  updatedAt DateTime @updatedAt
-}
-
-model LandlordProfile {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // A. Identity & Legal
-  landlordType       String? // Individual or Company
-  idType             String? // NIN, Passport, Driver's License
-  idNumber           String? // Stored string
-  residentialAddress String? // Where they live
-
-  // B. Ownership & Authority
-  relationshipToProperty String? // Owner, Agent, Family Rep, Attorney
-  proofOfAuthorityUrl    String? // Optional URL to document
-
-  // C. Payment & Financial
-  bankName      String?
-  accountName   String?
-  accountNumber String?
-
-  // D. Preferences & Consent
-  preferredContactMethod String? // WhatsApp, Phone, Email
-  isConsentGiven         Boolean   @default(false)
-  consentDate            DateTime?
-
-  updatedAt DateTime @updatedAt
-}
-
-// --- NEW FINANCIAL MODELS ---
-
 enum ExpenseStatus {
-  PENDING   // Created, waiting for tenant confirmation
-  APPROVED  // Confirmed by tenant, ready for deduction
-  DEDUCTED  // Applied to a Payout/Settlement
-  REJECTED  // Disputed
-}
-
-model LandlordExpense {
-  id          String   @id @default(cuid())
-  amount      Float
-  description String
-  date        DateTime @default(now())
-  status      ExpenseStatus @default(PENDING)
-
-  // Links
-  ticketId    String?   @unique
-  ticket      Ticket?   @relation(fields: [ticketId], references: [id])
-
-  propertyId  String
-  property    Property @relation(fields: [propertyId], references: [id])
-
-  landlordId  String
-  landlord    User     @relation(fields: [landlordId], references: [id])
-
-  payoutId    String?
-  payout      Payout?  @relation(fields: [payoutId], references: [id])
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Payout {
-  id              String   @id @default(cuid())
-  reference       String   @unique // PO-2025-01-xxxx
-  
-  landlordId      String
-  landlord        User     @relation(fields: [landlordId], references: [id])
-
-  amount          Float    // Final calculated amount (Rent - Expenses)
-  periodStart     DateTime
-  periodEnd       DateTime
-  
-  rentCycleId     String?
-  rentCycle       RentCycle? @relation(fields: [rentCycleId], references: [id])
-  
-  status          String   @default("PENDING") // PENDING, PROCESSED
-
-  expenses        LandlordExpense[]
-  
-  // Expenses Snapshot (JSON to freeze the state of what was deducted)
-  expenseSnapshot Json?
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-// --- NEW REPAIR & ANALYTICS MODELS ---
-
-model RentCycle {
-  id        String   @id @default(cuid())
-  startDate DateTime
-  endDate   DateTime
-  status    String   @default("OPEN") // OPEN, CLOSED
-  
-  landlordId String
-  landlord   User   @relation(fields: [landlordId], references: [id])
-  
-  tickets    Ticket[]
-  payouts    Payout[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model MonthlyMetric {
-  id        String   @id @default(cuid())
-  month     DateTime // First day of the month
-  
-  // Scopes (can be global, per-landlord, or per-property)
-  landlordId String?
-  landlord   User?   @relation(fields: [landlordId], references: [id])
-  
-  propertyId String?
-  property   Property? @relation(fields: [propertyId], references: [id])
-
-  // Metrics
-  totalRentCollected Float @default(0)
-  occupancyRate      Float @default(0) // Percentage 0-100
-  activeTickets      Int   @default(0)
-  churnRate          Float @default(0) // Tenants left / Total tenants
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  @@unique([month, landlordId, propertyId]) // Prevent dupes for same scope/month
+  PENDING
+  APPROVED
+  DEDUCTED
+  REJECTED
 }

@@ -15,13 +15,20 @@ export async function createProperty(formData: FormData) {
     const ownerId = formData.get("ownerId") as string;
     const isMultiUnit = formData.get("isMultiUnit") === "true" || formData.get("isMultiUnit") === "on";
     const unitCount = formData.get("unitCount") ? parseInt(formData.get("unitCount") as string) : 0;
-    const serviceCharge = formData.get("serviceCharge") ? parseFloat(formData.get("serviceCharge") as string) : 0;
-    const cautionDeposit = formData.get("cautionDeposit") ? parseFloat(formData.get("cautionDeposit") as string) : 0;
-
     // Specifications
-    const bedrooms = formData.get("bedrooms") ? parseInt(formData.get("bedrooms") as string) : null;
-    const bathrooms = formData.get("bathrooms") ? parseInt(formData.get("bathrooms") as string) : null;
-    const sqft = formData.get("sqft") ? parseInt(formData.get("sqft") as string) : null;
+    const bedroomsStr = formData.get("bedrooms") as string;
+    const bathroomsStr = formData.get("bathrooms") as string;
+    const sqftStr = formData.get("sqft") as string;
+    const serviceChargeStr = formData.get("serviceCharge") as string;
+    const cautionDepositStr = formData.get("cautionDeposit") as string;
+    const managementFeeStr = formData.get("managementFee") as string;
+
+    const bedrooms = (bedroomsStr && !isNaN(parseInt(bedroomsStr))) ? parseInt(bedroomsStr) : null;
+    const bathrooms = (bathroomsStr && !isNaN(parseInt(bathroomsStr))) ? parseInt(bathroomsStr) : null;
+    const sqft = (sqftStr && !isNaN(parseInt(sqftStr))) ? parseInt(sqftStr) : null;
+    const serviceCharge = (serviceChargeStr && !isNaN(parseFloat(serviceChargeStr))) ? parseFloat(serviceChargeStr) : 0;
+    const cautionDeposit = (cautionDepositStr && !isNaN(parseFloat(cautionDepositStr))) ? parseFloat(cautionDepositStr) : 0;
+    const managementFee = (managementFeeStr && !isNaN(parseFloat(managementFeeStr))) ? parseFloat(managementFeeStr) : 10;
 
     // Basic validation
     if (!title || !description || isNaN(price) || !location || !type) {
@@ -66,7 +73,7 @@ export async function createProperty(formData: FormData) {
 
     // Fallback logic if needed, or stricter checks. 
     // APMS + City + 4 digits
-    const commonData = {
+    const commonDataMinimal = {
         title,
         description,
         price,
@@ -77,61 +84,64 @@ export async function createProperty(formData: FormData) {
         bedrooms,
         bathrooms,
         sqft,
-        ownerId,
-        serviceCharge,
-        cautionDeposit
+        ownerId
     };
 
     try {
+        let createdProperty;
         if (isMultiUnit && unitCount > 0) {
-            // Generate ID for parent
             const parentUniqueId = await generateUniqueId(`APMS${cityCode}`, 'property');
 
-            // Create Parent Property
             const parent = await prisma.property.create({
                 data: {
-                    ...commonData,
+                    ...commonDataMinimal,
                     uniqueId: parentUniqueId,
                     isMultiUnit: true,
-                }
+                } as any
             });
+            createdProperty = parent;
 
-            // Create Units
             for (let i = 1; i <= unitCount; i++) {
-                // Generate FRESH unique ID for EACH unit
                 const unitUniqueId = await generateUniqueId(`APMS${cityCode}`, 'property');
-
-                await prisma.property.create({
+                const unit = await prisma.property.create({
                     data: {
-                        ...commonData,
+                        ...commonDataMinimal,
                         uniqueId: unitUniqueId,
                         title: `${title} - Unit ${i}`,
                         unitNumber: `Unit ${i}`,
                         parentId: parent.id,
                         status: 'AVAILABLE'
-                    }
+                    } as any
                 });
+
+                await prisma.$executeRawUnsafe(
+                    `UPDATE "Property" SET "serviceCharge" = $1, "cautionDeposit" = $2, "managementFee" = $3 WHERE "id" = $4`,
+                    serviceCharge, cautionDeposit, managementFee, unit.id
+                );
             }
         } else {
-            // Single Property
             const uniqueId = await generateUniqueId(`APMS${cityCode}`, 'property');
-
-            await prisma.property.create({
+            createdProperty = await prisma.property.create({
                 data: {
-                    ...commonData,
+                    ...commonDataMinimal,
                     uniqueId: uniqueId,
                     isMultiUnit: false
-                }
+                } as any
             });
         }
 
+        // Finalize financial fields via Raw SQL to bypass client sync issues
+        await prisma.$executeRawUnsafe(
+            `UPDATE "Property" SET "serviceCharge" = $1, "cautionDeposit" = $2, "managementFee" = $3 WHERE "id" = $4`,
+            serviceCharge,
+            cautionDeposit,
+            managementFee,
+            createdProperty.id
+        );
+
     } catch (error) {
-        console.error("Failed to create property - Detailed Error:", error);
-        // Throwing the original error to see it in Next.js error overlay if in dev mode
-        if (error instanceof Error) {
-            throw new Error(`Failed to create property: ${error.message}`);
-        }
-        throw new Error("Failed to create property: Unknown error");
+        console.error("Failed to create property:", error);
+        throw error;
     }
 
     revalidatePath("/admin/properties");
@@ -141,21 +151,30 @@ export async function createProperty(formData: FormData) {
 export async function updateProperty(propertyId: string, formData: FormData) {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-    const price = parseFloat(formData.get("price") as string);
+    const priceStr = formData.get("price") as string;
+    const price = priceStr ? parseFloat(priceStr) : NaN;
     const location = formData.get("location") as string;
     const type = formData.get("type") as string;
     const status = formData.get("status") as "AVAILABLE" | "RENTED" | "SOLD" | "MAINTENANCE";
     const images = formData.get("images") as string;
 
     // Specifications
-    const bedrooms = formData.get("bedrooms") ? parseInt(formData.get("bedrooms") as string) : null;
-    const bathrooms = formData.get("bathrooms") ? parseInt(formData.get("bathrooms") as string) : null;
-    const sqft = formData.get("sqft") ? parseInt(formData.get("sqft") as string) : null;
-    const serviceCharge = formData.get("serviceCharge") ? parseFloat(formData.get("serviceCharge") as string) : 0;
-    const cautionDeposit = formData.get("cautionDeposit") ? parseFloat(formData.get("cautionDeposit") as string) : 0;
+    const bedroomsStr = formData.get("bedrooms") as string;
+    const bathroomsStr = formData.get("bathrooms") as string;
+    const sqftStr = formData.get("sqft") as string;
+    const serviceChargeStr = formData.get("serviceCharge") as string;
+    const cautionDepositStr = formData.get("cautionDeposit") as string;
+    const managementFeeStr = formData.get("managementFee") as string;
+
+    const bedrooms = (bedroomsStr && !isNaN(parseInt(bedroomsStr))) ? parseInt(bedroomsStr) : null;
+    const bathrooms = (bathroomsStr && !isNaN(parseInt(bathroomsStr))) ? parseInt(bathroomsStr) : null;
+    const sqft = (sqftStr && !isNaN(parseInt(sqftStr))) ? parseInt(sqftStr) : null;
+    const serviceCharge = (serviceChargeStr && !isNaN(parseFloat(serviceChargeStr))) ? parseFloat(serviceChargeStr) : 0;
+    const cautionDeposit = (cautionDepositStr && !isNaN(parseFloat(cautionDepositStr))) ? parseFloat(cautionDepositStr) : 0;
+    const managementFee = (managementFeeStr && !isNaN(parseFloat(managementFeeStr))) ? parseFloat(managementFeeStr) : 10;
 
     if (!propertyId || !title || !description || isNaN(price) || !location || !type) {
-        throw new Error("Missing required fields");
+        throw new Error("Missing required fields or invalid price");
     }
 
     // Safe image handling
@@ -170,6 +189,7 @@ export async function updateProperty(propertyId: string, formData: FormData) {
     }
 
     try {
+        // Update core fields
         await prisma.property.update({
             where: { id: propertyId },
             data: {
@@ -183,13 +203,20 @@ export async function updateProperty(propertyId: string, formData: FormData) {
                 bedrooms,
                 bathrooms,
                 sqft,
-                serviceCharge,
-                cautionDeposit
-            }
+            } as any
         });
+
+        // Update financial fields via Raw SQL to bypass possible client validation issues
+        await prisma.$executeRawUnsafe(
+            `UPDATE "Property" SET "serviceCharge" = $1, "cautionDeposit" = $2, "managementFee" = $3 WHERE "id" = $4`,
+            serviceCharge,
+            cautionDeposit,
+            managementFee,
+            propertyId
+        );
     } catch (error) {
         console.error("Failed to update property:", error);
-        throw new Error("Failed to update property");
+        throw error;
     }
 
     revalidatePath("/admin/properties");

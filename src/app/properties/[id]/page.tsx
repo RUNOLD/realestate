@@ -207,7 +207,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                             </div>
                         </section>
 
-                        <section className="grid grid-cols-2 md:grid-cols-3 gap-6 p-6 bg-accent/5 rounded-xl border border-accent/10">
+                        <section className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6 bg-accent/5 rounded-xl border border-accent/10">
                             <div className="text-center">
                                 <div className="text-xs text-muted-foreground uppercase font-bold mb-1">Service Charge</div>
                                 <div className="text-xl font-bold">₦{property.serviceCharge?.toLocaleString() || 0}</div>
@@ -215,6 +215,10 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                             <div className="text-center border-l border-border">
                                 <div className="text-xs text-muted-foreground uppercase font-bold mb-1">Caution Fee</div>
                                 <div className="text-xl font-bold">₦{property.cautionDeposit?.toLocaleString() || 0}</div>
+                            </div>
+                            <div className="text-center border-l border-border">
+                                <div className="text-xs text-muted-foreground uppercase font-bold mb-1">Mgt Fee</div>
+                                <div className="text-xl font-bold">{(property as any).managementFee || 10}%</div>
                             </div>
                             <div className="text-center border-l border-border">
                                 <div className="text-xs text-muted-foreground uppercase font-bold mb-1">Status</div>

@@ -73,19 +73,35 @@ export function LogPaymentModal({ tenantId }: { tenantId: string }) {
                         <Input name="date" type="date" required defaultValue={new Date().toISOString().split('T')[0]} />
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-black text-gray-700">Payment Category</label>
-                        <select name="category" className="w-full rounded-md border border-gray-300 p-2 text-sm font-bold bg-white" required>
-                            <option value="RENT">Rent Payment</option>
-                            <option value="SERVICE_CHARGE">Service Charge</option>
-                            <option value="CAUTION_DEPOSIT">Caution Deposit</option>
-                            <option value="OTHER">Other / Miscellaneous</option>
-                        </select>
+                    <div className="space-y-3">
+                        <label className="text-sm font-black text-gray-700">Payment Category (Select all that apply)</label>
+                        <div className="grid grid-cols-1 gap-2 p-3 rounded-md border border-gray-300 bg-gray-900">
+                            {[
+                                { label: "Rent Payment", value: "RENT" },
+                                { label: "Service Charge", value: "SERVICE_CHARGE" },
+                                { label: "Caution Deposit", value: "CAUTION_DEPOSIT" },
+                                { label: "Other / Miscellaneous", value: "OTHER" },
+                            ].map((cat) => (
+                                <label key={cat.value} className="flex items-center space-x-3 text-white cursor-pointer hover:bg-white/5 p-1 rounded transition-colors">
+                                    <input
+                                        type="checkbox"
+                                        name="category"
+                                        value={cat.value}
+                                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary bg-transparent"
+                                    />
+                                    <span className="text-sm font-bold">{cat.label}</span>
+                                </label>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="space-y-2">
                         <label className="text-sm font-black text-gray-700">Payment Method</label>
-                        <select name="method" className="w-full rounded-md border border-gray-300 p-2 text-sm font-bold bg-white" required>
+                        <select
+                            name="method"
+                            className="w-full h-10 rounded-md border border-gray-300 p-2 text-sm font-bold bg-gray-900 text-white focus:ring-2 focus:ring-primary outline-none"
+                            required
+                        >
                             <option value="Transfer">Bank Transfer</option>
                             <option value="Cash">Cash</option>
                             <option value="POS">POS</option>

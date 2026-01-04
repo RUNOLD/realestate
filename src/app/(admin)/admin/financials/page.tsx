@@ -13,6 +13,9 @@ import { FinancialsToolbar } from "@/components/admin/FinancialsToolbar";
 import { prisma } from "@/lib/prisma";
 
 import { ExportPayoutsButton } from "@/components/admin/financials/ExportPayoutsButton";
+import { FinancialsSearch } from "@/components/admin/financials/FinancialsSearch";
+import { TransactionActions } from "@/components/admin/financials/TransactionActions";
+import { FinancialsFilter } from "@/components/admin/financials/FinancialsFilter";
 
 export default async function FinancialsPage({
     searchParams,
@@ -43,12 +46,26 @@ export default async function FinancialsPage({
             prisma.payment.findMany({
                 where: {
                     createdAt: startDate ? { gte: startDate } : undefined,
-                    status: status || undefined
+                    status: status || undefined,
+                    OR: searchParams && (searchParams as any).q ? [
+                        { user: { name: { contains: (searchParams as any).q, mode: 'insensitive' } } },
+                        { user: { email: { contains: (searchParams as any).q, mode: 'insensitive' } } },
+                        { property: { title: { contains: (searchParams as any).q, mode: 'insensitive' } } },
+                    ] : undefined
                 },
                 orderBy: { createdAt: 'desc' },
                 include: {
                     user: {
                         select: { name: true, email: true, image: true }
+                    },
+                    property: {
+                        select: {
+                            title: true,
+                            unitNumber: true,
+                            owner: {
+                                select: { name: true }
+                            }
+                        }
                     }
                 },
                 take: period === 'all' && !status ? 100 : undefined
@@ -72,18 +89,23 @@ export default async function FinancialsPage({
         payouts = [];
     }
 
-    // 3. Calculate Stats (Real Data)
-    const totalRevenue = payments.reduce((sum, p) => p.status === 'SUCCESS' ? sum + p.amount : sum, 0);
+    // 3. Calculate Stats (Real Data - Based on Processed Payout Commissions)
+    const totalRevenue = payouts.reduce((sum, p) => {
+        const snapshot = p.expenseSnapshot as any;
+        return sum + (Number(snapshot?.commission) || 0);
+    }, 0);
+
     const pendingCount = payments.filter(p => p.status === 'PENDING').length;
     const pendingAmount = payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0);
     const successCount = payments.filter(p => p.status === 'SUCCESS').length;
     const totalTxns = payments.length;
     const successRate = totalTxns > 0 ? Math.round((successCount / totalTxns) * 100) : 0;
 
-    // Analytics Data Preparation (Group by Date)
-    const chartData = view === 'analytics' ? payments.reduce((acc: any, curr: any) => {
+    // Analytics Data Preparation (Group by Date - Commissions Only)
+    const chartData = view === 'analytics' ? payouts.reduce((acc: any, curr: any) => {
         const date = new Date(curr.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-        acc[date] = (acc[date] || 0) + curr.amount;
+        const commission = (curr.expenseSnapshot as any)?.commission || 0;
+        acc[date] = (acc[date] || 0) + Number(commission);
         return acc;
     }, {}) : {};
 
@@ -185,17 +207,8 @@ export default async function FinancialsPage({
                         </h3>
 
                         <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <div className="relative flex-1 sm:w-64">
-                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <input
-                                    type="text"
-                                    placeholder="Search payments..."
-                                    className="w-full pl-9 pr-4 py-2 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground placeholder:text-muted-foreground"
-                                />
-                            </div>
-                            <Button variant="outline" size="icon" className="shrink-0">
-                                <Filter className="h-4 w-4 text-muted-foreground" />
-                            </Button>
+                            <FinancialsSearch />
+                            <FinancialsFilter />
                         </div>
                     </div>
 
@@ -204,8 +217,10 @@ export default async function FinancialsPage({
                         <table className="w-full text-sm text-left">
                             <thead className="bg-muted/50 text-muted-foreground font-medium border-b border-border">
                                 <tr>
-                                    <th className="px-6 py-4">Transaction Details</th>
-                                    <th className="px-6 py-4">User</th>
+                                    <th className="px-6 py-4">Tenant</th>
+                                    <th className="px-6 py-4">Property / Unit</th>
+                                    <th className="px-6 py-4">Landlord</th>
+                                    <th className="px-6 py-4">Rent Period</th>
                                     <th className="px-6 py-4">Date</th>
                                     <th className="px-6 py-4">Status</th>
                                     <th className="px-6 py-4 text-right">Amount</th>
@@ -229,12 +244,6 @@ export default async function FinancialsPage({
                                     payments.map((payment) => (
                                         <tr key={payment.id} className="group hover:bg-muted/50 transition-colors">
                                             <td className="px-6 py-4">
-                                                <div className="flex flex-col">
-                                                    <span className="font-mono text-xs text-muted-foreground">#{payment.id.substring(0, 8)}</span>
-                                                    <span className="font-medium text-foreground">Rent Payment</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-accent-foreground">
                                                         {payment.user.name?.[0] || 'U'}
@@ -245,7 +254,19 @@ export default async function FinancialsPage({
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-muted-foreground">
+                                            <td className="px-6 py-4">
+                                                <div className="text-foreground font-medium">{payment.property?.title || 'N/A'}</div>
+                                                <div className="text-xs text-muted-foreground">{payment.property?.unitNumber || 'Main Unit'}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-foreground font-medium">{payment.property?.owner?.name || 'System Managed'}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-foreground font-medium">
+                                                    {new Date(payment.createdAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
                                                 {new Date(payment.createdAt).toLocaleDateString('en-GB', {
                                                     day: 'numeric', month: 'short', year: 'numeric'
                                                 })}
@@ -257,9 +278,7 @@ export default async function FinancialsPage({
                                                 ₦{payment.amount.toLocaleString()}
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-                                                </Button>
+                                                <TransactionActions payment={payment as any} />
                                             </td>
                                         </tr>
                                     ))

@@ -8,6 +8,8 @@ import {
     Users,
     Ticket,
     DollarSign,
+    TrendingUp,
+    CreditCard,
     LogOut,
     Settings,
     Package,
@@ -101,56 +103,36 @@ export default async function AdminLayout({
                                 <Building2 size={20} />
                                 Properties
                             </Link>
-                            <Link href="/admin/users" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
-                                <Users size={20} />
-                                Users
-                            </Link>
-                            <Link href="/admin/team" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
-                                <Users size={20} />
-                                Team
-                            </Link>
                             <Link href="/admin/users?role=TENANT" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
                                 <Users size={20} />
-                                Tenant Directory
+                                Tenants
                             </Link>
                             <Link href="/admin/users?role=LANDLORD" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
                                 <Building2 size={20} />
-                                Landlord Directory
+                                Landlords
+                            </Link>
+                            <Link href="/admin/financials" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                                <DollarSign size={20} />
+                                Rent Payments
+                            </Link>
+                            <Link href="/admin/payouts" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                                <CreditCard size={20} />
+                                Payouts
                             </Link>
                             <Link href="/admin/tickets" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors justify-between">
                                 <div className="flex items-center gap-3">
                                     <Ticket size={20} />
-                                    Tickets
+                                    Maintenance
                                 </div>
                                 {activeTicketCount > 0 && (
                                     <span className="h-2 w-2 rounded-full bg-red-600 animate-pulse" />
                                 )}
                             </Link>
-                            {/* Materials - Allow Staff? Assuming yes as it is operational */}
-                            <Link href="/admin/materials" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
-                                <Package size={20} />
-                                Materials
+                            <Link href="/admin/analytics" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                                <TrendingUp size={20} />
+                                Reports
                             </Link>
 
-                            {/* Super Admin / Owner Only Links */}
-                            {isSuperAdmin && (
-                                <>
-                                    <Link href="/admin/approvals" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
-                                        <CheckCircle size={20} />
-                                        Approvals
-                                    </Link>
-                                    <Link href="/admin/financials" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
-                                        <DollarSign size={20} />
-                                        Financials
-                                    </Link>
-                                    <Link href="/admin/activity-logs" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
-                                        <FileText size={20} />
-                                        Activity Logs
-                                    </Link>
-                                </>
-                            )}
-
-                            {/* Settings - Available to All (Profile, Notifications etc) */}
                             <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
                                 <Settings size={20} />
                                 Settings

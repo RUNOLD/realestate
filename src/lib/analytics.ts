@@ -145,19 +145,14 @@ export class AnalyticsService {
         const now = new Date();
         const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
 
-        // Get Current Month Metric
-        let currentMetric = await this.fetchMetric(userId, role, firstDay);
-
-        // If no current metric (aggregation hasn't run), run it now for real-time accuracy
-        if (!currentMetric) {
-            const endOfCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-            if (role === 'LANDLORD') {
-                await this.aggregateLandlordMetrics(userId, firstDay, endOfCurrentMonth);
-            } else if (role === 'ADMIN') {
-                await this.aggregateMetrics(now);
-            }
-            currentMetric = await this.fetchMetric(userId, role, firstDay);
+        // Always refresh current month metric for real-time accuracy during dashboard load
+        const endOfCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        if (role === 'LANDLORD') {
+            await this.aggregateLandlordMetrics(userId, firstDay, endOfCurrentMonth);
+        } else if (role === 'ADMIN') {
+            await this.aggregateMetrics(now);
         }
+        let currentMetric = await this.fetchMetric(userId, role, firstDay);
 
         // Get Previous Month Metric for Trends
         const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -188,9 +183,16 @@ export class AnalyticsService {
     }
 
     private static calcTrend(current: number = 0, prev: number = 0): string {
-        if (prev === 0) return current > 0 ? "+100%" : "0%";
+        if (prev === 0) {
+            return current > 0 ? "New Data" : "Stable";
+        }
         const diff = current - prev;
         const percent = (diff / prev) * 100;
+
+        // Cap extreme trends for UI readability
+        if (percent > 999) return "+999%";
+        if (percent < -99) return "-99%";
+
         return `${percent > 0 ? '+' : ''}${percent.toFixed(1)}%`;
     }
 }

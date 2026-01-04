@@ -36,7 +36,7 @@ export function TenantLeaseSection({ lease }: TenantLeaseSectionProps) {
         );
     }
 
-    const { property, rentAmount, billingCycle, startDate, endDate, isActive } = lease;
+    const { property, rentAmount, billingCycle, startDate, endDate, isActive, terminationDate } = lease;
 
     return (
         <div className="space-y-6">
@@ -80,6 +80,10 @@ export function TenantLeaseSection({ lease }: TenantLeaseSectionProps) {
                                 <span className="text-muted-foreground text-sm flex items-center gap-2"><ShieldCheck size={16} /> Caution Deposit</span>
                                 <span className="font-bold">₦{(property.cautionDeposit || 0).toLocaleString()}</span>
                             </div>
+                            <div className="flex justify-between items-center pb-2 border-b border-border/50">
+                                <span className="text-muted-foreground text-sm flex items-center gap-2"><TrendingUp size={16} /> Mgt Fee</span>
+                                <span className="font-bold text-accent">{(property as any).managementFee || 10}%</span>
+                            </div>
                         </div>
 
                         {/* Timeline and Agreement */}
@@ -90,7 +94,9 @@ export function TenantLeaseSection({ lease }: TenantLeaseSectionProps) {
                             </div>
                             <div className="flex justify-between items-center pb-2 border-b border-border/50">
                                 <span className="text-muted-foreground text-sm flex items-center gap-2"><Calendar size={16} /> Frequency</span>
-                                <span className="font-medium uppercase text-xs bg-muted px-2 py-0.5 rounded">{billingCycle}</span>
+                                <span className="font-medium uppercase text-xs bg-muted px-2 py-0.5 rounded">
+                                    {billingCycle === 'YEARLY' ? 'YEARLY' : billingCycle}
+                                </span>
                             </div>
                             <div className="flex justify-between items-center pb-2 border-b border-border/50">
                                 <span className="text-muted-foreground text-sm">Lease Start</span>
@@ -102,6 +108,12 @@ export function TenantLeaseSection({ lease }: TenantLeaseSectionProps) {
                                     {endDate ? format(new Date(endDate), 'PPP') : "Indefinite"}
                                 </span>
                             </div>
+                            {terminationDate && (
+                                <div className="flex justify-between items-center pb-2 border-b border-rose-100 bg-rose-50/30 px-2 py-1 rounded">
+                                    <span className="text-rose-600 text-sm font-bold">Terminated On</span>
+                                    <span className="font-black text-rose-700">{format(new Date(terminationDate), 'PPP')}</span>
+                                </div>
+                            )}
                             <div className="pt-2">
                                 <Button variant="outline" className="w-full gap-2 border-primary/20 hover:border-primary/50 hover:bg-primary/5">
                                     <FileText size={18} />
