@@ -21,7 +21,7 @@ export function DeleteButton({ id, type }: DeleteButtonProps) {
         setIsPending(true);
         try {
             if (type === 'PROPERTY') {
-                await deleteProperty(id);
+                await deleteProperty(id, "Deleted via Admin Dashboard");
             } else {
                 await deleteMaterial(id);
             }

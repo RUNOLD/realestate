@@ -22,8 +22,13 @@ export async function generateUniqueId(prefix: string, model: 'user' | 'property
   const maxRetries = 10;
 
   for (let i = 0; i < maxRetries; i++) {
-    const randomDigits = generateRandomDigits(4);
-    const uniqueId = `${prefix}${randomDigits}`;
+    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // No I, O, 1, 0 for checks
+    let result = '';
+    const charactersLength = characters.length;
+    for (let j = 0; j < 8; j++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    const uniqueId = `${prefix}${result}`;
 
     // Validation: Unique Check
     let exists = false;

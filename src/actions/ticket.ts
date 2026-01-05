@@ -45,30 +45,8 @@ export async function createTicket(prevState: any, formData: FormData) {
             return { error: "Property has no assigned landlord." };
         }
 
-        // Repair Logic: Find active Rent Cycle for Landlord
-        let rentCycle = await prisma.rentCycle.findFirst({
-            where: {
-                landlordId,
-                status: 'OPEN',
-                endDate: { gte: new Date() }
-            }
-        });
-
-        // Auto-create Rent Cycle if none exists (Monthly Default)
-        if (!rentCycle) {
-            const now = new Date();
-            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
-            rentCycle = await prisma.rentCycle.create({
-                data: {
-                    startDate: firstDay,
-                    endDate: lastDay,
-                    status: 'OPEN',
-                    landlordId
-                }
-            });
-        }
+        // Repair Logic: Ensure active Rent Cycle exists (Robust)
+        const rentCycle = await establishRentCycle(landlordId);
 
         const ticket = await prisma.ticket.create({
             data: {
@@ -525,4 +503,30 @@ export async function addComment(ticketId: string, content: string) {
         console.error("Add Comment Error:", e);
         return { error: e.message || "Failed to post comment" };
     }
+}
+
+export async function establishRentCycle(landlordId: string) {
+    let rentCycle = await prisma.rentCycle.findFirst({
+        where: {
+            landlordId,
+            status: 'OPEN',
+            endDate: { gte: new Date() }
+        }
+    });
+
+    if (!rentCycle) {
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+        rentCycle = await prisma.rentCycle.create({
+            data: {
+                startDate: firstDay,
+                endDate: lastDay,
+                status: 'OPEN',
+                landlordId
+            }
+        });
+    }
+    return rentCycle;
 }

@@ -33,6 +33,13 @@ export class AnalyticsService {
         // 2. Upsert Global Metric
         // 2. Upsert Global Metric
         // Use findFirst/Create pattern to handle nulls in unique constraints safely (Postgres null distinct behavior)
+        // 2. Upsert Global Metric (Robust Concurrency)
+        const updateDataGlobal = {
+            totalRentCollected: totalRent._sum.amount || 0,
+            occupancyRate,
+            activeTickets
+        };
+
         const existingGlobal = await prisma.monthlyMetric.findFirst({
             where: {
                 month: firstDay,
@@ -44,23 +51,34 @@ export class AnalyticsService {
         if (existingGlobal) {
             await prisma.monthlyMetric.update({
                 where: { id: existingGlobal.id },
-                data: {
-                    totalRentCollected: totalRent._sum.amount || 0,
-                    occupancyRate,
-                    activeTickets
-                }
+                data: updateDataGlobal
             });
         } else {
-            await prisma.monthlyMetric.create({
-                data: {
-                    month: firstDay,
-                    landlordId: undefined, // Prisma handles optional as null
-                    propertyId: undefined,
-                    totalRentCollected: totalRent._sum.amount || 0,
-                    occupancyRate,
-                    activeTickets
+            try {
+                await prisma.monthlyMetric.create({
+                    data: {
+                        month: firstDay,
+                        landlordId: undefined,
+                        propertyId: undefined,
+                        ...updateDataGlobal
+                    }
+                });
+            } catch (e: any) {
+                // P2002: Unique constraint violation (Race Condition)
+                if (e.code === 'P2002') {
+                    const retry = await prisma.monthlyMetric.findFirst({
+                        where: { month: firstDay, landlordId: null, propertyId: null }
+                    });
+                    if (retry) {
+                        await prisma.monthlyMetric.update({
+                            where: { id: retry.id },
+                            data: updateDataGlobal
+                        });
+                    }
+                } else {
+                    throw e;
                 }
-            });
+            }
         }
 
         // 3. Per Landlord Metrics (Simplified loop)
@@ -115,6 +133,9 @@ export class AnalyticsService {
 
         // BUT unique constraint with NULLs can be tricky. Let's try finding existing.
 
+        // Upsert Landlord Metric (Robust Concurrency)
+        const updateDataLandlord = { totalRentCollected: rentCollected, occupancyRate: occupancy, activeTickets: tickets };
+
         const existing = await prisma.monthlyMetric.findFirst({
             where: {
                 month: start,
@@ -126,18 +147,32 @@ export class AnalyticsService {
         if (existing) {
             await prisma.monthlyMetric.update({
                 where: { id: existing.id },
-                data: { totalRentCollected: rentCollected, occupancyRate: occupancy, activeTickets: tickets }
+                data: updateDataLandlord
             });
         } else {
-            await prisma.monthlyMetric.create({
-                data: {
-                    month: start,
-                    landlordId,
-                    totalRentCollected: rentCollected,
-                    occupancyRate: occupancy,
-                    activeTickets: tickets
+            try {
+                await prisma.monthlyMetric.create({
+                    data: {
+                        month: start,
+                        landlordId,
+                        ...updateDataLandlord
+                    }
+                });
+            } catch (e: any) {
+                if (e.code === 'P2002') {
+                    const retry = await prisma.monthlyMetric.findFirst({
+                        where: { month: start, landlordId, propertyId: null }
+                    });
+                    if (retry) {
+                        await prisma.monthlyMetric.update({
+                            where: { id: retry.id },
+                            data: updateDataLandlord
+                        });
+                    }
+                } else {
+                    throw e;
                 }
-            });
+            }
         }
     }
 

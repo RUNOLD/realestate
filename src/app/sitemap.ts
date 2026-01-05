@@ -5,10 +5,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://ayoolarealestate.com";
 
     // Fetch all active properties
-    const properties = await prisma.property.findMany({
-        where: { status: "AVAILABLE" },
-        select: { id: true, updatedAt: true },
-    });
+    let properties: { id: string; updatedAt: Date }[] = [];
+    try {
+        properties = await prisma.property.findMany({
+            where: { status: "AVAILABLE" },
+            select: { id: true, updatedAt: true },
+        });
+    } catch (error) {
+        console.warn("Failed to fetch properties for sitemap (likely build time DB connection issue). Using static routes only.");
+    }
 
     const propertyUrls = properties.map((property) => ({
         url: `${baseUrl}/properties/${property.id}`,

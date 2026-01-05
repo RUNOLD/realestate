@@ -94,7 +94,7 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
     const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
     const resetLink = `${cleanBaseUrl}/reset-password?token=${token}`;
 
-    console.log(`📡 Attempting to send reset link to ${email}...`);
+    // console.log(`📡 Attempting to send reset link to ${email}...`);
 
     const emailResult = await sendEmail({
         to: email,
@@ -106,7 +106,7 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
         console.error("❌ Failed to send reset email:", emailResult.error);
         // We still return success to the UI for security (email enumeration prevention)
     } else {
-        console.log(`✅ Reset link sent to ${email}`);
+        // console.log(`✅ Reset link sent to ${email}`);
     }
 
     return { success: "If an account exists, a reset link has been sent." };

@@ -64,7 +64,7 @@ export default async function StaffProfilePage(props: PageProps) {
                             <span>•</span>
                             <span>{user.role}</span>
                             <span>•</span>
-                            <span>ID: <span className="font-mono text-xs">{user.id}</span></span>
+                            <span>ID: <span className="font-mono text-xs">{user.uniqueId || user.id}</span></span>
                         </p>
                     </div>
                 </div>

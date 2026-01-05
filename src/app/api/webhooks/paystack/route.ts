@@ -11,7 +11,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Configuration error" }, { status: 500 });
         }
 
-        const body = await req.json();
+        const arrayBuffer = await req.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
         const signature = req.headers.get("x-paystack-signature");
 
         if (!signature) {
@@ -19,8 +20,11 @@ export async function POST(req: Request) {
         }
 
         const hash = crypto.createHmac("sha512", secret)
-            .update(JSON.stringify(body))
+            .update(buffer)
             .digest("hex");
+
+        // Convert to JSON for logic processing after verification
+        const body = JSON.parse(buffer.toString());
 
         if (hash !== signature) {
             return NextResponse.json({ error: "Invalid signature" }, { status: 401 });

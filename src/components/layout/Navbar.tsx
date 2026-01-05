@@ -20,7 +20,8 @@ import {
     CheckCircle,
     Wrench,
     CreditCard,
-    Mail
+    Mail,
+    TrendingUp
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -50,12 +51,14 @@ const NAV_LINKS = [
 
 const ADMIN_LINKS = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/admin/inbox", label: "Inbox", icon: Mail },
     { href: "/admin/properties", label: "Properties", icon: Building2 },
-    { href: "/admin/users", label: "Users", icon: Users },
-    { href: "/admin/team", label: "Team", icon: Users },
-    { href: "/admin/tickets", label: "Tickets", icon: Ticket },
-    { href: "/admin/materials", label: "Materials", icon: Package },
+    { href: "/admin/users?role=TENANT", label: "Tenants", icon: Users },
+    { href: "/admin/users?role=LANDLORD", label: "Landlords", icon: Building2 },
+    { href: "/admin/team", label: "Staff & Team", icon: Users },
+    { href: "/admin/financials", label: "Rent Payments", icon: DollarSign },
+    { href: "/admin/payouts", label: "Payouts", icon: CreditCard },
+    { href: "/admin/tickets", label: "Maintenance", icon: Ticket },
+    { href: "/admin/analytics", label: "Reports", icon: TrendingUp },
     { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
@@ -65,6 +68,12 @@ const TENANT_LINKS = [
     { href: "/dashboard/maintenance", label: "Maintenance", icon: Wrench },
     { href: "/dashboard/documents", label: "Documents", icon: FileText },
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
+];
+
+const LANDLORD_LINKS = [
+    { href: "/landlord/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/landlord/settings", label: "Settings", icon: Settings },
+    { href: "/landlord/financials", label: "Financials", icon: DollarSign },
 ];
 
 export function Navbar({ user, ticketCount = 0 }: { user?: any, ticketCount?: number }) {
@@ -94,17 +103,11 @@ export function Navbar({ user, ticketCount = 0 }: { user?: any, ticketCount?: nu
     const userRole = user?.role;
 
     const getMobileLinks = () => {
-        if (isAdminPath) {
-            const links = [...ADMIN_LINKS];
-            if (userRole === 'ADMIN') {
-                links.push(
-                    { href: "/admin/approvals", label: "Approvals", icon: CheckCircle },
-                    { href: "/admin/financials", label: "Financials", icon: DollarSign }
-                );
-            }
-            return links;
-        }
-        if (isDashboardPath) return TENANT_LINKS;
+        if (userRole === 'ADMIN' || userRole === 'STAFF') return ADMIN_LINKS;
+        if (userRole === 'TENANT') return TENANT_LINKS;
+        if (userRole === 'LANDLORD') return LANDLORD_LINKS;
+
+        // Fallback for public or unauthenticated
         return NAV_LINKS.map(link => ({ ...link, icon: null }));
     };
 
@@ -118,8 +121,8 @@ export function Navbar({ user, ticketCount = 0 }: { user?: any, ticketCount?: nu
     // Logic to visually check which link needs a badge
     const shouldShowBadge = (label: string) => {
         if (ticketCount > 0) {
-            if (isAdminPath && label === 'Tickets') return true;
-            if (isDashboardPath && label === 'Maintenance') return true;
+            if ((userRole === 'ADMIN' || userRole === 'STAFF') && label === 'Maintenance') return true;
+            if (userRole === 'TENANT' && label === 'Maintenance') return true;
         }
         return false;
     };
@@ -148,12 +151,12 @@ export function Navbar({ user, ticketCount = 0 }: { user?: any, ticketCount?: nu
                             )}
                         </div>
 
-                        <div className="flex flex-col justify-center border-l border-border/60 pl-3 sm:pl-4 h-8 sm:h-12 min-w-0">
-                            <span className="text-lg sm:text-2xl font-black tracking-tighter uppercase leading-none truncate block text-foreground">
+                        <div className="flex flex-col justify-center border-l border-border/60 pl-3 sm:pl-4 min-w-0">
+                            <span className="text-xl sm:text-2xl font-black tracking-tighter uppercase leading-tight block text-foreground">
                                 Ayoola
                             </span>
-                            <span className="text-[7px] sm:text-[9px] font-bold tracking-[0.05em] sm:tracking-[0.15em] text-muted-foreground uppercase mt-0.5 block">
-                                Property Management & Sourcing Services LTD.
+                            <span className="text-[9px] sm:text-[10px] font-bold tracking-widest text-muted-foreground uppercase block">
+                                Property Management & Sourcing Services
                             </span>
                         </div>
                     </Link>

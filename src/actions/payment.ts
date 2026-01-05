@@ -19,6 +19,12 @@ export async function createPayment(prevState: any, formData: FormData) {
         category: formData.getAll("category"), // Capture all selected categories
     };
 
+    // SECURITY: Prevent Tenants from creating payments for others
+    const userRole = (session.user as any).role;
+    if (userRole === 'TENANT' && rawData.tenantId !== session.user.id) {
+        return { error: "Unauthorized. You can only record payments for yourself." };
+    }
+
     const validatedFields = CreatePaymentSchema.safeParse(rawData);
 
     if (!validatedFields.success) {
@@ -39,11 +45,19 @@ export async function createPayment(prevState: any, formData: FormData) {
         const userRole = (session.user as any).role;
         const approvalStatus = userRole === 'STAFF' ? ApprovalStatus.PENDING_ADMIN : ApprovalStatus.APPROVED;
 
-        // Auto-resolve Property from Lease
-        const activeLease = await prisma.lease.findFirst({
+        // Auto-resolve Property from Lease (Robust)
+        const activeLeases = await prisma.lease.findMany({
             where: { userId: tenantId, isActive: true },
             select: { propertyId: true }
         });
+
+        if (activeLeases.length > 1) {
+            return { error: "Ambiguous payment: Tenant has multiple active leases. Please contact support." };
+        }
+
+        // If 0 found, propertyId is undefined (Deposit or Unassigned)
+        // If 1 found, we link it.
+        const resolvedPropertyId = activeLeases[0]?.propertyId;
 
         const payment = await prisma.payment.create({
             data: {
@@ -51,7 +65,7 @@ export async function createPayment(prevState: any, formData: FormData) {
                 reference,
                 method,
                 userId: tenantId,
-                propertyId: activeLease?.propertyId, // AUTOMATED RESOLUTION
+                propertyId: resolvedPropertyId, // AUTOMATED RESOLUTION (Robust)
                 status: 'SUCCESS',
                 approvalStatus,
                 category: Array.isArray(category) ? category.join(", ") : (category || 'RENT'),
@@ -63,7 +77,7 @@ export async function createPayment(prevState: any, formData: FormData) {
             ActionType.CREATE,
             EntityType.PAYMENT,
             payment.id,
-            { amount, reference, approvalStatus, propertyId: activeLease?.propertyId }
+            { amount, reference, approvalStatus, propertyId: resolvedPropertyId }
         );
 
         revalidatePath(`/admin/users/${tenantId}`);
@@ -103,11 +117,19 @@ export async function approvePayment(paymentId: string) {
 export async function verifyPayment(reference: string, amount: number, userId: string): Promise<{ success: boolean; error?: string }> {
     try {
         if (reference.startsWith('mock_')) {
-            // Auto-resolve Property from Lease
-            const activeLease = await prisma.lease.findFirst({
+            // SECURITY: Only allow mock payments in development
+            if (process.env.NODE_ENV === 'production') {
+                return { success: false, error: "Mock payments disabled in production" };
+            }
+
+            // Auto-resolve Property from Lease (Robust)
+            const activeLeases = await prisma.lease.findMany({
                 where: { userId: userId, isActive: true },
                 select: { propertyId: true }
             });
+
+            if (activeLeases.length > 1) return { success: false, error: "Ambiguous: Multiple active leases found." };
+            const resolvedPropertyId = activeLeases[0]?.propertyId;
 
             await prisma.payment.create({
                 data: {
@@ -115,7 +137,7 @@ export async function verifyPayment(reference: string, amount: number, userId: s
                     reference: reference,
                     status: 'SUCCESS',
                     userId: userId,
-                    propertyId: activeLease?.propertyId, // AUTOMATED RESOLUTION
+                    propertyId: resolvedPropertyId, // AUTOMATED RESOLUTION (Robust)
                     method: 'Paystack (Mock)',
                     approvalStatus: ApprovalStatus.PENDING_ADMIN
                 }

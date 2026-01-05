@@ -111,6 +111,10 @@ export default async function AdminLayout({
                                 <Building2 size={20} />
                                 Landlords
                             </Link>
+                            <Link href="/admin/team" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
+                                <Users size={20} />
+                                Staff & Team
+                            </Link>
                             <Link href="/admin/financials" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-md font-medium transition-colors">
                                 <DollarSign size={20} />
                                 Rent Payments

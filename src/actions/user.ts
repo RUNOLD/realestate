@@ -14,6 +14,11 @@ export async function createTenant(prevState: any, formData: FormData): Promise<
     const session = await auth();
     if (!session?.user?.id) return { error: "Not authenticated" };
 
+    const currentUserRole = (session.user as any).role;
+    if (currentUserRole !== 'ADMIN' && currentUserRole !== 'STAFF') {
+        return { error: "Unauthorized. Only Admin or Staff can create tenants." };
+    }
+
     // Parse Guarantors JSON manually before sending to Zod
     let guarantorsJson = formData.get("guarantors") as string;
     // ensure it's valid JSON string

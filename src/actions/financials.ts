@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { differenceInMonths, differenceInYears, addMonths, addYears } from "date-fns";
+import { differenceInMonths, differenceInYears, addMonths, addYears, addDays } from "date-fns";
 
 export async function calculatePayout(landlordId: string) {
     const session = await auth();
@@ -141,7 +141,7 @@ export async function generatePayout(rentCycleId: string) {
                         landlordId,
                         propertyId: firstProperty.id,
                         status: 'APPROVED',
-                        date: new Date() // Will be picked up by next cycle logic
+                        date: addDays(rentCycle.endDate, 1) // Will be picked up by NEXT cycle logic
                     }
                 });
             }
