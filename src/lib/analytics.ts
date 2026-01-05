@@ -182,6 +182,118 @@ export class AnalyticsService {
         return null;
     }
 
+    static async getAnalyticsData() {
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        // 1. Monthly Revenue (Last 6 Months)
+        const financialData = [];
+        for (let i = 5; i >= 0; i--) {
+            const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const start = new Date(date.getFullYear(), date.getMonth(), 1);
+            const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
+
+            const revenue = await prisma.payment.aggregate({
+                where: {
+                    status: 'SUCCESS',
+                    createdAt: { gte: start, lte: end }
+                },
+                _sum: { amount: true }
+            });
+
+            financialData.push({
+                name: date.toLocaleString('default', { month: 'short' }),
+                revenue: revenue._sum.amount || 0
+            });
+        }
+
+        // 2. Occupancy Distribution
+        // Count base properties (parents + standalone) vs active leases
+        const totalUnits = await prisma.property.count({
+            where: { isMultiUnit: false } // Standalone or Units, not parent shells
+        });
+        const activeLeases = await prisma.lease.count({ where: { isActive: true } });
+        const vacantUnits = Math.max(0, totalUnits - activeLeases);
+        const occupancyRate = totalUnits > 0 ? Math.round((activeLeases / totalUnits) * 100) : 0;
+
+        // 3. Support Ticket Volume (Last 7 Days)
+        const ticketTrendData = [];
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            date.setHours(0, 0, 0, 0);
+            const nextDay = new Date(date);
+            nextDay.setDate(date.getDate() + 1);
+
+            const count = await prisma.ticket.count({
+                where: {
+                    createdAt: { gte: date, lt: nextDay }
+                }
+            });
+
+            ticketTrendData.push({
+                name: date.toLocaleString('default', { weekday: 'short' }),
+                tickets: count
+            });
+        }
+
+        // 4. NEW: User Growth Analysis (Tenants vs Landlords) - Last 6 Months
+        const userGrowthData = [];
+        for (let i = 5; i >= 0; i--) {
+            const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const start = new Date(date.getFullYear(), date.getMonth(), 1);
+            const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
+
+            const tenants = await prisma.user.count({
+                where: {
+                    role: 'TENANT',
+                    createdAt: { gte: start, lte: end }
+                }
+            });
+
+            const landlords = await prisma.user.count({
+                where: {
+                    role: 'LANDLORD',
+                    createdAt: { gte: start, lte: end }
+                }
+            });
+
+            userGrowthData.push({
+                name: date.toLocaleString('default', { month: 'short' }),
+                tenants,
+                landlords,
+            });
+        }
+
+        // 5. KPI Metrics
+        const ytdStart = new Date(now.getFullYear(), 0, 1);
+        const totalRevenueYTD = await prisma.payment.aggregate({
+            where: { status: 'SUCCESS', createdAt: { gte: ytdStart } },
+            _sum: { amount: true }
+        });
+
+        const maintenanceCost = await prisma.landlordExpense.aggregate({
+            where: { date: { gte: firstDayOfMonth } }, // Current Month
+            _sum: { amount: true }
+        });
+
+        return {
+            financialData,
+            occupancyData: [
+                { name: 'Occupied', value: activeLeases },
+                { name: 'Vacant', value: vacantUnits }
+            ],
+            occupancyRate,
+            ticketTrendData,
+            userGrowthData,
+            kpis: {
+                totalRevenueYTD: totalRevenueYTD._sum.amount || 0,
+                vacancyRate: 100 - occupancyRate,
+                maintenanceCost: maintenanceCost._sum.amount || 0
+            }
+        };
+    }
+
     private static calcTrend(current: number = 0, prev: number = 0): string {
         if (prev === 0) {
             return current > 0 ? "New Data" : "Stable";

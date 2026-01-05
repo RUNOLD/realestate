@@ -9,6 +9,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { DeletePropertyButton } from "@/components/admin/properties/DeletePropertyButton";
 
 export default async function PropertyDetailsPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
@@ -22,7 +23,9 @@ export default async function PropertyDetailsPage(props: { params: Promise<{ id:
                     user: true
                 },
                 take: 1
-            }
+            },
+            units: true,
+            parent: true
         }
     });
 
@@ -57,6 +60,11 @@ export default async function PropertyDetailsPage(props: { params: Promise<{ id:
                                 <Edit size={16} /> Edit Details
                             </Button>
                         </Link>
+                        <DeletePropertyButton
+                            propertyId={property.id}
+                            hasUnits={property.units.length > 0}
+                            isUnit={!!property.parentId}
+                        />
                         <Badge className={`text-sm px-3 py-1 ${property.status === 'AVAILABLE' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                             property.status === 'RENTED' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
                                 'bg-muted text-muted-foreground'

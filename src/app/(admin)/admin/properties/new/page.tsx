@@ -15,6 +15,7 @@ import {
     Users,
     Building
 } from "lucide-react";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 export default async function NewPropertyPage() {
     const landlords = await prisma.user.findMany({
@@ -107,7 +108,7 @@ export default async function NewPropertyPage() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
                                             <label htmlFor="bedrooms" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Bedrooms</label>
                                             <Input id="bedrooms" name="bedrooms" type="number" placeholder="0" min="0" className="h-12 bg-muted/50 border-transparent focus:border-primary focus:bg-background transition-all text-center" />
@@ -115,10 +116,6 @@ export default async function NewPropertyPage() {
                                         <div className="space-y-2">
                                             <label htmlFor="bathrooms" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Bathrooms</label>
                                             <Input id="bathrooms" name="bathrooms" type="number" placeholder="0" min="0" className="h-12 bg-muted/50 border-transparent focus:border-primary focus:bg-background transition-all text-center" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label htmlFor="sqft" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Sqft</label>
-                                            <Input id="sqft" name="sqft" type="number" placeholder="0" min="0" className="h-12 bg-muted/50 border-transparent focus:border-primary focus:bg-background transition-all text-center" />
                                         </div>
                                     </div>
 
@@ -192,10 +189,9 @@ export default async function NewPropertyPage() {
                                     </div>
                                     <h2>Gallery</h2>
                                 </div>
-                                <div className="space-y-2">
-                                    <label htmlFor="images" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Cover Image URL</label>
-                                    <Input id="images" name="images" placeholder="https://..." className="h-12 font-mono text-xs bg-muted/50 border-transparent focus:border-primary focus:bg-background transition-all" />
-                                    <p className="text-[10px] text-muted-foreground/70 ml-1">Enter a direct URL for the main property image.</p>
+                                <div className="space-y-4">
+                                    <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Cover Image</label>
+                                    <ImageUpload name="images" />
                                 </div>
                             </div>
                         </div>
@@ -227,7 +223,7 @@ export default async function NewPropertyPage() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-6">
                                         <div className="space-y-2">
                                             <label htmlFor="serviceCharge" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Service Charge (Annual)</label>
                                             <div className="relative">
@@ -251,6 +247,20 @@ export default async function NewPropertyPage() {
                                                     type="number"
                                                     placeholder="0.00"
                                                     className="pl-8 h-12 bg-muted/50 border-transparent focus:border-primary focus:bg-background transition-all"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label htmlFor="managementFee" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Mgt Fee (%)</label>
+                                            <div className="relative">
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">%</div>
+                                                <Input
+                                                    id="managementFee"
+                                                    name="managementFee"
+                                                    type="number"
+                                                    step="0.1"
+                                                    placeholder="10"
+                                                    className="pr-8 h-12 bg-muted/50 border-transparent focus:border-primary focus:bg-background transition-all"
                                                 />
                                             </div>
                                         </div>

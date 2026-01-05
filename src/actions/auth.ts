@@ -90,13 +90,24 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
         },
     });
 
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const resetLink = `${cleanBaseUrl}/reset-password?token=${token}`;
 
-    await sendEmail({
+    console.log(`📡 Attempting to send reset link to ${email}...`);
+
+    const emailResult = await sendEmail({
         to: email,
         subject: "Reset Your Password - Ayoola Property",
         html: getResetPasswordTemplate(resetLink)
     });
+
+    if (!emailResult.success) {
+        console.error("❌ Failed to send reset email:", emailResult.error);
+        // We still return success to the UI for security (email enumeration prevention)
+    } else {
+        console.log(`✅ Reset link sent to ${email}`);
+    }
 
     return { success: "If an account exists, a reset link has been sent." };
 }

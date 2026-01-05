@@ -23,7 +23,7 @@ export default async function FinancialsPage({
     searchParams: Promise<{ period?: string; q?: string; status?: string; view?: string }>;
 }) {
     // 1. Determine Date Range & Filters
-    const { period = 'all', status, view } = await searchParams;
+    const { period = 'all', q, status, view } = await searchParams;
     let startDate: Date | undefined;
 
     if (period === '7d') {
@@ -47,10 +47,10 @@ export default async function FinancialsPage({
                 where: {
                     createdAt: startDate ? { gte: startDate } : undefined,
                     status: status || undefined,
-                    OR: searchParams && (searchParams as any).q ? [
-                        { user: { name: { contains: (searchParams as any).q, mode: 'insensitive' } } },
-                        { user: { email: { contains: (searchParams as any).q, mode: 'insensitive' } } },
-                        { property: { title: { contains: (searchParams as any).q, mode: 'insensitive' } } },
+                    OR: q ? [
+                        { user: { name: { contains: q, mode: 'insensitive' } } },
+                        { user: { email: { contains: q, mode: 'insensitive' } } },
+                        { property: { title: { contains: q, mode: 'insensitive' } } },
                     ] : undefined
                 },
                 orderBy: { createdAt: 'desc' },

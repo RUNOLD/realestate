@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Lock, Loader2, CheckCircle2 } from "lucide-react";
+import { Lock, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
 import { Suspense } from "react";
 
 function ResetPasswordForm() {
@@ -45,11 +45,14 @@ function ResetPasswordForm() {
     }
 
     return (
-        <div className="p-8">
+        <div className="p-8 sm:p-10">
             <div className="text-center mb-8">
-                <h1 className="text-2xl font-serif font-bold text-primary mb-2">Reset Password</h1>
-                <p className="text-muted-foreground text-sm">
-                    Enter your new password below.
+                <Link href="/login" className="inline-flex items-center text-sm font-semibold text-muted-foreground hover:text-primary mb-6 transition-colors">
+                    <ArrowLeft size={16} className="mr-1.5" /> Back to Login
+                </Link>
+                <h1 className="text-3xl font-serif font-black text-foreground uppercase tracking-tight mb-3">Reset Password</h1>
+                <p className="text-muted-foreground text-sm font-medium leading-relaxed">
+                    Set a new secure password for your Ayoola account.
                 </p>
             </div>
 
@@ -57,32 +60,32 @@ function ResetPasswordForm() {
                 <input type="hidden" name="token" value={token} />
 
                 <div className="space-y-2">
-                    <label htmlFor="password" className="text-sm font-medium text-gray-700">New Password</label>
+                    <label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">New Password</label>
                     <div className="relative">
-                        <Lock className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
+                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             id="password"
                             name="password"
                             type="password"
                             placeholder="••••••••"
                             required
-                            className="pl-9 h-11"
+                            className="pl-11 h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner focus-visible:ring-1 focus-visible:ring-primary/20"
                             minLength={6}
                         />
                     </div>
                 </div>
 
                 <div className="space-y-2">
-                    <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Confirm Password</label>
+                    <label htmlFor="confirmPassword" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Confirm New Password</label>
                     <div className="relative">
-                        <Lock className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
+                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             id="confirmPassword"
                             name="confirmPassword"
                             type="password"
                             placeholder="••••••••"
                             required
-                            className="pl-9 h-11"
+                            className="pl-11 h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner focus-visible:ring-1 focus-visible:ring-primary/20"
                             minLength={6}
                         />
                     </div>
@@ -96,15 +99,15 @@ function ResetPasswordForm() {
 
                 <Button
                     type="submit"
-                    className="w-full h-11 text-base font-semibold"
+                    className="w-full h-14 text-base font-black uppercase tracking-widest rounded-2xl shadow-lg hover:shadow-primary/20 transition-all active:scale-[0.98]"
                     disabled={isPending}
                 >
                     {isPending ? (
                         <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Resetting...
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Resetting...
                         </>
                     ) : (
-                        "Reset Password"
+                        "Update Password"
                     )}
                 </Button>
             </form>
@@ -114,9 +117,9 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
     return (
-        <div className="min-h-screen bg-muted/30 flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+            <div className="w-full max-w-md bg-card rounded-2xl shadow-2xl border border-border overflow-hidden">
+                <Suspense fallback={<div className="p-8 text-center text-muted-foreground font-medium">Loading credentials...</div>}>
                     <ResetPasswordForm />
                 </Suspense>
             </div>

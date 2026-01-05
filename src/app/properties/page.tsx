@@ -4,12 +4,12 @@ import {
     MapPin,
     BedDouble,
     Bath,
-    Maximize,
     Search,
     SlidersHorizontal,
     ArrowRight,
     Calendar,
-    Phone
+    Phone,
+    Camera
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { SearchFilter } from "@/components/home/SearchFilter";
@@ -200,8 +200,16 @@ export default async function PropertiesPage({
                                                 </div>
                                             )}
 
-                                            <div className="absolute bottom-4 left-4 text-white">
-                                                <p className="text-2xl font-bold">₦{property.price.toLocaleString()}<span className="text-sm font-normal opacity-80">/yr</span></p>
+                                            <div className="absolute bottom-4 left-4 text-white z-10 flex items-center justify-between w-[calc(100%-2rem)]">
+                                                <p className="text-2xl font-bold bg-primary/40 backdrop-blur-md px-3 py-1 rounded-lg">
+                                                    ₦{property.price.toLocaleString()}<span className="text-sm font-normal opacity-80">/yr</span>
+                                                </p>
+                                                {property.images.length > 1 && (
+                                                    <div className="bg-black/40 backdrop-blur-md text-white px-2 py-1 rounded-md text-[10px] font-black flex items-center gap-1 border border-white/10 shadow-lg">
+                                                        <Camera size={10} className="text-accent" />
+                                                        {property.images.length}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
 
@@ -222,10 +230,6 @@ export default async function PropertiesPage({
                                                 <div className="flex items-center gap-2 text-sm text-muted-foreground" title="Bathrooms">
                                                     <Bath size={18} />
                                                     <span className="font-medium text-foreground">{property.bathrooms || 0}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-muted-foreground" title="Square Footage">
-                                                    <Maximize size={18} />
-                                                    <span className="font-medium text-foreground">{property.sqft?.toLocaleString() || 0}</span>
                                                 </div>
                                             </div>
 

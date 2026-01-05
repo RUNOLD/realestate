@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+import { uploadToCloudinary } from "@/lib/cloudinary";
+
 export async function createProperty(formData: FormData) {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
@@ -11,24 +13,60 @@ export async function createProperty(formData: FormData) {
     const location = formData.get("location") as string;
     const type = formData.get("type") as string;
     const status = formData.get("status") as "AVAILABLE" | "RENTED" | "SOLD" | "MAINTENANCE";
-    const images = formData.get("images") as string;
+
+    // Image Handling - Multiple Files
+    const imageFiles = formData.getAll("images") as File[];
+    const existingImagesStr = formData.get("images_existing") as string;
+    let imageArray: string[] = [];
+
+    // 1. Process local file uploads
+    for (const file of imageFiles) {
+        if (file instanceof File && file.size > 0) {
+            const uploadedUrl = await uploadToCloudinary(file, 'properties');
+            imageArray.push(uploadedUrl);
+        }
+    }
+
+    // 2. Process existing URLs
+    if (existingImagesStr) {
+        try {
+            const existing = JSON.parse(existingImagesStr);
+            if (Array.isArray(existing)) {
+                imageArray = [...imageArray, ...existing];
+            }
+        } catch { }
+    }
+
+    // 3. Fallback for external URL mode
+    const imagesField = formData.get("images");
+    if (typeof imagesField === 'string' && imagesField && !imagesField.startsWith('[')) {
+        imageArray.push(imagesField);
+    } else if (typeof imagesField === 'string' && imagesField?.startsWith('[')) {
+        try {
+            const parsed = JSON.parse(imagesField);
+            if (Array.isArray(parsed)) imageArray = [...imageArray, ...parsed];
+        } catch { }
+    }
+
+    // Deduplicate and limit
+    imageArray = Array.from(new Set(imageArray)).slice(0, 5);
+
     const ownerId = formData.get("ownerId") as string;
     const isMultiUnit = formData.get("isMultiUnit") === "true" || formData.get("isMultiUnit") === "on";
     const unitCount = formData.get("unitCount") ? parseInt(formData.get("unitCount") as string) : 0;
+
     // Specifications
     const bedroomsStr = formData.get("bedrooms") as string;
     const bathroomsStr = formData.get("bathrooms") as string;
-    const sqftStr = formData.get("sqft") as string;
     const serviceChargeStr = formData.get("serviceCharge") as string;
     const cautionDepositStr = formData.get("cautionDeposit") as string;
     const managementFeeStr = formData.get("managementFee") as string;
 
     const bedrooms = (bedroomsStr && !isNaN(parseInt(bedroomsStr))) ? parseInt(bedroomsStr) : null;
     const bathrooms = (bathroomsStr && !isNaN(parseInt(bathroomsStr))) ? parseInt(bathroomsStr) : null;
-    const sqft = (sqftStr && !isNaN(parseInt(sqftStr))) ? parseInt(sqftStr) : null;
     const serviceCharge = (serviceChargeStr && !isNaN(parseFloat(serviceChargeStr))) ? parseFloat(serviceChargeStr) : 0;
     const cautionDeposit = (cautionDepositStr && !isNaN(parseFloat(cautionDepositStr))) ? parseFloat(cautionDepositStr) : 0;
-    const managementFee = (managementFeeStr && !isNaN(parseFloat(managementFeeStr))) ? parseFloat(managementFeeStr) : 10;
+    const managementFee = (managementFeeStr && !isNaN(parseFloat(managementFeeStr))) ? parseFloat(managementFeeStr) : 0;
 
     // Basic validation
     if (!title || !description || isNaN(price) || !location || !type) {
@@ -45,34 +83,17 @@ export async function createProperty(formData: FormData) {
     });
 
     if (!landlord || landlord.role !== 'LANDLORD') {
-        // Ideally redirect to user creation, but throwing error for now as UI should handle fallback
         throw new Error("Invalid Landlord or User is not a Landlord");
     }
 
-    // Safe image handling
-    let imageArray: string[] = [];
-    if (images) {
-        try {
-            // Try parsing if it's a JSON array string
-            const parsed = JSON.parse(images);
-            imageArray = Array.isArray(parsed) ? parsed : [images];
-        } catch {
-            // If not JSON, treat it as a single URL string
-            imageArray = [images];
-        }
-    }
-
     const { generateUniqueId } = await import("@/lib/utils");
-    // City Mapping: Ibadan -> IB, Lagos -> LG, Abuja -> ABJ
-    let cityCode = 'XX'; // Default
+    let cityCode = 'XX';
     const locLower = location.toLowerCase();
 
     if (locLower.includes('ibadan')) cityCode = 'IB';
     else if (locLower.includes('lagos')) cityCode = 'LG';
     else if (locLower.includes('abuja')) cityCode = 'ABJ';
 
-    // Fallback logic if needed, or stricter checks. 
-    // APMS + City + 4 digits
     const commonDataMinimal = {
         title,
         description,
@@ -83,7 +104,6 @@ export async function createProperty(formData: FormData) {
         images: imageArray,
         bedrooms,
         bathrooms,
-        sqft,
         ownerId
     };
 
@@ -130,7 +150,6 @@ export async function createProperty(formData: FormData) {
             });
         }
 
-        // Finalize financial fields via Raw SQL to bypass client sync issues
         await prisma.$executeRawUnsafe(
             `UPDATE "Property" SET "serviceCharge" = $1, "cautionDeposit" = $2, "managementFee" = $3 WHERE "id" = $4`,
             serviceCharge,
@@ -156,40 +175,62 @@ export async function updateProperty(propertyId: string, formData: FormData) {
     const location = formData.get("location") as string;
     const type = formData.get("type") as string;
     const status = formData.get("status") as "AVAILABLE" | "RENTED" | "SOLD" | "MAINTENANCE";
-    const images = formData.get("images") as string;
+
+    // Image Handling - Multiple Files
+    const imageFiles = formData.getAll("images") as File[];
+    const existingImagesStr = formData.get("images_existing") as string;
+    let imageArray: string[] = [];
+
+    // 1. Process local file uploads
+    for (const file of imageFiles) {
+        if (file instanceof File && file.size > 0) {
+            const uploadedUrl = await uploadToCloudinary(file, 'properties');
+            imageArray.push(uploadedUrl);
+        }
+    }
+
+    // 2. Process existing URLs
+    if (existingImagesStr) {
+        try {
+            const existing = JSON.parse(existingImagesStr);
+            if (Array.isArray(existing)) {
+                imageArray = [...imageArray, ...existing];
+            }
+        } catch { }
+    }
+
+    // 3. Fallback for external URL mode
+    const imagesField = formData.get("images");
+    if (typeof imagesField === 'string' && imagesField && !imagesField.startsWith('[')) {
+        imageArray.push(imagesField);
+    } else if (typeof imagesField === 'string' && imagesField?.startsWith('[')) {
+        try {
+            const parsed = JSON.parse(imagesField);
+            if (Array.isArray(parsed)) imageArray = [...imageArray, ...parsed];
+        } catch { }
+    }
+
+    // Deduplicate and limit
+    imageArray = Array.from(new Set(imageArray)).slice(0, 5);
 
     // Specifications
     const bedroomsStr = formData.get("bedrooms") as string;
     const bathroomsStr = formData.get("bathrooms") as string;
-    const sqftStr = formData.get("sqft") as string;
     const serviceChargeStr = formData.get("serviceCharge") as string;
     const cautionDepositStr = formData.get("cautionDeposit") as string;
     const managementFeeStr = formData.get("managementFee") as string;
 
     const bedrooms = (bedroomsStr && !isNaN(parseInt(bedroomsStr))) ? parseInt(bedroomsStr) : null;
     const bathrooms = (bathroomsStr && !isNaN(parseInt(bathroomsStr))) ? parseInt(bathroomsStr) : null;
-    const sqft = (sqftStr && !isNaN(parseInt(sqftStr))) ? parseInt(sqftStr) : null;
     const serviceCharge = (serviceChargeStr && !isNaN(parseFloat(serviceChargeStr))) ? parseFloat(serviceChargeStr) : 0;
     const cautionDeposit = (cautionDepositStr && !isNaN(parseFloat(cautionDepositStr))) ? parseFloat(cautionDepositStr) : 0;
-    const managementFee = (managementFeeStr && !isNaN(parseFloat(managementFeeStr))) ? parseFloat(managementFeeStr) : 10;
+    const managementFee = (managementFeeStr && !isNaN(parseFloat(managementFeeStr))) ? parseFloat(managementFeeStr) : 0;
 
     if (!propertyId || !title || !description || isNaN(price) || !location || !type) {
         throw new Error("Missing required fields or invalid price");
     }
 
-    // Safe image handling
-    let imageArray: string[] = [];
-    if (images) {
-        try {
-            const parsed = JSON.parse(images);
-            imageArray = Array.isArray(parsed) ? parsed : [images];
-        } catch {
-            imageArray = [images];
-        }
-    }
-
     try {
-        // Update core fields
         await prisma.property.update({
             where: { id: propertyId },
             data: {
@@ -202,11 +243,9 @@ export async function updateProperty(propertyId: string, formData: FormData) {
                 images: imageArray,
                 bedrooms,
                 bathrooms,
-                sqft,
             } as any
         });
 
-        // Update financial fields via Raw SQL to bypass possible client validation issues
         await prisma.$executeRawUnsafe(
             `UPDATE "Property" SET "serviceCharge" = $1, "cautionDeposit" = $2, "managementFee" = $3 WHERE "id" = $4`,
             serviceCharge,

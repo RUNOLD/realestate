@@ -24,16 +24,33 @@ export async function sendEmail({ to, subject, html }: SendEmailProps) {
 
     try {
         const resend = new Resend(apiKey);
+        const fromEmail = process.env.RESEND_FROM_EMAIL || 'info@send.ayoolapropertymanagement.com';
+        const isDomainVerified = process.env.RESEND_DOMAIN_VERIFIED === 'true';
+
+        // If domain is not verified, Resend requires 'onboarding@resend.dev'
+        const finalFrom = isDomainVerified ? `Ayoola Property <${fromEmail}>` : 'Ayoola Property <onboarding@resend.dev>';
+
+        if (!isDomainVerified) {
+            console.warn("⚠️ [RESEND NOTICE] Domain not marked as verified in .env. Falling back to onboarding@resend.dev.");
+            console.warn("   To use your company email, verify your domain in Resend and set RESEND_DOMAIN_VERIFIED=true");
+        }
+
         const data = await resend.emails.send({
-            from: 'Ayoola Property <onboarding@resend.dev>', // Update this with verified domain later
+            from: finalFrom,
             to: to,
             subject: subject,
             html: html,
         });
 
+        if (data.error) {
+            console.error("❌ Resend Service Error:", data.error);
+            return { success: false, error: data.error };
+        }
+
+        console.log(`✅ Email Sent Successfully to ${to}. ID: ${data.data?.id}`);
         return { success: true, data };
     } catch (error) {
-        console.error("Failed to send email:", error);
+        console.error("❌ Critical Email Failure:", error);
         return { success: false, error };
     }
 }

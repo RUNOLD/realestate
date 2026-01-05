@@ -13,6 +13,7 @@ import {
     Activity
 } from "lucide-react";
 import { notFound } from "next/navigation";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 export default async function EditPropertyPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
@@ -109,7 +110,7 @@ export default async function EditPropertyPage(props: { params: Promise<{ id: st
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
                                             <label htmlFor="bedrooms" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Bedrooms</label>
                                             <Input id="bedrooms" name="bedrooms" type="number" defaultValue={property.bedrooms ?? ""} placeholder="0" min="0" className="h-12 bg-muted/50 border-transparent focus:border-primary focus:bg-background transition-all text-center text-foreground" />
@@ -117,10 +118,6 @@ export default async function EditPropertyPage(props: { params: Promise<{ id: st
                                         <div className="space-y-2">
                                             <label htmlFor="bathrooms" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Bathrooms</label>
                                             <Input id="bathrooms" name="bathrooms" type="number" defaultValue={property.bathrooms ?? ""} placeholder="0" min="0" className="h-12 bg-muted/50 border-transparent focus:border-primary focus:bg-background transition-all text-center text-foreground" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label htmlFor="sqft" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Sqft</label>
-                                            <Input id="sqft" name="sqft" type="number" defaultValue={property.sqft ?? ""} placeholder="0" min="0" className="h-12 bg-muted/50 border-transparent focus:border-primary focus:bg-background transition-all text-center text-foreground" />
                                         </div>
                                     </div>
 
@@ -149,9 +146,12 @@ export default async function EditPropertyPage(props: { params: Promise<{ id: st
                                     </div>
                                     <h2>Gallery</h2>
                                 </div>
-                                <div className="space-y-2">
-                                    <label htmlFor="images" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Cover Image URL</label>
-                                    <Input id="images" name="images" defaultValue={property.images && property.images.length > 0 ? property.images[0] : ""} placeholder="https://..." className="h-12 font-mono text-xs bg-muted/50 border-transparent focus:border-primary focus:bg-background transition-all text-foreground" />
+                                <div className="space-y-4">
+                                    <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Cover Image</label>
+                                    <ImageUpload
+                                        name="images"
+                                        defaultValue={property.images && property.images.length > 0 ? property.images[0] : ""}
+                                    />
                                 </div>
                             </div>
                         </div>

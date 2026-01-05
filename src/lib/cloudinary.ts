@@ -22,20 +22,30 @@ export async function uploadToCloudinary(file: File, folder: string = 'realestat
 
     return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
-            { folder: folder, resource_type: 'auto' },
+            {
+                folder: folder,
+                resource_type: 'auto',
+                quality: 'auto',
+                fetch_format: 'auto'
+            },
             (error, result) => {
                 if (error) {
-                    console.error('Cloudinary Upload Stream Error:', error);
+                    console.error('❌ Cloudinary Upload Stream Error:', {
+                        message: error.message,
+                        http_code: error.http_code,
+                        name: error.name
+                    });
                     reject(new Error(`Cloudinary upload failed: ${error.message} (Code: ${error.http_code})`));
                     return;
                 }
 
                 if (!result?.secure_url) {
-                    console.error('Cloudinary Upload failed to return a secure_url:', result);
+                    console.error('❌ Cloudinary Upload failed to return a secure_url. Result:', result);
                     reject(new Error('Cloudinary upload succeeded but no URL was returned.'));
                     return;
                 }
 
+                console.log(`✅ Cloudinary Upload Success: ${result.secure_url}`);
                 resolve(result.secure_url);
             }
         );

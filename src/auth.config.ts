@@ -22,8 +22,8 @@ export const authConfig = {
             if (isOnAdmin) {
                 if (!isLoggedIn) return false; // Redirect to login
 
-                // STRICT RBAC: Only ADMIN and STAFF can access /admin
-                const hasAdminAccess = userRole === 'ADMIN' || userRole === 'STAFF';
+                // STRICT RBAC: Only ADMIN, STAFF and LANDLORD can access /admin
+                const hasAdminAccess = userRole === 'ADMIN' || userRole === 'STAFF' || userRole === 'LANDLORD';
                 if (!hasAdminAccess) {
                     console.warn(`[Middleware Block] User with role '${userRole}' attempted to access ADMIN route.`);
                     // Redirect unauthorized users to their appropriate dashboard or home

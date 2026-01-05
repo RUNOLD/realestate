@@ -11,7 +11,7 @@ export default async function EditUserPage({
     const { id } = await params;
     const session = await auth();
 
-    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') {
+    if (!session?.user?.id || !['ADMIN', 'STAFF', 'LANDLORD'].includes((session.user as any).role)) {
         redirect("/login");
     }
 

@@ -25,7 +25,42 @@ export async function createNotification(
             }
         });
 
-        // Trigger Real-time notification via Pusher
+        // 1. Fetch User Preferences to check if we should send Email/SMS
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { email: true, notificationPreferences: true }
+        });
+
+        const preferences = user?.notificationPreferences as any;
+
+        // 2. Trigger External Alerts based on "Pulse Connectivity" preferences
+        if (preferences?.email && user?.email) {
+            try {
+                const { sendEmail } = await import("@/lib/mail");
+                await sendEmail({
+                    to: user.email,
+                    subject: `[Ayoola Pulse] ${title}`,
+                    html: `
+                        <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; color: #333;">
+                            <h2 style="color: #1a1a1a;">${title}</h2>
+                            <p>${message || 'You have a new update on your portal.'}</p>
+                            ${link ? `<div style="margin: 20px 0;">
+                                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}${link}" 
+                                   style="background: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                                    View Details
+                                </a>
+                            </div>` : ''}
+                            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                            <p style="font-size: 12px; color: #666;">Ayoola Property Management & Sourcing Services Limited</p>
+                        </div>
+                    `
+                });
+            } catch (mailError) {
+                console.error("Pulse Email Error:", mailError);
+            }
+        }
+
+        // 3. Trigger Real-time notification via Pusher
         try {
             const { pusherServer } = await import("@/lib/pusher");
             await pusherServer.trigger(`private-user-${userId}`, "incoming-notification", {

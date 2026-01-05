@@ -130,6 +130,15 @@ export default async function PayoutsPage() {
         });
     }).flat().filter(p => p.hasPending);
 
+    const allPayouts = await prisma.payout.findMany({
+        include: {
+            landlord: { select: { name: true, email: true } },
+            property: { select: { title: true } }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 50
+    });
+
     return (
         <div className="space-y-8 p-6 sm:p-8">
             <div className="flex justify-between items-center">
@@ -158,6 +167,17 @@ export default async function PayoutsPage() {
                             ₦{pendingPayouts.reduce((sum, p) => sum + (Number(p.netPayable) || 0), 0).toLocaleString()}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">After commission & expenses</p>
+                    </CardContent>
+                </Card>
+                <Card className="bg-card border-border">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground uppercase">Historical Payouts</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold text-blue-600">
+                            {allPayouts.length}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Total processed transactions</p>
                     </CardContent>
                 </Card>
             </div>
@@ -229,6 +249,77 @@ export default async function PayoutsPage() {
                                         </TableCell>
                                     </TableRow>
                                 ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+
+            {/* Payout History Section */}
+            <Card className="bg-card border-border shadow-sm">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-primary" />
+                        Payout History
+                    </CardTitle>
+                    <CardDescription>A log of all payouts processed for landlords.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Reference</TableHead>
+                                <TableHead>Landlord</TableHead>
+                                <TableHead>Property</TableHead>
+                                <TableHead>Formula</TableHead>
+                                <TableHead className="text-right font-bold">Net Amount</TableHead>
+                                <TableHead>Status</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {allPayouts.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                                        No historical payouts found.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                allPayouts.map((payout) => {
+                                    const snapshot = payout.expenseSnapshot as any;
+                                    return (
+                                        <TableRow key={payout.id} className="hover:bg-muted/50 transition-colors">
+                                            <TableCell className="whitespace-nowrap">
+                                                {new Date(payout.createdAt).toLocaleDateString()}
+                                            </TableCell>
+                                            <TableCell className="font-mono text-xs text-muted-foreground">
+                                                {payout.reference}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="font-medium">{payout.landlord.name}</div>
+                                                <div className="text-[10px] text-muted-foreground">{payout.landlord.email}</div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {payout.property?.title || "Multiple Properties"}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="text-[10px] space-y-0.5">
+                                                    <div className="text-muted-foreground">Gross: ₦{Number(snapshot?.totalCollected || 0).toLocaleString()}</div>
+                                                    <div className="text-amber-600">Comm ({snapshot?.managementFee}%): -₦{Number(snapshot?.commission || 0).toLocaleString()}</div>
+                                                    <div className="text-red-500">Exp: -₦{Number(snapshot?.totalExpenses || 0).toLocaleString()}</div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-right font-bold text-foreground">
+                                                ₦{payout.amount.toLocaleString()}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 capitalize">
+                                                    {payout.status.toLowerCase()}
+                                                </Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })
                             )}
                         </TableBody>
                     </Table>

@@ -13,7 +13,11 @@ import {
     FileText,
     Coins,
     ShieldCheck,
-    Download
+    Download,
+    Building,
+    MapPin,
+    Plus,
+    LayoutDashboard
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -21,8 +25,9 @@ import { DocumentUpload } from "@/components/tenant/DocumentUpload";
 import { CreateLeaseModal } from "@/components/admin/properties/CreateLeaseModal";
 import { ResetPasswordButton } from "@/components/admin/users/ResetPasswordButton";
 import { TenantProfileDetail } from "@/components/admin/users/TenantProfileDetail";
-import { LandlordDetail } from "@/components/admin/users/LandlordDetail";
+import { LandlordProfileDetail } from "@/components/admin/users/LandlordProfileDetail";
 import { TenantSnapshot } from "@/components/admin/users/TenantSnapshot";
+import { LandlordSnapshot } from "@/components/admin/users/LandlordSnapshot";
 import { TenantAdminQuickActions } from "@/components/admin/users/TenantAdminQuickActions";
 import { TenantLeaseSection } from "@/components/admin/users/TenantLeaseSection";
 import { getTenantFinancials } from "@/actions/financials";
@@ -55,7 +60,11 @@ export default async function UserDetailPage(props: PageProps) {
             },
             landlordProfile: true,
             tenantProfile: true,
-            ownedProperties: true
+            ownedProperties: {
+                include: {
+                    tickets: true
+                }
+            }
         }
     });
 
@@ -135,194 +144,274 @@ export default async function UserDetailPage(props: PageProps) {
                 )}
             </div>
 
-            {user.role === 'LANDLORD' ? (
-                <LandlordDetail user={user} properties={user.ownedProperties} />
-            ) : (
-                <div className="space-y-6">
-                    {/* Snapshot */}
-                    {financials && (
-                        <TenantSnapshot
-                            financials={financials as any}
-                            blacklistReason={(user as any).blacklistReason}
-                        />
-                    )}
+            {/* Template Container */}
+            <div className="space-y-6">
+                {/* Snapshot Section */}
+                {user.role === 'TENANT' && financials ? (
+                    <TenantSnapshot
+                        financials={financials as any}
+                        blacklistReason={(user as any).blacklistReason}
+                    />
+                ) : user.role === 'LANDLORD' ? (
+                    <LandlordSnapshot user={user} properties={user.ownedProperties} />
+                ) : null}
 
-                    <Tabs defaultValue="overview" className="w-full">
-                        <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 mb-6 space-x-6">
-                            <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-1 font-bold">Overview</TabsTrigger>
-                            <TabsTrigger value="lease" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-1 font-bold">Lease</TabsTrigger>
-                            <TabsTrigger value="fees" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-1 font-bold">Fees & Deposits</TabsTrigger>
-                            <TabsTrigger value="documents" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-1 font-bold">Documents</TabsTrigger>
-                            <TabsTrigger value="tickets" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-1 font-bold">Tickets ({user.tickets.length})</TabsTrigger>
-                            <TabsTrigger value="profile" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-1 font-bold">Full Profile</TabsTrigger>
-                        </TabsList>
+                <Tabs defaultValue="overview" className="w-full">
+                    <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 mb-6 space-x-6">
+                        <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-1 font-bold">Overview</TabsTrigger>
 
-                        <TabsContent value="overview" className="space-y-6 mt-0">
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                <Card>
-                                    <div className="p-6">
-                                        <h3 className="font-bold text-lg mb-4 text-primary border-b pb-2">Contact Details</h3>
-                                        <div className="space-y-4 text-sm">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-muted-foreground flex items-center gap-2"><Mail size={14} /> Email</span>
-                                                <span className="font-medium">{user.email}</span>
-                                            </div>
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-muted-foreground flex items-center gap-2"><Phone size={14} /> Phone</span>
-                                                <span className="font-medium">{maskData(user.phone)}</span>
-                                            </div>
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-muted-foreground flex items-center gap-2"><Shield size={14} /> ID Number</span>
-                                                <span className="font-mono text-xs">{maskData(user.uniqueId || user.id)}</span>
-                                            </div>
-                                        </div>
-                                        <div className="mt-6 pt-4 border-t">
-                                            <ResetPasswordButton email={user.email} />
-                                        </div>
-                                    </div>
-                                </Card>
+                        {user.role === 'TENANT' ? (
+                            <>
+                                <TabsTrigger value="lease" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-1 font-bold">Lease</TabsTrigger>
+                                <TabsTrigger value="fees" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-1 font-bold">Fees & Deposits</TabsTrigger>
+                            </>
+                        ) : user.role === 'LANDLORD' ? (
+                            <TabsTrigger value="portfolio" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-1 font-bold">Property Portfolio</TabsTrigger>
+                        ) : null}
 
-                                <Card className="lg:col-span-2">
-                                    <div className="p-6">
-                                        <h3 className="font-bold text-lg mb-4 text-primary flex items-center gap-2">
-                                            <Shield size={18} /> Customer Service Note
-                                        </h3>
-                                        {user.role === 'TENANT' && financials && (
-                                            <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-lg">
-                                                <p className="text-sm text-blue-800 leading-relaxed">
-                                                    This tenant is currently in <span className="font-bold underline uppercase">{financials.status}</span> status.
-                                                    When resolving tickets, prioritize high-impact maintenance issues.
-                                                    Outstanding balance: <span className="font-bold text-red-600">₦{financials.balance?.toLocaleString() || 0}</span>.
-                                                </p>
-                                            </div>
-                                        )}
+                        <TabsTrigger value="documents" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-1 font-bold">Documents</TabsTrigger>
 
-                                        {!financials?.lease && (
-                                            <div className="mt-6 p-6 border-2 border-dashed rounded-xl text-center space-y-4">
-                                                <div className="mx-auto w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                                                    <Clock size={20} className="text-muted-foreground" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-medium">Assign to Property</p>
-                                                    <p className="text-xs text-muted-foreground">This user is not active yet.</p>
-                                                </div>
-                                                <CreateLeaseModal userId={user.id} properties={availableProperties} />
-                                            </div>
-                                        )}
-                                    </div>
-                                </Card>
-                            </div>
-                        </TabsContent>
+                        <TabsTrigger value="tickets" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-1 font-bold">
+                            Tickets {user.role === 'TENANT' ? `(${user.tickets.length})` : ''}
+                        </TabsTrigger>
 
-                        <TabsContent value="lease" className="space-y-6 mt-0">
-                            <TenantLeaseSection lease={financials?.lease} />
-                        </TabsContent>
+                        <TabsTrigger value="profile" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-1 font-bold">Full Profile</TabsTrigger>
+                    </TabsList>
 
-                        <TabsContent value="fees" className="space-y-6 mt-0">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Card>
-                                    <div className="p-6 border-b">
-                                        <h3 className="font-bold text-lg flex items-center gap-2">
-                                            <Coins className="text-amber-500" size={20} /> Service Charge
-                                        </h3>
-                                    </div>
-                                    <div className="p-6 space-y-4">
-                                        <div className="flex justify-between items-center bg-muted/30 p-3 rounded-lg">
-                                            <span className="text-sm font-medium">Standard Amount</span>
-                                            <span className="font-black">₦{financials?.lease?.property?.serviceCharge?.toLocaleString() || 0}</span>
-                                        </div>
-                                        <div className="divide-y border rounded-lg">
-                                            {user.payments.filter(p => p.category === 'SERVICE_CHARGE').length === 0 ? (
-                                                <div className="p-8 text-center text-xs text-muted-foreground italic">No service charge payments recorded.</div>
-                                            ) : (
-                                                user.payments.filter(p => p.category === 'SERVICE_CHARGE').map(p => (
-                                                    <div key={p.id} className="p-3 flex justify-between items-center">
-                                                        <div>
-                                                            <p className="font-bold text-sm">₦{p.amount.toLocaleString()}</p>
-                                                            <p className="text-[10px] text-muted-foreground">{new Date(p.createdAt).toLocaleDateString()}</p>
-                                                        </div>
-                                                        <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700 border-green-200">Paid ✔</Badge>
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-                                    </div>
-                                </Card>
-
-                                <Card>
-                                    <div className="p-6 border-b">
-                                        <h3 className="font-bold text-lg flex items-center gap-2">
-                                            <ShieldCheck className="text-blue-500" size={20} /> Caution Deposit
-                                        </h3>
-                                    </div>
-                                    <div className="p-6 space-y-4">
-                                        <div className="flex justify-between items-center bg-muted/30 p-3 rounded-lg">
-                                            <span className="text-sm font-medium">Required Deposit</span>
-                                            <span className="font-black">₦{financials?.lease?.property?.cautionDeposit?.toLocaleString() || 0}</span>
-                                        </div>
-                                        <div className="divide-y border rounded-lg">
-                                            {user.payments.filter(p => p.category === 'CAUTION_DEPOSIT').length === 0 ? (
-                                                <div className="p-8 text-center text-xs text-muted-foreground italic">No caution deposit recorded.</div>
-                                            ) : (
-                                                user.payments.filter(p => p.category === 'CAUTION_DEPOSIT').map(p => (
-                                                    <div key={p.id} className="p-3 flex justify-between items-center">
-                                                        <div>
-                                                            <p className="font-bold text-sm">₦{p.amount.toLocaleString()}</p>
-                                                            <p className="text-[10px] text-muted-foreground">{new Date(p.createdAt).toLocaleDateString()}</p>
-                                                        </div>
-                                                        <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">Held ✔</Badge>
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-                                    </div>
-                                </Card>
-                            </div>
-
+                    {/* OVERVIEW TAB */}
+                    <TabsContent value="overview" className="space-y-6 mt-0">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <Card>
-                                <div className="p-6 border-b flex justify-between items-center">
-                                    <h3 className="font-bold text-lg">Detailed Payment History</h3>
-                                    {financials && (
-                                        <div className="flex items-center gap-4 text-sm">
-                                            <div className="text-right">
-                                                <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Due (Rent)</p>
-                                                <p className="font-bold">₦{financials.totalDue?.toLocaleString() || 0}</p>
+                                <div className="p-6">
+                                    <h3 className="font-bold text-lg mb-4 text-primary border-b pb-2">Contact Details</h3>
+                                    <div className="space-y-4 text-sm">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground flex items-center gap-2"><Mail size={14} /> Email</span>
+                                            <span className="font-medium">{user.email}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground flex items-center gap-2"><Phone size={14} /> Phone</span>
+                                            <span className="font-medium">{maskData(user.phone)}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground flex items-center gap-2"><Shield size={14} /> ID Number</span>
+                                            <span className="font-mono text-xs">{maskData(user.uniqueId || user.id)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-6 pt-4 border-t">
+                                        <ResetPasswordButton email={user.email} />
+                                    </div>
+                                </div>
+                            </Card>
+
+                            <Card className="lg:col-span-2">
+                                <div className="p-6">
+                                    <h3 className="font-bold text-lg mb-4 text-primary flex items-center gap-2">
+                                        <ShieldCheck size={18} /> {user.role === 'TENANT' ? 'Customer Service Note' : 'Landlord Authority & Status'}
+                                    </h3>
+
+                                    {user.role === 'TENANT' && financials && (
+                                        <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-lg">
+                                            <p className="text-sm text-blue-800 leading-relaxed">
+                                                This tenant is currently in <span className="font-bold underline uppercase">{financials.status}</span> status.
+                                                When resolving tickets, prioritize high-impact maintenance issues.
+                                                Outstanding balance: <span className="font-bold text-red-600">₦{financials.balance?.toLocaleString() || 0}</span>.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {user.role === 'LANDLORD' && (
+                                        <div className={`p-4 rounded-lg border ${user.landlordProfile?.isConsentGiven ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
+                                            <p className={`text-sm font-medium ${user.landlordProfile?.isConsentGiven ? 'text-green-800' : 'text-red-800'}`}>
+                                                {user.landlordProfile?.isConsentGiven
+                                                    ? `Authority confirmed and verified. Landlord signed consent on ${user.landlordProfile.consentDate ? new Date(user.landlordProfile.consentDate).toLocaleDateString() : 'N/A'}.`
+                                                    : "Pending Consent: This landlord has not yet signed the authority to manage properties digitally."}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {user.role === 'TENANT' && !financials?.lease && (
+                                        <div className="mt-6 p-6 border-2 border-dashed rounded-xl text-center space-y-4">
+                                            <div className="mx-auto w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                                                <Clock size={20} className="text-muted-foreground" />
                                             </div>
-                                            <div className="text-right">
-                                                <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Paid (Rent)</p>
-                                                <p className="font-bold text-green-600">₦{financials.totalPaid?.toLocaleString() || 0}</p>
+                                            <div>
+                                                <p className="text-sm font-medium">Assign to Property</p>
+                                                <p className="text-xs text-muted-foreground">This user is not active yet.</p>
                                             </div>
+                                            <CreateLeaseModal userId={user.id} properties={availableProperties} />
                                         </div>
                                     )}
                                 </div>
+                            </Card>
+                        </div>
+                    </TabsContent>
+
+                    {/* TENANT SPECIFIC TABS */}
+                    {user.role === 'TENANT' && (
+                        <>
+                            <TabsContent value="lease" className="space-y-6 mt-0">
+                                <TenantLeaseSection lease={financials?.lease} />
+                            </TabsContent>
+
+                            <TabsContent value="fees" className="space-y-6 mt-0">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <Card>
+                                        <div className="p-6 border-b">
+                                            <h3 className="font-bold text-lg flex items-center gap-2">
+                                                <Coins className="text-amber-500" size={20} /> Service Charge
+                                            </h3>
+                                        </div>
+                                        <div className="p-6 space-y-4">
+                                            <div className="flex justify-between items-center bg-muted/30 p-3 rounded-lg">
+                                                <span className="text-sm font-medium">Standard Amount</span>
+                                                <span className="font-black">₦{financials?.lease?.property?.serviceCharge?.toLocaleString() || 0}</span>
+                                            </div>
+                                            <div className="divide-y border rounded-lg">
+                                                {user.payments.filter(p => p.status === 'SUCCESS' && p.category?.includes('SERVICE_CHARGE')).length === 0 ? (
+                                                    <div className="p-8 text-center text-xs text-muted-foreground italic">No service charge payments recorded.</div>
+                                                ) : (
+                                                    user.payments.filter(p => p.status === 'SUCCESS' && p.category?.includes('SERVICE_CHARGE')).map(p => (
+                                                        <div key={p.id} className="p-3 flex justify-between items-center">
+                                                            <div>
+                                                                <p className="font-bold text-sm">₦{p.amount.toLocaleString()}</p>
+                                                                <p className="text-[10px] text-muted-foreground">{new Date(p.createdAt).toLocaleDateString()}</p>
+                                                            </div>
+                                                            <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700 border-green-200">Paid ✔</Badge>
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Card>
+
+                                    <Card>
+                                        <div className="p-6 border-b">
+                                            <h3 className="font-bold text-lg flex items-center gap-2">
+                                                <ShieldCheck className="text-blue-500" size={20} /> Caution Deposit
+                                            </h3>
+                                        </div>
+                                        <div className="p-6 space-y-4">
+                                            <div className="flex justify-between items-center bg-muted/30 p-3 rounded-lg">
+                                                <span className="text-sm font-medium">Required Deposit</span>
+                                                <span className="font-black">₦{financials?.lease?.property?.cautionDeposit?.toLocaleString() || 0}</span>
+                                            </div>
+                                            <div className="divide-y border rounded-lg">
+                                                {user.payments.filter(p => p.status === 'SUCCESS' && p.category?.includes('CAUTION_DEPOSIT')).length === 0 ? (
+                                                    <div className="p-8 text-center text-xs text-muted-foreground italic">No caution deposit recorded.</div>
+                                                ) : (
+                                                    user.payments.filter(p => p.status === 'SUCCESS' && p.category?.includes('CAUTION_DEPOSIT')).map(p => (
+                                                        <div key={p.id} className="p-3 flex justify-between items-center">
+                                                            <div>
+                                                                <p className="font-bold text-sm">₦{p.amount.toLocaleString()}</p>
+                                                                <p className="text-[10px] text-muted-foreground">{new Date(p.createdAt).toLocaleDateString()}</p>
+                                                            </div>
+                                                            <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">Held ✔</Badge>
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Card>
+                                </div>
+
+                                <Card>
+                                    <div className="p-6 border-b flex justify-between items-center">
+                                        <h3 className="font-bold text-lg">Detailed Payment History</h3>
+                                        {financials && (
+                                            <div className="flex items-center gap-4 text-sm">
+                                                <div className="text-right">
+                                                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Overall Due</p>
+                                                    <p className="font-bold">₦{financials.totalDue?.toLocaleString() || 0}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Overall Paid</p>
+                                                    <p className="font-bold text-green-600">₦{financials.totalPaid?.toLocaleString() || 0}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="divide-y">
+                                        {user.payments.length === 0 ? (
+                                            <div className="p-12 text-center text-muted-foreground italic">
+                                                No payment records found.
+                                            </div>
+                                        ) : (
+                                            user.payments.map(payment => (
+                                                <div key={payment.id} className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${payment.status === 'SUCCESS' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                                            }`}>
+                                                            <CreditCard size={20} />
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="font-bold text-sm tracking-tight">{payment.method} Payment</p>
+                                                                {((payment as any).category || 'RENT').split(', ').map((cat: string) => (
+                                                                    <Badge key={cat} variant="outline" className="text-[9px] uppercase font-bold">{cat}</Badge>
+                                                                ))}
+                                                            </div>
+                                                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                                                Ref: {payment.reference} • {new Date(payment.createdAt).toLocaleDateString()}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="font-black text-sm">₦{payment.amount.toLocaleString()}</p>
+                                                        <Badge variant={payment.status === 'SUCCESS' ? "default" : "destructive"} className="text-[10px] h-4 px-1">
+                                                            {payment.status}
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </Card>
+                            </TabsContent>
+                        </>
+                    )}
+
+                    {/* LANDLORD SPECIFIC TABS */}
+                    {user.role === 'LANDLORD' && (
+                        <TabsContent value="portfolio" className="space-y-6 mt-0">
+                            <Card className="overflow-hidden">
+                                <div className="p-6 border-b flex justify-between items-center bg-gray-50/50">
+                                    <h3 className="font-bold text-lg text-primary flex items-center gap-2">
+                                        <Building size={20} /> Property Portfolio
+                                    </h3>
+                                    <Link href="/admin/properties/check-in">
+                                        <Button size="sm" variant="outline" className="gap-2 font-bold">
+                                            <Plus size={14} /> Add Property
+                                        </Button>
+                                    </Link>
+                                </div>
                                 <div className="divide-y">
-                                    {user.payments.length === 0 ? (
-                                        <div className="p-12 text-center text-muted-foreground italic">
-                                            No payment records found.
+                                    {user.ownedProperties.length === 0 ? (
+                                        <div className="p-12 text-center text-muted-foreground">
+                                            <Building size={48} className="mx-auto mb-4 opacity-10" />
+                                            <p className="font-bold">No properties assigned to this landlord.</p>
                                         </div>
                                     ) : (
-                                        user.payments.map(payment => (
-                                            <div key={payment.id} className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                                        user.ownedProperties.map((property: any) => (
+                                            <div key={property.id} className="p-4 hover:bg-muted/30 transition-colors flex items-center justify-between">
                                                 <div className="flex items-center gap-4">
-                                                    <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${payment.status === 'SUCCESS' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                                                        }`}>
-                                                        <CreditCard size={20} />
+                                                    <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+                                                        <Building size={24} />
                                                     </div>
                                                     <div>
-                                                        <div className="flex items-center gap-2">
-                                                            <p className="font-bold text-sm tracking-tight">{payment.method} Payment</p>
-                                                            <Badge variant="outline" className="text-[9px] uppercase font-bold">{(payment as any).category || 'RENT'}</Badge>
+                                                        <h4 className="font-black text-foreground tracking-tight">{property.title}</h4>
+                                                        <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin size={12} /> {property.location}</p>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <Badge variant="outline" className="text-[9px] uppercase font-bold">{property.status}</Badge>
+                                                            <Badge variant="secondary" className="text-[9px] uppercase font-bold">{property.type}</Badge>
                                                         </div>
-                                                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                                            Ref: {payment.reference} • {new Date(payment.createdAt).toLocaleDateString()}
-                                                        </p>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="font-black text-sm">₦{payment.amount.toLocaleString()}</p>
-                                                    <Badge variant={payment.status === 'SUCCESS' ? "default" : "destructive"} className="text-[10px] h-4 px-1">
-                                                        {payment.status}
-                                                    </Badge>
+                                                    <p className="font-black text-base">₦{property.price.toLocaleString()}</p>
+                                                    <Link href={`/admin/properties/${property.id}`}>
+                                                        <Button variant="ghost" size="sm" className="h-7 text-[10px] font-bold">Manage</Button>
+                                                    </Link>
                                                 </div>
                                             </div>
                                         ))
@@ -330,31 +419,35 @@ export default async function UserDetailPage(props: PageProps) {
                                 </div>
                             </Card>
                         </TabsContent>
+                    )}
 
-                        <TabsContent value="documents" className="space-y-6 mt-0">
-                            <Card>
-                                <div className="p-6 border-b flex justify-between items-center">
-                                    <h3 className="font-bold text-lg flex items-center gap-2">
-                                        <FileText size={20} /> KYC & Agreements
-                                    </h3>
-                                    <Badge variant="secondary">{user.documents.length} Files</Badge>
-                                </div>
-                                <div className="p-6 space-y-8">
-                                    <DocumentUpload userId={user.id} />
+                    {/* SHARED TABS */}
+                    <TabsContent value="documents" className="space-y-6 mt-0">
+                        <Card>
+                            <div className="p-6 border-b flex justify-between items-center">
+                                <h3 className="font-bold text-lg flex items-center gap-2">
+                                    <FileText size={20} /> {user.role === 'TENANT' ? 'KYC & Agreements' : 'Agreements & Property Documents'}
+                                </h3>
+                                <Badge variant="secondary">{user.documents.length} Files</Badge>
+                            </div>
+                            <div className="p-6 space-y-8">
+                                <DocumentUpload userId={user.id} />
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {user.documents.map(doc => (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {user.documents.length === 0 ? (
+                                        <div className="col-span-full p-8 text-center text-muted-foreground italic">No documents uploaded yet.</div>
+                                    ) : (
+                                        user.documents.map(doc => (
                                             <div key={doc.id} className="p-4 border rounded-xl flex items-center justify-between group hover:border-primary/50 transition-all">
                                                 <div className="flex items-center gap-4 overflow-hidden">
-                                                    <div className="h-10 w-10 bg-primary/5 text-primary rounded-lg flex items-center justify-center shrink-0">
+                                                    <div className="h-10 w-10 bg-amber-500/10 text-amber-600 rounded-lg flex items-center justify-center shrink-0">
                                                         <FileText size={20} />
                                                     </div>
                                                     <div className="overflow-hidden">
                                                         <p className="font-bold text-sm truncate">{doc.name}</p>
                                                         <div className="flex items-center gap-2 mt-0.5">
                                                             <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded font-bold uppercase">{doc.category || 'DOC'}</span>
-                                                            <Badge variant="outline" className="text-[9px] h-4 px-1 bg-green-50 text-green-700 border-green-200">Verified ✔</Badge>
-                                                            <span className="text-[9px] text-muted-foreground">Expires in 180 days</span>
+                                                            <span className="text-[9px] text-muted-foreground">{new Date(doc.createdAt).toLocaleDateString()}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -364,16 +457,23 @@ export default async function UserDetailPage(props: PageProps) {
                                                     </a>
                                                 </Button>
                                             </div>
-                                        ))}
-                                    </div>
+                                        ))
+                                    )}
                                 </div>
-                            </Card>
-                        </TabsContent>
+                            </div>
+                        </Card>
+                    </TabsContent>
 
-                        <TabsContent value="tickets" className="space-y-6 mt-0">
-                            <Card>
-                                <div className="divide-y">
-                                    {user.tickets.length === 0 ? (
+                    <TabsContent value="tickets" className="space-y-6 mt-0">
+                        <Card>
+                            <div className="p-6 border-b">
+                                <h3 className="font-bold text-lg flex items-center gap-2">
+                                    <Ticket size={20} /> {user.role === 'TENANT' ? 'Complaint Records' : 'Portfolio Tickets'}
+                                </h3>
+                            </div>
+                            <div className="divide-y">
+                                {user.role === 'TENANT' ? (
+                                    user.tickets.length === 0 ? (
                                         <div className="p-12 text-center text-muted-foreground">No complaints filed by this tenant.</div>
                                     ) : (
                                         user.tickets.map(ticket => (
@@ -399,17 +499,46 @@ export default async function UserDetailPage(props: PageProps) {
                                                 </div>
                                             </div>
                                         ))
-                                    )}
-                                </div>
-                            </Card>
-                        </TabsContent>
+                                    )
+                                ) : (
+                                    /* Landlord Portfolio Tickets */
+                                    (() => {
+                                        const portfolioTickets = user.ownedProperties.flatMap((p: any) => p.tickets || []);
+                                        if (portfolioTickets.length === 0) return <div className="p-12 text-center text-muted-foreground">No tickets associated with this landlord's properties.</div>;
+                                        return portfolioTickets.map((ticket: any) => (
+                                            <div key={ticket.id} className="p-6 hover:bg-muted/30 transition-colors">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <h4 className="font-black text-lg text-primary">{ticket.subject}</h4>
+                                                            {getPriorityBadge(ticket.priority)}
+                                                        </div>
+                                                        <p className="text-[10px] text-muted-foreground uppercase font-bold mt-1">Property: {user.ownedProperties.find((p: any) => p.id === ticket.propertyId)?.title || "Unknown"}</p>
+                                                    </div>
+                                                    {getTicketStatusBadge(ticket.status)}
+                                                </div>
+                                                <div className="mt-4 flex justify-end">
+                                                    <Link href={`/admin/tickets/${ticket.id}`}>
+                                                        <Button variant="outline" size="sm" className="font-bold">Manage Ticket</Button>
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        ));
+                                    })()
+                                )}
+                            </div>
+                        </Card>
+                    </TabsContent>
 
-                        <TabsContent value="profile" className="mt-0">
+                    <TabsContent value="profile" className="mt-0">
+                        {user.role === 'TENANT' ? (
                             <TenantProfileDetail profile={user.tenantProfile} />
-                        </TabsContent>
-                    </Tabs>
-                </div>
-            )}
+                        ) : user.role === 'LANDLORD' ? (
+                            <LandlordProfileDetail profile={user.landlordProfile} />
+                        ) : null}
+                    </TabsContent>
+                </Tabs>
+            </div>
         </div>
     );
 }

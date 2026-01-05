@@ -107,7 +107,7 @@ export default async function AdminLandlordsPage({ searchParams }: PageProps) {
                                         </td>
                                         <td className="px-6 py-4">
                                             <Button variant="outline" size="sm" asChild>
-                                                <Link href={`/admin/landlords/${landlord.id}`}>
+                                                <Link href={`/admin/users/${landlord.id}`}>
                                                     View Details
                                                 </Link>
                                             </Button>

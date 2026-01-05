@@ -196,13 +196,63 @@ export async function deleteLease(leaseId: string) {
     }
 }
 
-export async function deleteProperty(propertyId: string) {
+export async function deleteProperty(propertyId: string, reason: string, deleteAllUnits: boolean = false) {
     const session = await auth();
     if (!session?.user?.id || (session.user as any).role !== 'ADMIN') return { error: "Unauthorized" };
 
     try {
-        await prisma.property.delete({
-            where: { id: propertyId }
+        const property = await prisma.property.findUnique({
+            where: { id: propertyId },
+            include: { units: true }
+        });
+
+        if (!property) return { error: "Property not found" };
+
+        let idsToDelete = [propertyId];
+
+        if (deleteAllUnits) {
+            if (property.parentId) {
+                // If it's a unit, find siblings and include the parent
+                const siblings = await prisma.property.findMany({
+                    where: { parentId: property.parentId },
+                    select: { id: true }
+                });
+                idsToDelete = Array.from(new Set([...idsToDelete, ...siblings.map(s => s.id), property.parentId]));
+            } else if (property.units.length > 0) {
+                // If it's a parent, find all units
+                idsToDelete = Array.from(new Set([...idsToDelete, ...property.units.map(u => u.id)]));
+            }
+        }
+
+        await prisma.$transaction(async (tx) => {
+            // Disconnect or delete related records to satisfy constraints
+
+            // Tickets
+            await tx.ticket.deleteMany({ where: { propertyId: { in: idsToDelete } } });
+            await tx.ticket.deleteMany({ where: { unitId: { in: idsToDelete } } });
+
+            // Payments
+            await tx.payment.updateMany({
+                where: { propertyId: { in: idsToDelete } },
+                data: { propertyId: null }
+            });
+
+            // LandlordExpense
+            await tx.landlordExpense.deleteMany({ where: { propertyId: { in: idsToDelete } } });
+
+            // Payouts
+            await tx.payout.updateMany({
+                where: { propertyId: { in: idsToDelete } },
+                data: { propertyId: null }
+            });
+
+            // Delete the properties in correct order (children first to avoid FK issues)
+            await tx.property.deleteMany({
+                where: { id: { in: idsToDelete }, parentId: { not: null } }
+            });
+            await tx.property.deleteMany({
+                where: { id: { in: idsToDelete }, parentId: null }
+            });
         });
 
         await createActivityLog(
@@ -210,13 +260,13 @@ export async function deleteProperty(propertyId: string) {
             ActionType.DELETE,
             EntityType.PROPERTY,
             propertyId,
-            { details: "Property Deleted" }
+            { details: `Property Deleted (Reason: ${reason})`, deletedIds: idsToDelete }
         );
 
         revalidatePath("/admin/properties");
         return { success: true };
     } catch (e) {
         console.error("Delete Property Error:", e);
-        return { error: "Failed to delete property" };
+        return { error: "Failed to delete property. It may have dependent records that cannot be safely removed." };
     }
 }

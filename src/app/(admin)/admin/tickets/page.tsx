@@ -20,14 +20,18 @@ import { ExportTicketsButton } from "@/components/admin/tickets/ExportTicketsBut
 export default async function AdminTicketsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
     const { status: filterStatus } = await searchParams;
 
+    const where: any = {};
+    if (filterStatus && filterStatus !== 'ALL') {
+        if (filterStatus.startsWith('PENDING_')) {
+            where.approvalStatus = filterStatus as any;
+        } else {
+            where.status = filterStatus as any;
+        }
+    }
+
     // 1. Fetch Data
     const tickets = await prisma.ticket.findMany({
-        where: filterStatus && filterStatus !== 'ALL' ? {
-            OR: [
-                { status: filterStatus as any },
-                { approvalStatus: filterStatus as any }
-            ]
-        } : {},
+        where,
         orderBy: { createdAt: 'desc' },
         include: { user: true }
     });

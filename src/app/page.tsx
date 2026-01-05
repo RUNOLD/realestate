@@ -7,14 +7,14 @@ import {
   MapPin,
   BedDouble,
   Bath,
-  Maximize,
   ArrowRight,
   Search,
   Star,
   Quote,
   CheckCircle2,
   Map as MapIcon,
-  Compass
+  Compass,
+  Camera
 } from "lucide-react";
 import Image from "next/image";
 
@@ -80,12 +80,15 @@ export default async function Home() {
                     className="object-cover transform group-hover:scale-110 transition-transform duration-700"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
-                  <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm text-foreground px-3 py-1 rounded-md text-xs font-bold shadow-sm z-10">
-                    FOR RENT
-                  </div>
                   <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-black shadow-sm uppercase tracking-wider">
                     {property.status === 'AVAILABLE' ? 'AVAILABLE NOW' : property.status}
                   </div>
+                  {property.images.length > 1 && (
+                    <div className="absolute bottom-4 right-4 bg-black/40 backdrop-blur-md text-white px-2 py-1 rounded-md text-[10px] font-black flex items-center gap-1 border border-white/10 shadow-lg">
+                      <Camera size={10} className="text-accent" />
+                      {property.images.length}
+                    </div>
+                  )}
                 </div>
 
                 {/* Card Body */}

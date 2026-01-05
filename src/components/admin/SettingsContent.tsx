@@ -455,7 +455,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
                             <div className="p-8 md:p-12 space-y-10 animate-in slide-in-from-bottom-4 duration-500">
                                 <div className="space-y-4">
                                     <h2 className="text-3xl font-serif font-black text-primary uppercase tracking-tighter text-gray-900 border-b pb-4">Nexus Core Control</h2>
-                                    <p className="text-muted-foreground font-medium">System-wide platform parameters for the Ayoola ecosystem.</p>
+                                    <p className="text-muted-foreground font-medium">Platform Master Settings for the Ayoola ecosystem (Receipts, Emails, and Invoices).</p>
                                 </div>
 
                                 <form
@@ -475,17 +475,17 @@ export function SettingsContent({ user }: SettingsContentProps) {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Global Support Node</label>
-                                            <Input name="supportEmail" defaultValue="support@ayoolaproperty.com" className="h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner" />
+                                            <Input name="supportEmail" defaultValue="info@ayoolaproperty.com" className="h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner" />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Verified Hotline</label>
-                                            <Input name="hotline" defaultValue="+234 800 123 4567" className="h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner" />
+                                            <Input name="hotline" defaultValue="+234 805 075 8674" className="h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner" />
                                         </div>
                                     </div>
 
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Headquarters Address</label>
-                                        <Input name="address" defaultValue="123 Lekki Phase 1, Lagos, Nigeria" className="h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner" />
+                                        <Input name="address" defaultValue="1st Floor, Theodolite House, 54, New State Hospital Road, Off Ring Road, Ibadan, Oyo State, Nigeria." className="h-14 bg-muted/30 border-none rounded-2xl font-bold shadow-inner" />
                                     </div>
 
                                     <div className="pt-8 flex items-center justify-end border-t border-border">
@@ -534,7 +534,10 @@ function NotificationToggle({ title, desc, checked, onChange, icon: Icon }: { ti
 function Switch({ checked, onChange }: { checked: boolean; onChange: () => void }) {
     return (
         <button
-            onClick={onChange}
+            onClick={(e) => {
+                e.stopPropagation();
+                onChange();
+            }}
             type="button"
             className={cn(
                 "group relative inline-flex h-8 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ring-offset-background",
