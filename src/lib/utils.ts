@@ -22,13 +22,13 @@ export async function generateUniqueId(prefix: string, model: 'user' | 'property
   const maxRetries = 10;
 
   for (let i = 0; i < maxRetries; i++) {
-    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // No I, O, 1, 0 for checks
-    let result = '';
+    const characters = '0123456789';
+    let randomPart = '';
     const charactersLength = characters.length;
-    for (let j = 0; j < 8; j++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    for (let j = 0; j < 4; j++) {
+      randomPart += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
-    const uniqueId = `${prefix}${result}`;
+    const uniqueId = `${prefix}${randomPart}`;
 
     // Validation: Unique Check
     let exists = false;

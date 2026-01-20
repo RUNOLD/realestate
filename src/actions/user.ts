@@ -120,7 +120,7 @@ export async function createTenant(prevState: any, formData: FormData): Promise<
 
     try {
         const { generateUniqueId } = await import("@/lib/utils");
-        const uniqueId = await generateUniqueId('APMS', 'user');
+        const uniqueId = await generateUniqueId('APMST', 'user');
 
         const existingUser = await prisma.user.findFirst({
             where: {
@@ -288,7 +288,7 @@ export async function createLandlord(prevState: any, formData: FormData): Promis
 
     try {
         const { generateUniqueId } = await import("@/lib/utils");
-        const uniqueId = await generateUniqueId('APMS', 'user');
+        const uniqueId = await generateUniqueId('APMSL', 'user');
 
         const existingUser = await prisma.user.findFirst({
             where: { email: data.email }
@@ -375,8 +375,8 @@ export async function createStaff(prevState: any, formData: FormData): Promise<A
 
     try {
         const { generateUniqueId } = await import("@/lib/utils");
-        // Staff/Admin: APM + 4 digits
-        const prefix = 'APM';
+        // Admin: APM + 4 digits | Staff: APMS + 4 digits
+        const prefix = role === 'ADMIN' ? 'APM' : 'APMS';
         const uniqueId = await generateUniqueId(prefix, 'user');
 
         const existingUser = await prisma.user.findUnique({
@@ -608,3 +608,4 @@ export async function updateSelfPassword(prevState: any, formData: FormData): Pr
         return { error: "Failed to update password." };
     }
 }
+

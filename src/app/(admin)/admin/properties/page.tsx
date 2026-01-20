@@ -15,13 +15,18 @@ export default async function AdminPropertiesPage({ searchParams }: PageProps) {
     const query = typeof params.query === 'string' ? params.query : undefined;
 
     // Fetch data with search filter
-    const where = query ? {
-        OR: [
-            { title: { contains: query, mode: 'insensitive' as const } },
-            { location: { contains: query, mode: 'insensitive' as const } },
-            { uniqueId: { contains: query, mode: 'insensitive' as const } }
+    const where: any = query ? {
+        AND: [
+            { isMultiUnit: false },
+            {
+                OR: [
+                    { title: { contains: query, mode: 'insensitive' as const } },
+                    { location: { contains: query, mode: 'insensitive' as const } },
+                    { uniqueId: { contains: query, mode: 'insensitive' as const } }
+                ]
+            }
         ]
-    } : {};
+    } : { isMultiUnit: false };
 
     let properties: any[] = [];
     try {

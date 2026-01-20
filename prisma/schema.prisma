@@ -20,7 +20,6 @@ model User {
   resetTokenExpiry        DateTime?
   role                    Role                  @default(USER)
   status                  UserStatus            @default(ACTIVE)
-  blacklistReason         String?
   createdAt               DateTime              @default(now())
   updatedAt               DateTime              @updatedAt
   nextOfKinName           String?
@@ -37,6 +36,7 @@ model User {
   homeAddress             String?
   salary                  Float?
   uniqueId                String?               @unique
+  blacklistReason         String?
   activityLogs            ActivityLog[]
   contactSubmissions      ContactSubmission[]
   documents               Document[]
@@ -102,20 +102,20 @@ model Property {
 }
 
 model Lease {
-  id           String                @id @default(cuid())
-  startDate    DateTime
-  endDate      DateTime?
-  rentAmount   Float
-  isActive     Boolean               @default(true)
+  id              String                @id @default(cuid())
+  startDate       DateTime
+  endDate         DateTime?
+  rentAmount      Float
+  isActive        Boolean               @default(true)
+  userId          String
+  propertyId      String
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  billingCycle    BillingCycle          @default(MONTHLY)
   terminationDate DateTime?
-  userId       String
-  propertyId   String
-  createdAt    DateTime              @default(now())
-  updatedAt    DateTime              @updatedAt
-  billingCycle BillingCycle          @default(MONTHLY)
-  property     Property              @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  user         User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rentLogs     RentModificationLog[]
+  property        Property              @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rentLogs        RentModificationLog[]
 }
 
 model Ticket {
@@ -397,13 +397,13 @@ model Payout {
   amount          Float
   periodStart     DateTime
   periodEnd       DateTime
-  description     String?
   status          String            @default("PENDING")
   expenseSnapshot Json?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   rentCycleId     String?
   propertyId      String?
+  description     String?
   expenses        LandlordExpense[]
   landlord        User              @relation(fields: [landlordId], references: [id])
   property        Property?         @relation("PropertyPayouts", fields: [propertyId], references: [id])

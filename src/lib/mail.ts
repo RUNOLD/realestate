@@ -11,14 +11,9 @@ export async function sendEmail({ to, subject, html }: SendEmailProps) {
 
     // Fallback if no API key is present (Dev Mode)
     if (!apiKey || apiKey === 're_123...' || apiKey.startsWith('re_mock')) {
-        console.log("---------------------------------------------------");
-        console.log("📧 [MOCK EMAIL SERVICE]");
-        console.log(`To: ${to}`);
-        console.log(`Subject: ${subject}`);
-        console.log("--- Body Start ---");
-        console.log(html); // In a real app we might strip HTML tags for readability
-        console.log("--- Body End ---");
-        console.log("---------------------------------------------------");
+        if (process.env.NODE_ENV !== 'production') {
+            console.log("📧 [MOCK EMAIL SERVICE] To:", to, "| Subject:", subject);
+        }
         return { success: true, id: 'mock-id' };
     }
 
