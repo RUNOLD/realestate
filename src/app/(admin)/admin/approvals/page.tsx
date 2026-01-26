@@ -1,4 +1,4 @@
-
+2
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, User, CreditCard } from "lucide-react";

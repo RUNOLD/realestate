@@ -53,13 +53,9 @@ export default async function RootLayout({
           where: { status: { notIn: ['RESOLVED', 'CLOSED'] } }
         });
       } catch (error) {
-        console.error("Failed to fetch admin ticket count, trying raw query:", error);
-        try {
-          const result = await prisma.$queryRaw<any[]>`SELECT COUNT(*)::int as count FROM "Ticket" WHERE status NOT IN ('RESOLVED', 'CLOSED')`;
-          ticketCount = result[0]?.count || 0;
-        } catch (rawError) {
-          console.error("Raw query also failed:", rawError);
-        }
+        console.error("Failed to fetch admin ticket count:", error);
+        // Fallback to 0 if database is unreachable
+        ticketCount = 0;
       }
     } else if (role === 'TENANT') {
       try {
@@ -70,13 +66,8 @@ export default async function RootLayout({
           }
         });
       } catch (error) {
-        console.error("Failed to fetch tenant ticket count, trying raw query:", error);
-        try {
-          const result = await prisma.$queryRaw<any[]>`SELECT COUNT(*)::int as count FROM "Ticket" WHERE "userId" = ${session.user.id} AND status NOT IN ('RESOLVED', 'CLOSED')`;
-          ticketCount = result[0]?.count || 0;
-        } catch (rawError) {
-          console.error("Raw query also failed:", rawError);
-        }
+        console.error("Failed to fetch tenant ticket count:", error);
+        ticketCount = 0;
       }
     }
   }

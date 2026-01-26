@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
-import { PropertyStatus } from "@prisma/client";
+import { PropertyStatus, Property } from "@prisma/client";
 
 export const dynamic = 'force-dynamic';
 
@@ -34,11 +34,18 @@ export const metadata: Metadata = {
 
 export default async function Home() {
   // Fetch featured properties
-  const featuredProperties = await prisma.property.findMany({
-    take: 3,
-    orderBy: { createdAt: 'desc' },
-    where: { status: PropertyStatus.AVAILABLE }
-  });
+  // Fetch featured properties
+  let featuredProperties: Property[] = [];
+  try {
+    featuredProperties = await prisma.property.findMany({
+      take: 3,
+      orderBy: { createdAt: 'desc' },
+      where: { status: PropertyStatus.AVAILABLE }
+    });
+  } catch (error) {
+    console.error("Failed to fetch featured properties:", error);
+    // Fallback to empty array to prevent page crash
+  }
 
   return (
     <main className="min-h-screen bg-background font-sans text-foreground">
